@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "StructUtils/InstancedStruct.h"
+#include "StructUtils/PropertyBag.h"
 #include "EventSequenceDA.generated.h"
 
 
@@ -32,7 +33,7 @@ public:
 
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 	FString DisplayName = TEXT("666666666666666");  
 	

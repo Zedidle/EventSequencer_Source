@@ -52,6 +52,9 @@ struct FBaseSequenceEvent
 
 	UPROPERTY(EditDefaultsOnly)
 	FName Label = FName();
+
+	
+
 	
 	virtual FString GetDisplayName() const
 	{
@@ -92,6 +95,10 @@ struct FBaseSequenceEvent
 protected:
 	EEventState State = EEventState::Pending;
 };
+
+
+
+
 
 
 // 具体事件

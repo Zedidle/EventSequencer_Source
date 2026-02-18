@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/EventSequenceComponent.h"
 #include "DataAssets/EventSequenceDA.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "UObject/Object.h"
@@ -19,6 +20,9 @@ class EVENTSEQUENCER_API UEventSequenceSystem : public UTickableWorldSubsystem
 	
     UPROPERTY()
     TArray<UEventSequenceRunning*> EventSequencesRunning;
+
+    UPROPERTY()
+    TArray<TWeakObjectPtr<UEventSequenceComponent>> EventSequenceComponents;
     
 public:
     static UEventSequenceSystem* GetInstance(UWorld* World);
@@ -31,10 +35,14 @@ public:
     void TickSequences(float DeltaTime);
     
     UFUNCTION(BlueprintCallable, Category = "Event Sequencer")
-    UEventSequenceRunning* CreateEventSequence(UEventSequenceDA* TargetDataAsset);
+    UEventSequenceRunning* CreateEventSequence(UEventSequenceDA* TargetDataAsset, UEventSequenceComponent* Component = nullptr);
     
     UFUNCTION(BlueprintCallable, Category = "Event Sequencer")
     bool RemoveEventSequence(UEventSequenceRunning* EventSequence);
+
+    UFUNCTION()
+    bool RemoveComponent(const UEventSequenceComponent* Component);
+    
 };
 
 

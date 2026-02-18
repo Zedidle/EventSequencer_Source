@@ -27,7 +27,7 @@ TStatId UEventSequenceSystem::GetStatId() const
     return TStatId();  // 或其他安全的返回值
 }
 
-UEventSequenceRunning* UEventSequenceSystem::CreateEventSequence(UEventSequenceDA* TargetDataAsset)
+UEventSequenceRunning* UEventSequenceSystem::CreateEventSequence(UEventSequenceDA* TargetDataAsset, UEventSequenceComponent* Component)
 {
     if (!TargetDataAsset) return nullptr;
     if (TargetDataAsset->GetSequenceLength() == 0) return nullptr;
@@ -98,7 +98,15 @@ UEventSequenceRunning* UEventSequenceSystem::CreateEventSequence(UEventSequenceD
             }
         }
     }
-    EventSequencesRunning.Add(EventSequence);
+
+    if (Component)
+    {
+        EventSequenceComponents.Add(Component);
+    }
+    else
+    {
+        EventSequencesRunning.Add(EventSequence);
+    }
     return EventSequence;
 }
 
@@ -111,6 +119,24 @@ bool UEventSequenceSystem::RemoveEventSequence(UEventSequenceRunning* EventSeque
         EventSequencesRunning.Remove(EventSequence);
         return true;
     }
+    return false;
+}
+
+bool UEventSequenceSystem::RemoveComponent(const UEventSequenceComponent* Component)
+{
+    if (!Component) return false;
+
+    for (int32 Index = 0; Index < EventSequenceComponents.Num(); ++Index)
+    {
+        TWeakObjectPtr<UEventSequenceComponent>& WeakCompPtr = EventSequenceComponents[Index];
+        
+        if (WeakCompPtr.IsValid() && WeakCompPtr.Get() == Component)
+        {
+            EventSequenceComponents.RemoveAt(Index);
+            return true;
+        }
+    }
+
     return false;
 }
 

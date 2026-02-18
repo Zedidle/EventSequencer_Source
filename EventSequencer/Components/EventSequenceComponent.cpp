@@ -51,7 +51,10 @@ void UEventSequenceComponent::TickComponent(float DeltaTime, ELevelTick TickType
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
+	if (CurEventSequence)
+	{
+		CurEventSequence->Tick(DeltaTime);
+	}
 }
 
 UEventSequenceRunning* UEventSequenceComponent::CreateEventSequence(UEventSequenceDA* TargetDataAsset)
@@ -62,7 +65,7 @@ UEventSequenceRunning* UEventSequenceComponent::CreateEventSequence(UEventSequen
 	UWorld* World = Owner->GetWorld();
 	if (UEventSequenceSystem* EventSequenceSystem = UEventSequenceSystem::GetInstance(World))
 	{
-		CurEventSequence = EventSequenceSystem->CreateEventSequence(TargetDataAsset);
+		CurEventSequence = EventSequenceSystem->CreateEventSequence(TargetDataAsset, this);
 	}
 	
 	return CurEventSequence;
@@ -76,7 +79,7 @@ bool UEventSequenceComponent::RemoveEventSequence()
 	UWorld* World = Owner->GetWorld();
 	if (UEventSequenceSystem* EventSequenceSystem = UEventSequenceSystem::GetInstance(World))
 	{
-		return EventSequenceSystem->RemoveEventSequence(CurEventSequence);
+		return EventSequenceSystem->RemoveComponent(this);
 	}
 	
 	return false;

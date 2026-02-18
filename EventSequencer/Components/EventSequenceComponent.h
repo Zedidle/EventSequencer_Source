@@ -39,5 +39,5 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "Event Factory")
 	bool RemoveEventSequence();
-	
+		
 };
