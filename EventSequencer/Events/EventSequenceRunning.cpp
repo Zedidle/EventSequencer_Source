@@ -2,7 +2,7 @@
 
 
 #include "EventSequenceRunning.h"
-
+#include "../Events/SequenceEvent/CommonStructs.h"
 #include "EventSequencer/EventSequenceSystem.h"
 
 void UEventSequenceRunning::AddEventStruct(FInstancedStruct& EventStruct)

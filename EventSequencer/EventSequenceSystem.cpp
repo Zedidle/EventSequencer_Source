@@ -5,6 +5,7 @@
 #include "DataAssets/PropertyBagWrapper.h"
 #include "UObject/UnrealType.h"
 #include "Engine/World.h"
+#include "Events/SequenceEvent/CommonStructs.h"
 
 class AAIController;
 

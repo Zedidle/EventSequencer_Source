@@ -2,8 +2,6 @@
 
 
 #include "EventSequenceFuncLib.h"
-
-#include "EventSequencer/CommonStructs.h"
 #include "EventSequencer/EventSequenceSystem.h"
 
 

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EventSequencer/CommonStructs.h"
+#include "SequenceEvent/CommonStructs.h"
 #include "UObject/Object.h"
 #include "EventSyncObject.generated.h"
 

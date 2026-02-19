@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "EventSequenceDA.h"
-#include "EventSequencer/CommonStructs.h"
+#include "../Events/SequenceEvent/CommonStructs.h"
 
 
 void UEventSequenceDA::ResetDisplayName()

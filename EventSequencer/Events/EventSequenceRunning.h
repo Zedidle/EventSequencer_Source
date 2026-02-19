@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EventSequencer/CommonStructs.h"
 #include "EventSequencer/DataAssets/EventSequenceDA.h"
 #include "StructUtils/InstancedStruct.h"
 #include "UObject/Object.h"

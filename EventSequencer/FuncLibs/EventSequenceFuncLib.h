@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EventSequencer/CommonStructs.h"
+#include "../Events/SequenceEvent/CommonStructs.h"
 #include "EventSequencer/Events/EventSequenceRunning.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "StructUtils/InstancedStruct.h"
