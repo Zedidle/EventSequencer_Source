@@ -33,7 +33,14 @@ public:
 
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 
+	UPROPERTY(EditAnywhere)
+	FInstancedPropertyBag DefaultPropertyBag;
 
+	FInstancedPropertyBag OutPropertyBag;
+
+	FInstancedPropertyBag PropertyBagRuntime;
+	
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 	FString DisplayName = TEXT("666666666666666");  
 	

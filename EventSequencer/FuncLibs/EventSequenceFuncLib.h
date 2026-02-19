@@ -21,16 +21,21 @@ class EVENTSEQUENCER_API UEventSequenceFuncLib : public UBlueprintFunctionLibrar
 public:
 	// 创建NPC移动事件
 	UFUNCTION(BlueprintCallable, Category = "Event Factory")
-	static FInstancedStruct CreateMoveEvent(const FVector& TargetLocation, float ApproachDistance = 10.0f);
+	static FInstancedStruct CreateMoveEvent(const FMoveSequenceProperty& Property);
 
 	// 创建对话事件
 	UFUNCTION(BlueprintCallable, Category = "Event Factory")  
-	static FInstancedStruct CreateDialogEvent(const TArray<FString>& DialogLines, float TextSpeed = 0.05f);
+	static FInstancedStruct CreateDialogEvent(const FDialogSequenceProperty& Property);
 
 	// 创建等待事件
 	UFUNCTION(BlueprintCallable, Category = "Event Factory")
-	static FInstancedStruct CreateDelayEvent(float Duration = 1.0f);
+	static FInstancedStruct CreateWaitEvent(const FWaitSequenceProperty& Property);
 
+	// 创建等待事件
+	UFUNCTION(BlueprintCallable, Category = "Event Factory")
+	static FInstancedStruct CreateChoiceEvent(const FChoiceSequenceProperty& Property);
+
+	
 	UFUNCTION(BlueprintCallable, Category = "Event Factory", meta =(WorldContext = "WorldContextObject"))
 	static UEventSequenceRunning* CreateEventSequence(UObject* WorldContextObject, UEventSequenceDA* TargetDataAsset);
 	

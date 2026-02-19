@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Interfaces/EventSequencerInterface.h"
+#include "StructUtils/PropertyBag.h"
 #include "UI/ChoiceWidget.h"
 #include "UObject/Object.h"
 #include "CommonStructs.generated.h"
@@ -49,13 +50,13 @@ struct FBaseSequenceEvent
     
 	FBaseSequenceEvent(){}
 	virtual ~FBaseSequenceEvent() = default;
-
+	
+	UPROPERTY(EditAnywhere)
+	FInstancedPropertyBag InstancedPropertyBag;
+	
 	UPROPERTY(EditDefaultsOnly)
 	FName Label = FName();
 
-	
-
-	
 	virtual FString GetDisplayName() const
 	{
 		if (!Label.IsNone())
@@ -99,7 +100,18 @@ protected:
 
 
 
-
+USTRUCT(BlueprintType)
+struct FMoveSequenceProperty
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere)
+	FVector TargetLocation;
+	
+	UPROPERTY(EditAnywhere)
+	float ApproachDistance = 10;
+	
+};
 
 // 具体事件
 // 移动事件
@@ -115,16 +127,19 @@ struct FMoveSequenceEvent : public FBaseSequenceEvent
 
 	virtual FString GetDisplayName() const override
 	{
-		return Super::GetDisplayName() + FString::Printf(TEXT("Move ApproachDistance: %f"), ApproachDistance);
+		return Super::GetDisplayName() + FString::Printf(TEXT("Move ApproachDistance: %f"), Property.ApproachDistance);
 	}
 	
 	bool bMoving = false;    
-    
-	// 使用元数据将属性的显示与基类的 Type 枚举绑定
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "Type == EEventType::Move"))
-	FVector TargetLocation;
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "Type == EEventType::Move"))
-	float ApproachDistance = 10;
+
+
+	// UPROPERTY(EditAnywhere, Meta = (EditCondition = "Type == EEventType::Move"))
+	// FInstancedPropertyBag InstancedPropertyBag;
+	
+	// UPROPERTY(EditAnywhere, Meta = (EditCondition = "Type == EEventType::Move"))
+	UPROPERTY(EditAnywhere)
+	FMoveSequenceProperty Property; 
+
     
 	// UPROPERTY(EditAnywhere, Category = "Event", Meta = (EditCondition = "Type == EEventType::NPCMovement"))
 	// float MoveSpeed = 300.0f;
@@ -160,7 +175,7 @@ struct FMoveSequenceEvent : public FBaseSequenceEvent
 		
 		FVector CurLocation = NPCPawn->GetActorLocation();
     
-		if (FVector::Distance(CurLocation, TargetLocation) < ApproachDistance)
+		if (FVector::Distance(CurLocation, Property.TargetLocation) < Property.ApproachDistance)
 		{
 			State = EEventState::Completed;
 		}
@@ -168,7 +183,7 @@ struct FMoveSequenceEvent : public FBaseSequenceEvent
 		{
 			if (AController* Controller = NPCPawn->GetController())
 			{
-				UAIBlueprintHelperLibrary::SimpleMoveToLocation(Controller, TargetLocation);
+				UAIBlueprintHelperLibrary::SimpleMoveToLocation(Controller, Property.TargetLocation);
 			}
 			bMoving = true;
 		}
@@ -179,6 +194,20 @@ private:
 	UPROPERTY()
 	APawn* NPCPawn = nullptr;
 	FVector StartLocation;
+};
+
+
+USTRUCT(BlueprintType)
+struct FDialogSequenceProperty
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere)
+	TArray<FString> DialogLines;
+	
+	UPROPERTY(EditAnywhere)
+	float TextDisplaySpeed = 0.05f;
+	
 };
 
 // 对话事件
@@ -193,7 +222,7 @@ struct FDialogSequenceEvent : public FBaseSequenceEvent
 	}
 	virtual FString GetDisplayName() const override
 	{
-		return Super::GetDisplayName() + FString::Printf(TEXT("Dialog Num: %d"), DialogLines.Num());
+		return Super::GetDisplayName() + FString::Printf(TEXT("Dialog Num: %d"), Property.DialogLines.Num());
 	}
 	// 建议后续传入一个对话ID即可，在Enter时读取对话列表到这里。
 	// 可能不是 FString， 每个对话的结构 FDialogItem 如下：
@@ -202,10 +231,10 @@ struct FDialogSequenceEvent : public FBaseSequenceEvent
 	// 	Name - 名称
 	// 	Content - 所说的话。
 	// }
-    UPROPERTY(EditAnywhere, Meta = (EditCondition = "Type == EEventType::Dialog"))
-	TArray<FString> DialogLines;
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "Type == EEventType::Dialog"))
-	float TextDisplaySpeed = 0.05f;
+
+	UPROPERTY(EditAnywhere)
+	FDialogSequenceProperty Property;
+	
 	// UPROPERTY(EditAnywhere)
 	// TArray<FDialogItem> DialogItems;
 	
@@ -239,6 +268,16 @@ private:
 	float CurrentCharIndex = 0;
 };
 
+USTRUCT(BlueprintType)
+struct FWaitSequenceProperty
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere)
+	float Duration = 1.0f;
+	
+};
+
 // 等待事件
 USTRUCT(BlueprintType)
 struct FWaitSequenceEvent : public FBaseSequenceEvent
@@ -251,11 +290,12 @@ struct FWaitSequenceEvent : public FBaseSequenceEvent
 	}
 	virtual FString GetDisplayName() const override
 	{
-		return Super::GetDisplayName() + FString::Printf(TEXT("Wait For: %f"), Duration);
+		return Super::GetDisplayName() + FString::Printf(TEXT("Wait For: %f"), Property.Duration);
 	}
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "Type == EEventType::Wait"))
-	float Duration = 1.0f;
 
+	UPROPERTY(EditAnywhere)
+	FWaitSequenceProperty Property;
+	
 	float CurTime = 0;
     
 	virtual void OnEnter() override
@@ -274,7 +314,7 @@ struct FWaitSequenceEvent : public FBaseSequenceEvent
 	virtual void Tick(float DeltaTime) override
 	{
 		CurTime += DeltaTime;
-		if (CurTime >= Duration)
+		if (CurTime >= Property.Duration)
 		{
 			Execute();
 		}
@@ -290,6 +330,19 @@ struct FWaitSequenceEvent : public FBaseSequenceEvent
 
 
 USTRUCT(BlueprintType)
+struct FChoiceSequenceProperty
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere)
+	TArray<FString> Choices;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UChoiceWidget> ChoiceWidgetClass;
+	
+};
+
+USTRUCT(BlueprintType)
 struct FChoiceSequenceEvent : public FBaseSequenceEvent
 {
 	GENERATED_BODY()
@@ -301,19 +354,15 @@ struct FChoiceSequenceEvent : public FBaseSequenceEvent
 	
 	virtual FString GetDisplayName() const override
 	{
-		return Super::GetDisplayName() + FString::Printf(TEXT("Choice Choices Num: %d"), Choices.Num());
+		return Super::GetDisplayName() + FString::Printf(TEXT("Choice Choices Num: %d"), Property.Choices.Num());
 	}
 	
 	UPROPERTY()
 	TWeakObjectPtr<APawn> PlayerPawn;
 
+	UPROPERTY(EditAnywhere)
+	FChoiceSequenceProperty Property;
 	
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "Type == EEventType::Choice"))
-	TArray<FString> Choices;
-
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "Type == EEventType::Choice"))
-	TSubclassOf<UChoiceWidget> ChoiceWidgetClass;
-
 	UPROPERTY()
 	UChoiceWidget* ChoiceWidget;
 	
@@ -322,7 +371,7 @@ struct FChoiceSequenceEvent : public FBaseSequenceEvent
 		FBaseSequenceEvent::OnEnter();
 
 		// 针对对话所用的UMG生成对话选项界面
-		if (ChoiceWidgetClass)
+		if (Property.ChoiceWidgetClass)
 		{
 			// CreateWidget<UChoiceWidget>(this, ChoiceWidgetClass);
 			// 需要临时给每个选项绑定操作

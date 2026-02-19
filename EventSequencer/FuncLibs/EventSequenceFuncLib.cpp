@@ -6,46 +6,62 @@
 #include "EventSequencer/CommonStructs.h"
 #include "EventSequencer/EventSequenceSystem.h"
 
-FInstancedStruct UEventSequenceFuncLib::CreateMoveEvent(const FVector& TargetLocation, float ApproachDistance)
+
+FInstancedStruct UEventSequenceFuncLib::CreateMoveEvent(const FMoveSequenceProperty& Property)
 {
-	FInstancedStruct MoveEvent;
-	MoveEvent.InitializeAs<FMoveSequenceEvent>();
+	FInstancedStruct ResultEvent;
+	ResultEvent.InitializeAs<FMoveSequenceEvent>();
     
-	if (auto* Event = MoveEvent.GetMutablePtr<FMoveSequenceEvent>())
+	if (auto* Event = ResultEvent.GetMutablePtr<FMoveSequenceEvent>())
 	{
-		Event->TargetLocation = TargetLocation;
-		Event->ApproachDistance = ApproachDistance;
+		Event->Property.TargetLocation = Property.TargetLocation;
+		Event->Property.ApproachDistance = Property.ApproachDistance;
 	}
     
-	return MoveEvent;
+	return ResultEvent;
 }
 
-FInstancedStruct UEventSequenceFuncLib::CreateDialogEvent(const TArray<FString>& DialogLines, float TextSpeed)
+FInstancedStruct UEventSequenceFuncLib::CreateDialogEvent(const FDialogSequenceProperty& Property)
 {
-	FInstancedStruct DialogEvent;
-	DialogEvent.InitializeAs<FDialogSequenceEvent>();
+	FInstancedStruct ResultEvent;
+	ResultEvent.InitializeAs<FDialogSequenceEvent>();
     
-	if (auto* Event = DialogEvent.GetMutablePtr<FDialogSequenceEvent>())
+	if (auto* Event = ResultEvent.GetMutablePtr<FDialogSequenceEvent>())
 	{
-		Event->DialogLines = DialogLines;
-		Event->TextDisplaySpeed = TextSpeed;
+		Event->Property.DialogLines = Property.DialogLines;
+		Event->Property.TextDisplaySpeed = Property.TextDisplaySpeed;
 	}
     
-	return DialogEvent;
+	return ResultEvent;
 }
 
-FInstancedStruct UEventSequenceFuncLib::CreateDelayEvent(float Duration)
+FInstancedStruct UEventSequenceFuncLib::CreateWaitEvent(const FWaitSequenceProperty& Property)
 {
-	FInstancedStruct DelayEvent;
-	DelayEvent.InitializeAs<FWaitSequenceEvent>();
+	FInstancedStruct ResultEvent;
+	ResultEvent.InitializeAs<FWaitSequenceEvent>();
     
-	if (auto* Event = DelayEvent.GetMutablePtr<FWaitSequenceEvent>())
+	if (auto* Event = ResultEvent.GetMutablePtr<FWaitSequenceEvent>())
 	{
-		Event->Duration = Duration;
+		Event->Property.Duration = Property.Duration;
 	}
     
-	return DelayEvent;
+	return ResultEvent;
 }
+
+FInstancedStruct UEventSequenceFuncLib::CreateChoiceEvent(const FChoiceSequenceProperty& Property)
+{
+	FInstancedStruct ResultEvent;
+	ResultEvent.InitializeAs<FChoiceSequenceEvent>();
+    
+	if (auto* Event = ResultEvent.GetMutablePtr<FChoiceSequenceEvent>())
+	{
+		Event->Property.Choices = Property.Choices;
+		Event->Property.ChoiceWidgetClass = Property.ChoiceWidgetClass;
+	}
+    
+	return ResultEvent;
+}
+
 
 UEventSequenceRunning* UEventSequenceFuncLib::CreateEventSequence(UObject* WorldContextObject, UEventSequenceDA* TargetDataAsset)
 {

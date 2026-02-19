@@ -56,8 +56,8 @@ UEventSequenceRunning* UEventSequenceSystem::CreateEventSequence(UEventSequenceD
                     FMoveSequenceEvent* DEvent = RuntimeEvent.GetMutablePtr<FMoveSequenceEvent>();
                     if (SourceEvent && DEvent)
                     {
-                        DEvent->TargetLocation = SourceEvent->TargetLocation;
-                        DEvent->ApproachDistance = SourceEvent->ApproachDistance;
+                        DEvent->Property.TargetLocation = SourceEvent->Property.TargetLocation;
+                        DEvent->Property.ApproachDistance = SourceEvent->Property.ApproachDistance;
                         DEvent->bMoving = false;
                     }
                 }
@@ -68,8 +68,8 @@ UEventSequenceRunning* UEventSequenceSystem::CreateEventSequence(UEventSequenceD
                     FDialogSequenceEvent* DEvent = RuntimeEvent.GetMutablePtr<FDialogSequenceEvent>();
                     if (SourceEvent && DEvent)
                     {
-                        DEvent->DialogLines = SourceEvent->DialogLines;
-                        DEvent->TextDisplaySpeed = SourceEvent->TextDisplaySpeed;
+                        DEvent->Property.DialogLines = SourceEvent->Property.DialogLines;
+                        DEvent->Property.TextDisplaySpeed = SourceEvent->Property.TextDisplaySpeed;
                     }
                 }
                 else if (EventStruct.GetScriptStruct()->IsChildOf(FWaitSequenceEvent::StaticStruct()))
@@ -79,7 +79,7 @@ UEventSequenceRunning* UEventSequenceSystem::CreateEventSequence(UEventSequenceD
                     FWaitSequenceEvent* DEvent = RuntimeEvent.GetMutablePtr<FWaitSequenceEvent>();
                     if (SourceEvent && DEvent)
                     {
-                        DEvent->Duration = SourceEvent->Duration;
+                        DEvent->Property.Duration = SourceEvent->Property.Duration;
                     }
                 }
                 else if (EventStruct.GetScriptStruct()->IsChildOf(FChoiceSequenceEvent::StaticStruct()))
