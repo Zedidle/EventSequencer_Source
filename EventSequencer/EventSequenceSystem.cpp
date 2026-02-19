@@ -1,6 +1,8 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "EventSequenceSystem.h"
+
+#include "DataAssets/PropertyBagWrapper.h"
 #include "UObject/UnrealType.h"
 #include "Engine/World.h"
 
@@ -27,12 +29,20 @@ TStatId UEventSequenceSystem::GetStatId() const
     return TStatId();  // 或其他安全的返回值
 }
 
-UEventSequenceRunning* UEventSequenceSystem::CreateEventSequence(UEventSequenceDA* TargetDataAsset, UEventSequenceComponent* Component)
+UEventSequenceRunning* UEventSequenceSystem::CreateEventSequence(UEventSequenceDA* TargetDataAsset, UEventSequenceComponent* Component, UPropertyBagWrapper* PropertyWrapper)
 {
     if (!TargetDataAsset) return nullptr;
     if (TargetDataAsset->GetSequenceLength() == 0) return nullptr;
     
     UEventSequenceRunning* EventSequence = NewObject<UEventSequenceRunning>();
+
+    if (PropertyWrapper)
+    {
+        TargetDataAsset->SetPropertyBagInput(PropertyWrapper->GetPropertyBag());
+    }
+    EventSequence->SetDataAsset(TargetDataAsset);
+
+    // TargetDataAsset
     
     for (int32 i = 0; i < TargetDataAsset->GetSequenceLength(); ++i)
     {
@@ -109,6 +119,7 @@ UEventSequenceRunning* UEventSequenceSystem::CreateEventSequence(UEventSequenceD
     }
     return EventSequence;
 }
+
 
 bool UEventSequenceSystem::RemoveEventSequence(UEventSequenceRunning* EventSequence)
 {

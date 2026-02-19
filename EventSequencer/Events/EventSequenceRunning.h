@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "EventSequencer/CommonStructs.h"
+#include "EventSequencer/DataAssets/EventSequenceDA.h"
 #include "StructUtils/InstancedStruct.h"
 #include "UObject/Object.h"
 #include "EventSequenceRunning.generated.h"
@@ -21,7 +22,13 @@ public:
 	bool bPause = false;
 	int CurEventIndex = 0;
 	TArray<FInstancedStruct> EventQueue;
-	
+
+	// 初始化定义的DA，存储了 InstancedPropertyBag 数据
+	UPROPERTY()
+	UEventSequenceDA* InitDataAsset;
+
+	UFUNCTION()
+	void SetDataAsset(UEventSequenceDA* DataAsset);
 	
 	void Tick(float DeltaTime);
 	

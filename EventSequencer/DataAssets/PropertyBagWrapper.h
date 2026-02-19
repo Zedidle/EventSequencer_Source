@@ -17,82 +17,134 @@ public:
     // 构造函数
     UPropertyBagWrapper();
 
-    // 属性操作接口
-    UFUNCTION(BlueprintCallable, Category = "PropertyBag")
-    bool AddProperty(const FName& Name, const FString& TypeString);
-    
-    UFUNCTION(BlueprintCallable, Category = "PropertyBag")
-    bool SetValueInt(const FName& Name, int32 Value);
-    
-    UFUNCTION(BlueprintCallable, Category = "PropertyBag")
-    bool SetValueFloat(const FName& Name, float Value);
-    
-    UFUNCTION(BlueprintCallable, Category = "PropertyBag")
-    bool SetValueString(const FName& Name, const FString& Value);
+	FORCEINLINE FInstancedPropertyBag& GetPropertyBag() { return PropertyBag; }
+    // FORCEINLINE const FInstancedPropertyBag& GetPropertyBag() const { return PropertyBag; }
 
-    
+	bool AddProperty(const FName& Name, const EPropertyBagPropertyType& Type);
+	
     UFUNCTION(BlueprintCallable, Category = "PropertyBag")
     bool SetValueBool(const FName& Name, bool Value);
-    
     UFUNCTION(BlueprintCallable, Category = "PropertyBag")
-    bool SetValueVector(const FName& Name, const FVector& Value);
-    
+    bool AddValueBool(const FName& Name, bool Value);
+
+    UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+    bool SetValueByte(const FName& Name, uint8 Value);
+    UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+    bool AddValueByte(const FName& Name, uint8 Value);
+
+    UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+    bool SetValueInt(const FName& Name, int32 Value);
+    UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+    bool AddValueInt(const FName& Name, int32 Value);
+
+    // UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+    // bool SetValueUInt32(const FName& Name, uint32 Value);
+    // UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+    // bool AddValueUInt32(const FName& Name, uint32 Value);
+
+    UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+    bool SetValueInt64(const FName& Name, int64 Value);
+    UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+    bool AddValueInt64(const FName& Name, int64 Value);
+
+    // UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+    // bool SetValueUInt64(const FName& Name, uint64 Value);
+    // UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+    // bool AddValueUInt64(const FName& Name, uint64 Value);
+
+    UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+    bool SetValueFloat(const FName& Name, float Value);
+    UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+    bool AddValueFloat(const FName& Name, float Value);
+
+    UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+    bool SetValueDouble(const FName& Name, double Value);
+    UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+    bool AddValueDouble(const FName& Name, double Value);
+
+    UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+    bool SetValueName(const FName& Name, const FName& Value);
+    UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+    bool AddValueName(const FName& Name, const FName& Value);
+
+    UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+    bool SetValueString(const FName& Name, const FString& Value);
+    UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+    bool AddValueString(const FName& Name, const FString& Value);
+
+    UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+    bool SetValueText(const FName& Name, const FText& Value);
+    UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+    bool AddValueText(const FName& Name, const FText& Value);
+	
+	UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+	bool SetValueVector(const FName& Name, const FVector& Value);
+	UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+	bool AddValueVector(const FName& Name, const FVector& Value);
+	
     UFUNCTION(BlueprintCallable, Category = "PropertyBag")
     bool SetValueObject(const FName& Name, UObject* Value);
-    
-    // 获取值接口（返回默认值如果失败）
-    UFUNCTION(BlueprintCallable, Category = "PropertyBag")
-    int32 GetValueInt(const FName& Name) const;
+	UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+    bool AddValueObject(const FName& Name, UObject* Value);
 
     UFUNCTION(BlueprintCallable, Category = "PropertyBag")
-    float GetValueFloat(const FName& Name) const;
-    
+    bool SetValueClass(const FName& Name, UClass* Value);
     UFUNCTION(BlueprintCallable, Category = "PropertyBag")
-    FString GetValueString(const FName& Name) const;
-    
+    bool AddValueClass(const FName& Name, UClass* Value);
+
     UFUNCTION(BlueprintCallable, Category = "PropertyBag")
-    bool GetValueBool(const FName& Name) const;
-    //
-    // UFUNCTION(BlueprintCallable, Category = "PropertyBag")
-    // FVector GetValueVector(const FName& Name) const;
-    //
-    // UFUNCTION(BlueprintCallable, Category = "PropertyBag")
-    // UObject* GetValueObject(const FName& Name) const;
-    //
-    // // 类型检查与验证
-    // UFUNCTION(BlueprintCallable, Category = "PropertyBag")
-    // bool HasProperty(const FName& Name) const;
-    //
-    // UFUNCTION(BlueprintCallable, Category = "PropertyBag")
-    // FString GetPropertyType(const FName& Name) const;
-    
+    bool SetValueSoftPath(const FName& Name, const FSoftObjectPath& Value);
     UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+    bool AddValueSoftPath(const FName& Name, const FSoftObjectPath& Value);
+
+
+
+	UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+	bool GetValueBool(const FName& Name) const;
+
+	UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+	uint8 GetValueByte(const FName& Name) const;
+	
+	UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+	int32 GetValueInt(const FName& Name) const;
+
+	UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+	int64 GetValueInt64(const FName& Name) const;
+	
+	UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+	float GetValueFloat(const FName& Name) const;
+
+	UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+	double GetValueDouble(const FName& Name) const;
+
+	UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+	FName GetValueName(const FName& Name) const;
+
+	UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+	FString GetValueString(const FName& Name) const;
+
+	UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+	FText GetValueText(const FName& Name) const;
+
+	UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+	FVector GetValueVector(const FName& Name) const;
+
+	UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+	UObject* GetValueObject(const FName& Name) const;
+
+	UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+	UClass* GetValueClass(const FName& Name) const;
+
+	UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+	FSoftObjectPath GetValueSoftPath(const FName& Name) const;
+	
+	
+	UFUNCTION(BlueprintCallable, Category = "PropertyBag")
     bool MergeFrom(UPropertyBagWrapper* Other, bool bOverrideExisting = true);
-    
-    // 清空所有属性
-    UFUNCTION(BlueprintCallable, Category = "PropertyBag")
-    void ClearAllProperties();
 
-    
-    UFUNCTION(BlueprintCallable, Category = "PropertyBag")
-    void PrintAllProperties();
-    
-    // // 获取所有属性名
-    // UFUNCTION(BlueprintCallable, Category = "PropertyBag")
-    // TArray<FName> GetAllPropertyNames() const;
-    //
-    // // 序列化支持
-    // virtual void Serialize(FArchive& Ar) override;
-    
+
 protected:
     // 内部存储
     UPROPERTY()
     FInstancedPropertyBag PropertyBag;
-    
-private:
-    // 类型字符串到枚举的映射
-    EPropertyBagPropertyType GetTypeFromString(const FString& TypeString) const;
-    
-    // 错误处理
-    void LogError(const FString& Message) const;
 };

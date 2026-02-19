@@ -89,6 +89,13 @@ void UEventSequenceDA::PostEditChangeProperty(struct FPropertyChangedEvent& Prop
 }
 
 
+void UEventSequenceDA::SetPropertyBagInput(const FInstancedPropertyBag& PropertyBag)
+{
+	PropertyBagInput = PropertyBag;
+	PropertyBagRuntime = PropertyBagDefault;
+
+	PropertyBagRuntime.MigrateToNewBagInstance(PropertyBagInput);
+}
 
 bool UEventSequenceDA::GetEventAtIndex(int32 Index, FInstancedStruct& OutEvent) const
 {

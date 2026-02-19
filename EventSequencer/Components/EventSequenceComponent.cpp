@@ -57,7 +57,7 @@ void UEventSequenceComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	}
 }
 
-UEventSequenceRunning* UEventSequenceComponent::CreateEventSequence(UEventSequenceDA* TargetDataAsset)
+UEventSequenceRunning* UEventSequenceComponent::CreateEventSequence(UEventSequenceDA* TargetDataAsset, UPropertyBagWrapper* PropertyWrapper)
 {
 	AActor* Owner = GetOwner();
 	if (!IsValid(Owner)) return nullptr;
@@ -65,7 +65,7 @@ UEventSequenceRunning* UEventSequenceComponent::CreateEventSequence(UEventSequen
 	UWorld* World = Owner->GetWorld();
 	if (UEventSequenceSystem* EventSequenceSystem = UEventSequenceSystem::GetInstance(World))
 	{
-		CurEventSequence = EventSequenceSystem->CreateEventSequence(TargetDataAsset, this);
+		CurEventSequence = EventSequenceSystem->CreateEventSequence(TargetDataAsset, this, PropertyWrapper);
 	}
 	
 	return CurEventSequence;

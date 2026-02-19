@@ -13,6 +13,8 @@
 #include "EventSequenceSystem.generated.h"
 
 
+class UPropertyBagWrapper;
+
 UCLASS()
 class EVENTSEQUENCER_API UEventSequenceSystem : public UTickableWorldSubsystem
 {
@@ -33,10 +35,11 @@ public:
     
     UFUNCTION()
     void TickSequences(float DeltaTime);
-    
+
+    // PropertyWrapper 开放给蓝图的话，需要在蓝图中创建并设置值，值多的话会占用不少面积
     UFUNCTION(BlueprintCallable, Category = "Event Sequencer")
-    UEventSequenceRunning* CreateEventSequence(UEventSequenceDA* TargetDataAsset, UEventSequenceComponent* Component = nullptr);
-    
+    UEventSequenceRunning* CreateEventSequence(UEventSequenceDA* TargetDataAsset, UEventSequenceComponent* Component = nullptr, UPropertyBagWrapper* PropertyWrapper = nullptr);
+
     UFUNCTION(BlueprintCallable, Category = "Event Sequencer")
     bool RemoveEventSequence(UEventSequenceRunning* EventSequence);
 

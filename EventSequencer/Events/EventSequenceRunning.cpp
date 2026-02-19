@@ -95,6 +95,11 @@ void UEventSequenceRunning::Destroy()
 }
 
 
+void UEventSequenceRunning::SetDataAsset(UEventSequenceDA* DataAsset)
+{
+	InitDataAsset = DataAsset;
+}
+
 void UEventSequenceRunning::Tick(float DeltaTime)
 {
 	if (bPause) return;

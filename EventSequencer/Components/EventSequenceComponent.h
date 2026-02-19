@@ -35,7 +35,8 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Event Factory")
-	UEventSequenceRunning* CreateEventSequence(UEventSequenceDA* TargetDataAsset);
+	// UEventSequenceRunning* CreateEventSequence(UEventSequenceDA* TargetDataAsset, FInstancedPropertyBag PropertyBag);
+	UEventSequenceRunning* CreateEventSequence(UEventSequenceDA* TargetDataAsset, UPropertyBagWrapper* PropertyWrapper = nullptr);
 	
 	UFUNCTION(BlueprintCallable, Category = "Event Factory")
 	bool RemoveEventSequence();

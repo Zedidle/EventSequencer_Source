@@ -51,9 +51,6 @@ struct FBaseSequenceEvent
 	FBaseSequenceEvent(){}
 	virtual ~FBaseSequenceEvent() = default;
 	
-	UPROPERTY(EditAnywhere)
-	FInstancedPropertyBag InstancedPropertyBag;
-	
 	UPROPERTY(EditDefaultsOnly)
 	FName Label = FName();
 

@@ -8,19 +8,12 @@ UPropertyBagWrapper::UPropertyBagWrapper()
     PropertyBag.Reset();
 }
 
-bool UPropertyBagWrapper::AddProperty(const FName& Name, const FString& TypeString)
+bool UPropertyBagWrapper::AddProperty(const FName& Name, const EPropertyBagPropertyType& Type)
 {
-    EPropertyBagPropertyType Type = GetTypeFromString(TypeString);
-    if (Type == EPropertyBagPropertyType::None)
-    {
-        LogError(FString::Printf(TEXT("无法识别的类型: %s"), *TypeString));
-        return false;
-    }
-    
     // 检查是否已存在同名属性
     if (PropertyBag.FindPropertyDescByName(Name) != nullptr)
     {
-        LogError(FString::Printf(TEXT("属性 %s 已存在"), *Name.ToString()));
+        UE_LOG(LogTemp, Warning, TEXT("属性 %s 已存在"), *Name.ToString());
         return false;
     }
     
@@ -29,16 +22,112 @@ bool UPropertyBagWrapper::AddProperty(const FName& Name, const FString& TypeStri
     return Result == EPropertyBagAlterationResult::Success;
 }
 
+bool UPropertyBagWrapper::SetValueBool(const FName& Name, bool Value)
+{
+    EPropertyBagResult Result = PropertyBag.SetValueBool(Name, Value);
+    return Result == EPropertyBagResult::Success;
+}
+
+bool UPropertyBagWrapper::AddValueBool(const FName& Name, bool Value)
+{
+    AddProperty(Name, EPropertyBagPropertyType::Bool);
+    return SetValueBool(Name, Value);
+}
+
+bool UPropertyBagWrapper::SetValueByte(const FName& Name, uint8 Value)
+{
+    EPropertyBagResult Result = PropertyBag.SetValueByte(Name, Value);
+    return Result == EPropertyBagResult::Success;
+}
+
+bool UPropertyBagWrapper::AddValueByte(const FName& Name, uint8 Value)
+{
+    AddProperty(Name, EPropertyBagPropertyType::Byte);
+    return SetValueByte(Name, Value);
+}
+
 bool UPropertyBagWrapper::SetValueInt(const FName& Name, int32 Value)
 {
     EPropertyBagResult Result = PropertyBag.SetValueInt32(Name, Value);
     return Result == EPropertyBagResult::Success;
 }
 
+bool UPropertyBagWrapper::AddValueInt(const FName& Name, int32 Value)
+{
+    AddProperty(Name, EPropertyBagPropertyType::Int32);
+    return SetValueInt(Name, Value);
+}
+
+// bool UPropertyBagWrapper::SetValueUInt32(const FName& Name, uint32 Value)
+// {
+//     EPropertyBagResult Result = PropertyBag.SetValueUInt32(Name, Value);
+//     return Result == EPropertyBagResult::Success;
+// }
+//
+// bool UPropertyBagWrapper::AddValueUInt32(const FName& Name, uint32 Value)
+// {
+//     AddProperty(Name, EPropertyBagPropertyType::UInt32);
+//     return SetValueUInt32(Name, Value);
+// }
+
+bool UPropertyBagWrapper::SetValueInt64(const FName& Name, int64 Value)
+{
+    EPropertyBagResult Result = PropertyBag.SetValueInt64(Name, Value);
+    return Result == EPropertyBagResult::Success;
+}
+
+bool UPropertyBagWrapper::AddValueInt64(const FName& Name, int64 Value)
+{
+    AddProperty(Name, EPropertyBagPropertyType::UInt64);
+    return SetValueInt64(Name, Value);
+}
+
+// bool UPropertyBagWrapper::SetValueUInt64(const FName& Name, uint64 Value)
+// {
+//     EPropertyBagResult Result = PropertyBag.SetValueUInt64(Name, Value);
+//     return Result == EPropertyBagResult::Success;
+// }
+//
+// bool UPropertyBagWrapper::AddValueUInt64(const FName& Name, uint64 Value)
+// {
+//     AddProperty(Name, EPropertyBagPropertyType::UInt64);
+//     return SetValueUInt64(Name, Value);
+// }
+
 bool UPropertyBagWrapper::SetValueFloat(const FName& Name, float Value)
 {
     EPropertyBagResult Result = PropertyBag.SetValueFloat(Name, Value);
     return Result == EPropertyBagResult::Success;
+}
+
+bool UPropertyBagWrapper::AddValueFloat(const FName& Name, float Value)
+{
+    AddProperty(Name, EPropertyBagPropertyType::Float);
+    return SetValueFloat(Name, Value);
+}
+
+bool UPropertyBagWrapper::SetValueDouble(const FName& Name, double Value)
+{
+    EPropertyBagResult Result = PropertyBag.SetValueDouble(Name, Value);
+    return Result == EPropertyBagResult::Success;
+}
+
+bool UPropertyBagWrapper::AddValueDouble(const FName& Name, double Value)
+{
+    AddProperty(Name, EPropertyBagPropertyType::Double);
+    return SetValueDouble(Name, Value);
+}
+
+bool UPropertyBagWrapper::SetValueName(const FName& Name, const FName& Value)
+{
+    EPropertyBagResult Result = PropertyBag.SetValueName(Name, Value);
+    return Result == EPropertyBagResult::Success;
+}
+
+bool UPropertyBagWrapper::AddValueName(const FName& Name, const FName& Value)
+{
+    AddProperty(Name, EPropertyBagPropertyType::Name);
+    return SetValueName(Name, Value);
 }
 
 bool UPropertyBagWrapper::SetValueString(const FName& Name, const FString& Value)
@@ -47,10 +136,22 @@ bool UPropertyBagWrapper::SetValueString(const FName& Name, const FString& Value
     return Result == EPropertyBagResult::Success;
 }
 
-bool UPropertyBagWrapper::SetValueBool(const FName& Name, bool Value)
+bool UPropertyBagWrapper::AddValueString(const FName& Name, const FString& Value)
 {
-    EPropertyBagResult Result = PropertyBag.SetValueBool(Name, Value);
+    AddProperty(Name, EPropertyBagPropertyType::String);
+    return SetValueString(Name, Value);
+}
+
+bool UPropertyBagWrapper::SetValueText(const FName& Name, const FText& Value)
+{
+    EPropertyBagResult Result = PropertyBag.SetValueText(Name, Value);
     return Result == EPropertyBagResult::Success;
+}
+
+bool UPropertyBagWrapper::AddValueText(const FName& Name, const FText& Value)
+{
+    AddProperty(Name, EPropertyBagPropertyType::Text);
+    return SetValueText(Name, Value);
 }
 
 bool UPropertyBagWrapper::SetValueVector(const FName& Name, const FVector& Value)
@@ -71,11 +172,80 @@ bool UPropertyBagWrapper::SetValueVector(const FName& Name, const FVector& Value
     return Result == EPropertyBagResult::Success;
 }
 
+bool UPropertyBagWrapper::AddValueVector(const FName& Name, const FVector& Value)
+{
+    AddProperty(Name, EPropertyBagPropertyType::Struct);
+    return SetValueVector(Name, Value);
+}
 
 bool UPropertyBagWrapper::SetValueObject(const FName& Name, UObject* Value)
 {
     EPropertyBagResult Result = PropertyBag.SetValueObject(Name, Value);
     return Result == EPropertyBagResult::Success;
+}
+
+bool UPropertyBagWrapper::AddValueObject(const FName& Name, UObject* Value)
+{
+    AddProperty(Name, EPropertyBagPropertyType::Object);
+    return SetValueObject(Name, Value);
+}
+
+bool UPropertyBagWrapper::SetValueClass(const FName& Name, UClass* Value)
+{
+    EPropertyBagResult Result = PropertyBag.SetValueClass(Name, Value);
+    return Result == EPropertyBagResult::Success;
+}
+
+bool UPropertyBagWrapper::AddValueClass(const FName& Name, UClass* Value)
+{
+    AddProperty(Name, EPropertyBagPropertyType::Class);
+    return SetValueClass(Name, Value);
+}
+
+bool UPropertyBagWrapper::SetValueSoftPath(const FName& Name, const FSoftObjectPath& Value)
+{
+    EPropertyBagResult Result = PropertyBag.SetValueSoftPath(Name, Value);
+    return Result == EPropertyBagResult::Success;
+}
+
+bool UPropertyBagWrapper::AddValueSoftPath(const FName& Name, const FSoftObjectPath& Value)
+{
+    AddProperty(Name, EPropertyBagPropertyType::SoftObject);
+    return SetValueSoftPath(Name, Value);
+}
+
+
+
+bool UPropertyBagWrapper::GetValueBool(const FName& Name) const
+{
+    auto V = PropertyBag.GetValueBool(Name);
+
+    if (V.HasError())
+    {
+        EPropertyBagResult ErrorCode = V.GetError();
+        UE_LOG(LogTemp, Error, TEXT("获取 bool 属性失败，错误码: %d"), static_cast<int32>(ErrorCode));
+        // 返回默认值或采取其他措施
+        return false;
+    }
+    if (V.HasValue()) return V.GetValue();
+    
+    return false;
+}
+
+uint8 UPropertyBagWrapper::GetValueByte(const FName& Name) const
+{
+    auto V = PropertyBag.GetValueByte(Name);
+
+    if (V.HasError())
+    {
+        EPropertyBagResult ErrorCode = V.GetError();
+        UE_LOG(LogTemp, Error, TEXT("获取 Byte 属性失败，错误码: %d"), static_cast<int32>(ErrorCode));
+        // 返回默认值或采取其他措施
+        return false;
+    }
+    if (V.HasValue()) return V.GetValue();
+    
+    return false;
 }
 
 int32 UPropertyBagWrapper::GetValueInt(const FName& Name) const
@@ -94,10 +264,69 @@ int32 UPropertyBagWrapper::GetValueInt(const FName& Name) const
     return 0;
 }
 
+int64 UPropertyBagWrapper::GetValueInt64(const FName& Name) const
+{
+    auto V = PropertyBag.GetValueInt64(Name);
+
+    if (V.HasError())
+    {
+        EPropertyBagResult ErrorCode = V.GetError();
+        UE_LOG(LogTemp, Error, TEXT("获取 int64 属性失败，错误码: %d"), static_cast<int32>(ErrorCode));
+        // 返回默认值或采取其他措施
+        return 0;
+    }
+    if (V.HasValue()) return V.GetValue();
+    
+    return 0;
+}
+
 
 float UPropertyBagWrapper::GetValueFloat(const FName& Name) const
 {
+    auto V = PropertyBag.GetValueFloat(Name);
+
+    if (V.HasError())
+    {
+        EPropertyBagResult ErrorCode = V.GetError();
+        UE_LOG(LogTemp, Error, TEXT("获取 float 属性失败，错误码: %d"), static_cast<int32>(ErrorCode));
+        // 返回默认值或采取其他措施
+        return 0;
+    }
+    if (V.HasValue()) return V.GetValue();
+    
     return 0;
+}
+
+double UPropertyBagWrapper::GetValueDouble(const FName& Name) const
+{
+    auto V = PropertyBag.GetValueDouble(Name);
+
+    if (V.HasError())
+    {
+        EPropertyBagResult ErrorCode = V.GetError();
+        UE_LOG(LogTemp, Error, TEXT("获取 double 属性失败，错误码: %d"), static_cast<int32>(ErrorCode));
+        // 返回默认值或采取其他措施
+        return 0;
+    }
+    if (V.HasValue()) return V.GetValue();
+    
+    return 0;
+}
+
+FName UPropertyBagWrapper::GetValueName(const FName& Name) const
+{
+    auto V = PropertyBag.GetValueName(Name);
+
+    if (V.HasError())
+    {
+        EPropertyBagResult ErrorCode = V.GetError();
+        UE_LOG(LogTemp, Error, TEXT("获取 FName 属性失败，错误码: %d"), static_cast<int32>(ErrorCode));
+        // 返回默认值或采取其他措施
+        return FName();
+    }
+    if (V.HasValue()) return V.GetValue();
+    
+    return FName();
 }
 
 FString UPropertyBagWrapper::GetValueString(const FName& Name) const
@@ -107,7 +336,7 @@ FString UPropertyBagWrapper::GetValueString(const FName& Name) const
     if (V.HasError())
     {
         EPropertyBagResult ErrorCode = V.GetError();
-        UE_LOG(LogTemp, Error, TEXT("获取 String 属性失败，错误码: %d"), static_cast<int32>(ErrorCode));
+        UE_LOG(LogTemp, Error, TEXT("获取 FString 属性失败，错误码: %d"), static_cast<int32>(ErrorCode));
         // 返回默认值或采取其他措施
         return "";
     }
@@ -116,20 +345,101 @@ FString UPropertyBagWrapper::GetValueString(const FName& Name) const
     return "";
 }
 
-bool UPropertyBagWrapper::GetValueBool(const FName& Name) const
+FText UPropertyBagWrapper::GetValueText(const FName& Name) const
 {
-    auto V = PropertyBag.GetValueBool(Name);
+    auto V = PropertyBag.GetValueText(Name);
 
     if (V.HasError())
     {
         EPropertyBagResult ErrorCode = V.GetError();
-        UE_LOG(LogTemp, Error, TEXT("获取 bool 属性失败，错误码: %d"), static_cast<int32>(ErrorCode));
+        UE_LOG(LogTemp, Error, TEXT("获取 Text 属性失败，错误码: %d"), static_cast<int32>(ErrorCode));
         // 返回默认值或采取其他措施
-        return false;
+        return FText();
     }
     if (V.HasValue()) return V.GetValue();
     
-    return false;
+    return FText();
+}
+
+
+
+FVector UPropertyBagWrapper::GetValueVector(const FName& Name) const
+{
+    auto V = PropertyBag.GetValueStruct(Name);
+
+    if (V.HasError())
+    {
+        EPropertyBagResult ErrorCode = V.GetError();
+        UE_LOG(LogTemp, Error, TEXT("获取 FVector 属性失败，错误码: %d"), static_cast<int32>(ErrorCode));
+        // 返回默认值或采取其他措施
+        return FVector::ZeroVector;
+    }
+
+    if (V.HasValue())
+    {
+        // 3. 验证 Struct 类型是否为 FVector
+        FStructView View = V.GetValue();
+        const UScriptStruct* StructType = View.GetScriptStruct();
+        if (!StructType && StructType != TBaseStructure<FVector>::Get())
+        {
+            UE_LOG(LogTemp, Error,
+                TEXT("属性 %s 不是FVector类型，实际类型: %s"),
+                *Name.ToString(),
+                StructType ? *StructType->GetName() : TEXT("None"));
+        }
+        
+        return View.Get<FVector>();
+    }
+    
+    return FVector::ZeroVector;
+}
+
+UObject* UPropertyBagWrapper::GetValueObject(const FName& Name) const
+{
+    auto V = PropertyBag.GetValueObject(Name);
+
+    if (V.HasError())
+    {
+        EPropertyBagResult ErrorCode = V.GetError();
+        UE_LOG(LogTemp, Error, TEXT("获取 UObject 属性失败，错误码: %d"), static_cast<int32>(ErrorCode));
+        // 返回默认值或采取其他措施
+        return nullptr;
+    }
+    if (V.HasValue()) return V.GetValue();
+    
+    return nullptr;
+}
+
+UClass* UPropertyBagWrapper::GetValueClass(const FName& Name) const
+{
+    auto V = PropertyBag.GetValueClass(Name);
+
+    if (V.HasError())
+    {
+        EPropertyBagResult ErrorCode = V.GetError();
+        UE_LOG(LogTemp, Error, TEXT("获取 UClass 属性失败，错误码: %d"), static_cast<int32>(ErrorCode));
+        // 返回默认值或采取其他措施
+        return nullptr;
+    }
+    if (V.HasValue()) return V.GetValue();
+    
+    return nullptr;
+}
+
+FSoftObjectPath UPropertyBagWrapper::GetValueSoftPath(const FName& Name) const
+{
+    auto V = PropertyBag.GetValueSoftPath(Name);
+
+    if (V.HasError())
+    {
+        EPropertyBagResult ErrorCode = V.GetError();
+        UE_LOG(LogTemp, Error, TEXT("获取 UClass 属性失败，错误码: %d"), static_cast<int32>(ErrorCode));
+        // 返回默认值或采取其他措施
+        return nullptr;
+    }
+    if (V.HasValue()) return V.GetValue();
+    
+    return nullptr;
 }
 
 bool UPropertyBagWrapper::MergeFrom(UPropertyBagWrapper* Other, bool bOverrideExisting)
@@ -140,80 +450,4 @@ bool UPropertyBagWrapper::MergeFrom(UPropertyBagWrapper* Other, bool bOverrideEx
         return true;
     }
     return false;
-}
-
-void UPropertyBagWrapper::ClearAllProperties()
-{
-}
-
-void UPropertyBagWrapper::PrintAllProperties(){
-    
-    // TConstArrayView<FPropertyBagPropertyDesc> Descs = PropertyBag.GetPropertyDescs();
-
-    // UE_LOG(LogTemp, Log, TEXT("PropertyBag 包含 %d 个属性:"), Descs.Num());
-    //
-    // for (const FPropertyBagPropertyDesc* Desc : Descs)
-    // {
-    //     if (Desc)
-    //     {
-    //         // 获取属性名
-    //         FName PropertyName = Desc->Name;
-    //         
-    //         // 获取属性类型
-    //         FString TypeName = TEXT("Unknown");
-    //         switch (Desc->ValueType)
-    //         {
-    //         case EPropertyBagPropertyType::Bool:
-    //             TypeName = TEXT("Bool");
-    //             break;
-    //         case EPropertyBagPropertyType::Int32:
-    //             TypeName = TEXT("Int32");
-    //             break;
-    //         case EPropertyBagPropertyType::Float:
-    //             TypeName = TEXT("Float");
-    //             break;
-    //         case EPropertyBagPropertyType::Double:
-    //             TypeName = TEXT("Double");
-    //             break;
-    //         case EPropertyBagPropertyType::String:
-    //             TypeName = TEXT("String");
-    //             break;
-    //         case EPropertyBagPropertyType::Struct:
-    //             TypeName = TEXT("Struct");
-    //             if (Desc->ValueTypeObject.IsValid())
-    //             {
-    //                 TypeName = FString::Printf(TEXT("Struct(%s)"), *Desc->ValueTypeObject->GetName());
-    //             }
-    //             break;
-    //         case EPropertyBagPropertyType::Object:
-    //             TypeName = TEXT("Object");
-    //             if (Desc->ValueTypeObject.IsValid())
-    //             {
-    //                 TypeName = FString::Printf(TEXT("Object(%s)"), *Desc->ValueTypeObject->GetName());
-    //             }
-    //             break;
-    //         case EPropertyBagPropertyType::Enum:
-    //             TypeName = TEXT("Enum");
-    //             if (Desc->ValueTypeObject.IsValid())
-    //             {
-    //                 TypeName = FString::Printf(TEXT("Enum(%s)"), *Desc->ValueTypeObject->GetName());
-    //             }
-    //             break;
-    //         default:
-    //             break;
-    //         }
-    //         
-    //         UE_LOG(LogTemp, Log, TEXT("  - %s: %s"), *PropertyName.ToString(), *TypeName);
-    //     }
-    // }
-}
-
-EPropertyBagPropertyType UPropertyBagWrapper::GetTypeFromString(const FString& TypeString) const
-{
-    return EPropertyBagPropertyType::Struct;
-}
-
-void UPropertyBagWrapper::LogError(const FString& Message) const
-{
-    
 }
