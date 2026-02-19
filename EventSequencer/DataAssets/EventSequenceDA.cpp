@@ -1,7 +1,11 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "EventSequenceDA.h"
-#include "../Events/SequenceEvent/CommonStructs.h"
+
+#include "EventSequencer/Events/SequenceEvent/SpecificEvents/ChoiceSequenceEvent.h"
+#include "EventSequencer/Events/SequenceEvent/SpecificEvents/DialogSequenceEvent.h"
+#include "EventSequencer/Events/SequenceEvent/SpecificEvents/MoveSequenceEvent.h"
+#include "EventSequencer/Events/SequenceEvent/SpecificEvents/WaitSequenceEvent.h"
 
 
 void UEventSequenceDA::ResetDisplayName()

@@ -3,6 +3,11 @@
 
 #include "EventSequenceFuncLib.h"
 #include "EventSequencer/EventSequenceSystem.h"
+#include "EventSequencer/Events/SequenceEvent/SpecificEvents/ChoiceSequenceEvent.h"
+#include "EventSequencer/Events/SequenceEvent/SpecificEvents/DialogSequenceEvent.h"
+#include "EventSequencer/Events/SequenceEvent/SpecificEvents/MoveSequenceEvent.h"
+#include "EventSequencer/Events/SequenceEvent/SpecificEvents/WaitSequenceEvent.h"
+
 
 
 FInstancedStruct UEventSequenceFuncLib::CreateMoveEvent(const FMoveSequenceProperty& Property)

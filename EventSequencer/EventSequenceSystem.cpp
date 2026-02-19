@@ -6,6 +6,10 @@
 #include "UObject/UnrealType.h"
 #include "Engine/World.h"
 #include "Events/SequenceEvent/CommonStructs.h"
+#include "Events/SequenceEvent/SpecificEvents/ChoiceSequenceEvent.h"
+#include "Events/SequenceEvent/SpecificEvents/DialogSequenceEvent.h"
+#include "Events/SequenceEvent/SpecificEvents/MoveSequenceEvent.h"
+#include "Events/SequenceEvent/SpecificEvents/WaitSequenceEvent.h"
 
 class AAIController;
 

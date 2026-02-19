@@ -8,6 +8,39 @@
 #include "CommonStructs.generated.h"
 
 
+// 条件操作符枚举
+UENUM(BlueprintType)
+enum class ESequenceConditionOperator : uint8
+{
+	Equal,          // ==
+	NotEqual,       // !=
+	Greater,        // >
+	GreaterEqual,   // >=
+	Less,           // <
+	LessEqual,      // <=
+	Contains,       // 字符串包含
+	StartsWith,     // 字符串以...开始
+	EndsWith        // 字符串以...结束
+};
+
+// 条件定义
+USTRUCT(BlueprintType)
+struct FSequenceCondition
+{
+	GENERATED_BODY()
+    
+	// 条件属性名
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Condition")
+	FName PropertyName;
+    
+	// 比较操作符
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Condition")
+	ESequenceConditionOperator Operator = ESequenceConditionOperator::Equal;
+    
+	// 比较值
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Condition")
+	FString ComparisonValue;
+};
 
 
 
@@ -21,6 +54,15 @@ UENUM(BlueprintType)
 enum class EEventType : uint8
 {
 	None        UMETA(DisplayName = "None"),
+
+	// 控制流事件
+	IF,
+	LOOP,
+	BREAK,
+	RETURN,
+	LABEL,
+	GOTO,
+	
 	// 事件类型预设
 	Move    UMETA(DisplayName = "Move"), 
 	Dialog    UMETA(DisplayName = "Dialog"),
@@ -47,31 +89,21 @@ struct FBaseSequenceEvent
     
 	FBaseSequenceEvent(){}
 	virtual ~FBaseSequenceEvent() = default;
-	
-	UPROPERTY(EditDefaultsOnly)
-	FName Label = FName();
 
-	virtual FString GetDisplayName() const
-	{
-		if (!Label.IsNone())
-		{
-			return "[Label: " + Label.ToString() + "] " ;
-		}
-		return "";
-	}
+	virtual FString GetDisplayName() const { return ""; }
 	
 	UPROPERTY()
 	TWeakObjectPtr<AActor> ContextActor;
 
-	AActor* GetContext()
-	{
-		return ContextActor.Get();
-	}
+	AActor* GetContext() { return ContextActor.Get(); }
 	
 	// 核心：事件类型枚举，用于在编辑器中进行选择
 	UPROPERTY(BlueprintReadOnly)
 	EEventType Type = EEventType::None;
-
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Event Sequence", meta = (ShowOnlyInnerProperties, BaseStruct = "/Script/EventSequencer.BaseSequenceEvent"))
+	TArray<FInstancedStruct> EventSequence;
+	
 	virtual void OnPending() { State = EEventState::Pending; }
 	// 事件生命周期方法
 	virtual void OnEnter() { State = EEventState::Active; }
@@ -86,7 +118,9 @@ struct FBaseSequenceEvent
 	void SetState(EEventState NewState) { State = NewState; }
 	EEventState GetState() const { return State; }
 	EEventType GetEventType() const { return Type; }
-    
+
+
+	
 protected:
 	EEventState State = EEventState::Pending;
 };
@@ -94,151 +128,5 @@ protected:
 
 
 
-USTRUCT(BlueprintType)
-struct FMoveSequenceProperty
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(EditAnywhere)
-	FVector TargetLocation;
-	
-	UPROPERTY(EditAnywhere)
-	float ApproachDistance = 10;
-	
-	// UPROPERTY(EditAnywhere, Category = "Event", Meta = (EditCondition = "Type == EEventType::NPCMovement"))
-	// float MoveSpeed = 300.0f;
-};
-
-// 具体事件
-// 移动事件
-USTRUCT(BlueprintType)
-struct FMoveSequenceEvent : public FBaseSequenceEvent
-{
-	GENERATED_BODY()
-    
-	FMoveSequenceEvent(){ Type = EEventType::Move;}
-	virtual FString GetDisplayName() const override;
-	virtual void OnEnter() override;
-	virtual bool Execute(int Index = 0) override;
-	virtual void Tick(float DeltaTime) override;
-
-	UPROPERTY(EditAnywhere)
-	FMoveSequenceProperty Property; 
-	
-	bool bMoving = false;    
-	
-	// NPCPawn 的设置需要在某个全局的登场NPC上？ 或者玩家当前指定的Active目标上获取
-	UPROPERTY()
-	APawn* NPCPawn = nullptr;
-	FVector StartLocation;
-};
 
 
-USTRUCT(BlueprintType)
-struct FDialogSequenceProperty
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(EditAnywhere)
-	TArray<FString> DialogLines;
-	
-	UPROPERTY(EditAnywhere)
-	float TextDisplaySpeed = 0.05f;
-
-	// UPROPERTY(EditAnywhere)
-	// TArray<FDialogItem> DialogItems;
-
-	// 建议后续传入一个对话ID即可，在Enter时读取对话列表到这里。
-	// 可能不是 FString， 每个对话的结构 FDialogItem 如下：
-	// {
-	// 	bPlayer : 是否为角色的话
-	// 	Name - 名称
-	// 	Content - 所说的话。
-	// }
-};
-
-// 对话事件
-USTRUCT(BlueprintType)
-struct FDialogSequenceEvent : public FBaseSequenceEvent
-{
-	GENERATED_BODY()
-    
-	FDialogSequenceEvent() { Type = EEventType::Dialog; }
-	virtual FString GetDisplayName() const override;
-	virtual void OnEnter() override;
-	virtual bool Execute(int Index = 0) override;
-	virtual void Tick(float DeltaTime) override;
-
-	
-	UPROPERTY(EditAnywhere)
-	FDialogSequenceProperty Property;
-	
-	int32 CurrentLineIndex = 0;
-	float CurrentCharIndex = 0;
-};
-
-USTRUCT(BlueprintType)
-struct FWaitSequenceProperty
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(EditAnywhere)
-	float Duration = 1.0f;
-	
-};
-
-// 等待事件
-USTRUCT(BlueprintType)
-struct FWaitSequenceEvent : public FBaseSequenceEvent
-{
-	GENERATED_BODY()
-    
-	FWaitSequenceEvent() { Type = EEventType::Wait; }
-	virtual FString GetDisplayName() const override;
-	virtual void OnEnter() override;
-	virtual bool Execute(int Index = 0) override;
-	virtual void Tick(float DeltaTime) override;
-	virtual void OnExit() override;
-	
-	UPROPERTY(EditAnywhere)
-	FWaitSequenceProperty Property;
-
-	float CurTime = 0;
-};
-
-
-USTRUCT(BlueprintType)
-struct FChoiceSequenceProperty
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(EditAnywhere)
-	TArray<FString> Choices;
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<UChoiceWidget> ChoiceWidgetClass;
-	
-};
-
-USTRUCT(BlueprintType)
-struct FChoiceSequenceEvent : public FBaseSequenceEvent
-{
-	GENERATED_BODY()
-	
-	FChoiceSequenceEvent() { Type = EEventType::Choice; }
-	virtual FString GetDisplayName() const override;
-	virtual void OnEnter() override;
-	virtual bool Execute(int Index = 0) override;
-	virtual void Tick(float DeltaTime) override;
-	virtual void OnExit() override;
-
-	
-	UPROPERTY(EditAnywhere)
-	FChoiceSequenceProperty Property;
-	
-	UPROPERTY()
-	TWeakObjectPtr<APawn> PlayerPawn;
-
-	UPROPERTY()
-	UChoiceWidget* ChoiceWidget;
-};

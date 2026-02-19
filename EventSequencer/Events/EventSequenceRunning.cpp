@@ -11,11 +11,11 @@ void UEventSequenceRunning::AddEventStruct(FInstancedStruct& EventStruct)
     
 	if (auto* DestEvent = EventStruct.GetMutablePtr<FBaseSequenceEvent>())
 	{
-		if (!DestEvent->Label.IsNone())
-		{
-			// 暂时忽略 Label 重复的问题
-			Label2Index.Add(DestEvent->Label, EventQueue.Num());
-		}
+		// if (!DestEvent->Label.IsNone())
+		// {
+		// 	// 暂时忽略 Label 重复的问题
+		// 	Label2Index.Add(DestEvent->Label, EventQueue.Num());
+		// }
 		EventQueue.Add(EventStruct);
 	}
 }
