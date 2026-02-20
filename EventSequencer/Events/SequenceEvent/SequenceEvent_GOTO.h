@@ -17,7 +17,7 @@ struct FSequenceEvent_GOTO : public FBaseSequenceEvent
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Condition")
 	FSequenceCondition JumpCondition;
     
-	// 是否应该跳转
+	// 是否应该跳转,传入 EventSequenceRunning 记录的 PropertyBagRuntime 
 	bool ShouldJump(const FInstancedPropertyBag& PropertyBag) const;
 
 };
