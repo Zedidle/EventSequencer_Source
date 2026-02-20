@@ -31,134 +31,118 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
         const FInstancedStruct& SourceEventStruct = EventSequence[i];
         
         // 创建事件的运行时副本
-        FInstancedStruct RuntimeEvent;
-        RuntimeEvent.InitializeAs(SourceEventStruct.GetScriptStruct());
-        
-        if (auto* DestEvent = RuntimeEvent.GetMutablePtr<FBaseSequenceEvent>())
-        {
-            // 基础事件数据复制，后续可以简化状态设置
-            DestEvent->SetState(EEventState::Pending);
-            
-            if (SourceEventStruct.GetScriptStruct()->IsChildOf(FSequenceEvent_LABEL::StaticStruct()))
-            {
-                // NPC移动事件特殊处理
-                const FSequenceEvent_LABEL* SourceEvent = SourceEventStruct.GetPtr<FSequenceEvent_LABEL>();
-                FSequenceEvent_LABEL* DEvent = RuntimeEvent.GetMutablePtr<FSequenceEvent_LABEL>();
-                if (SourceEvent && DEvent)
-                {
-                    DEvent->LabelName = SourceEvent->LabelName;
-                    DEvent->LabelDescription = SourceEvent->LabelDescription;
-                }
-            }
-            else if (SourceEventStruct.GetScriptStruct()->IsChildOf(FSequenceEvent_GOTO::StaticStruct()))
-            {
-                const FSequenceEvent_GOTO* SourceEvent = SourceEventStruct.GetPtr<FSequenceEvent_GOTO>();
-                FSequenceEvent_GOTO* DEvent = RuntimeEvent.GetMutablePtr<FSequenceEvent_GOTO>();
-                if (SourceEvent && DEvent)
-                {
-                    DEvent->TargetLabel = SourceEvent->TargetLabel;
-                    DEvent->JumpCondition = SourceEvent->JumpCondition;
-                }
-            }
-            else if (SourceEventStruct.GetScriptStruct()->IsChildOf(FSequenceEvent_IF::StaticStruct()))
-            {
-                const FSequenceEvent_IF* SourceEvent = SourceEventStruct.GetPtr<FSequenceEvent_IF>();
-                FSequenceEvent_IF* DEvent = RuntimeEvent.GetMutablePtr<FSequenceEvent_IF>();
-                if (SourceEvent && DEvent)
-                {
-                    DEvent->Condition = SourceEvent->Condition;
-                    DEvent->TrueEvents = SourceEvent->TrueEvents;
-                    DEvent->FalseEvents = SourceEvent->FalseEvents;
+        FInstancedStruct RuntimeEventStruct;
+        RuntimeEventStruct.InitializeAs(SourceEventStruct.GetScriptStruct());
 
-                    if (DEvent->EvaluateCondition(EventSequenceRunning->PropertyBagRuntime))
+        if (const FSequenceEvent_LABEL* SourceEvent_LABEL = SourceEventStruct.GetPtr<FSequenceEvent_LABEL>())
+        {
+            if (FSequenceEvent_LABEL* DEvent = RuntimeEventStruct.GetMutablePtr<FSequenceEvent_LABEL>())
+            {
+                DEvent->LabelName = SourceEvent_LABEL->LabelName;
+                DEvent->LabelDescription = SourceEvent_LABEL->LabelDescription;
+                EventSequenceRunning->AddLabel(DEvent->LabelName);
+                EventSequenceRunning->AddEvent(RuntimeEventStruct);
+            }
+        }
+        else if (const FSequenceEvent_GOTO* SourceEvent_GOTO = SourceEventStruct.GetPtr<FSequenceEvent_GOTO>())
+        {
+            if (FSequenceEvent_GOTO* DEvent = RuntimeEventStruct.GetMutablePtr<FSequenceEvent_GOTO>())
+            {
+                DEvent->TargetLabel = SourceEvent_GOTO->TargetLabel;
+                DEvent->JumpCondition = SourceEvent_GOTO->JumpCondition;
+                EventSequenceRunning->AddEvent(RuntimeEventStruct);
+            }
+        }
+        // 目前if事件这里有个缺点，不能在运行时决定是执行 TrueEvents 还是 FalseEvents
+        else if (const FSequenceEvent_IF* SourceEvent_IF = SourceEventStruct.GetPtr<FSequenceEvent_IF>())
+        {
+            if (FSequenceEvent_IF* DEvent = RuntimeEventStruct.GetMutablePtr<FSequenceEvent_IF>())
+            {
+                DEvent->Condition = SourceEvent_IF->Condition;
+                DEvent->TrueEvents = SourceEvent_IF->TrueEvents;
+                DEvent->FalseEvents = SourceEvent_IF->FalseEvents;
+
+                if (DEvent->EvaluateCondition(EventSequenceRunning->PropertyBagRuntime))
+                {
+                    ParseEventSequence(EventSequenceRunning, DEvent->TrueEvents);
+                    // EventSequenceRunning->AppendEvents(DEvent->TrueEvents);
+                }
+                else
+                {
+                    ParseEventSequence(EventSequenceRunning, DEvent->FalseEvents);
+                    // EventSequenceRunning->AppendEvents(DEvent->FalseEvents);
+                }
+            }
+        }
+        else if (const FSequenceEvent_LOOP* SourceEvent_LOOP = SourceEventStruct.GetPtr<FSequenceEvent_LOOP>())
+        {
+            if (FSequenceEvent_LOOP* DEvent = RuntimeEventStruct.GetMutablePtr<FSequenceEvent_LOOP>())
+            {
+                // 关于Loop事件，由于解析的平扁化处理，需要记录下它在 EventSequenceRunning 的序列开始下标和结束下标，以便循环和Break跳出。
+                DEvent->LoopEvents = SourceEvent_LOOP->LoopEvents;
+                DEvent->MaxIterations = SourceEvent_LOOP->MaxIterations;
+                DEvent->LoopCondition = SourceEvent_LOOP->LoopCondition;
+                EventSequenceRunning->AddEvent(RuntimeEventStruct);
+            }
+        }
+        else if (const FSequenceEvent_BREAK* SourceEvent_BREAK = SourceEventStruct.GetPtr<FSequenceEvent_BREAK>())
+        {
+            if (FSequenceEvent_BREAK* DEvent = RuntimeEventStruct.GetMutablePtr<FSequenceEvent_BREAK>())
+            {
+                EventSequenceRunning->AddEvent(RuntimeEventStruct);
+            }
+        }
+        else if (const FSequenceEvent_RETURN* SourceEvent_RETURN = SourceEventStruct.GetPtr<FSequenceEvent_RETURN>())
+        {
+            if (FSequenceEvent_RETURN* DEvent = RuntimeEventStruct.GetMutablePtr<FSequenceEvent_RETURN>())
+            {
+                DEvent->ReturnValue = SourceEvent_RETURN->ReturnValue;
+                EventSequenceRunning->AddEvent(RuntimeEventStruct);
+            }
+        }
+        // 具体事件
+        else
+        {
+            if (auto* DestEvent = RuntimeEventStruct.GetMutablePtr<FBaseSequenceEvent>())
+            {
+                // 移动事件
+                if (const FMoveSequenceEvent* SourceEvent_Move = SourceEventStruct.GetPtr<FMoveSequenceEvent>())
+                {
+                    if (FMoveSequenceEvent* DEvent = Cast<FMoveSequenceEvent>(DestEvent))
                     {
-                        ParseEventSequence(EventSequenceRunning, DEvent->TrueEvents);
-                        // EventSequenceRunning->AppendEvents(DEvent->TrueEvents);
+                        DEvent->Property.TargetLocation = SourceEvent_Move->Property.TargetLocation;
+                        DEvent->Property.ApproachDistance = SourceEvent_Move->Property.ApproachDistance;
+                        DEvent->bMoving = false;
                     }
-                    else
+                }
+                // 对话事件
+                else if (const FDialogSequenceEvent* SourceEvent = SourceEventStruct.GetPtr<FDialogSequenceEvent>())
+                {
+                    if (FDialogSequenceEvent* DEvent = Cast<FDialogSequenceEvent>(DestEvent))
                     {
-                        ParseEventSequence(EventSequenceRunning, DEvent->FalseEvents);
-                        // EventSequenceRunning->AppendEvents(DEvent->FalseEvents);
+                        DEvent->Property.DialogLines = SourceEvent->Property.DialogLines;
+                        DEvent->Property.TextDisplaySpeed = SourceEvent->Property.TextDisplaySpeed;
                     }
                 }
-            }
-            else if (SourceEventStruct.GetScriptStruct()->IsChildOf(FSequenceEvent_LOOP::StaticStruct()))
-            {
-                const FSequenceEvent_LOOP* SourceEvent = SourceEventStruct.GetPtr<FSequenceEvent_LOOP>();
-                FSequenceEvent_LOOP* DEvent = RuntimeEvent.GetMutablePtr<FSequenceEvent_LOOP>();
-                if (SourceEvent && DEvent)
+                // 延迟等待事件
+                else if (const FWaitSequenceEvent* SourceEvent_Wait = SourceEventStruct.GetPtr<FWaitSequenceEvent>())
                 {
-                    DEvent->LoopEvents = SourceEvent->LoopEvents;
-                    DEvent->MaxIterations = SourceEvent->MaxIterations;
-                    DEvent->LoopCondition = SourceEvent->LoopCondition;
+                    if (FWaitSequenceEvent* DEvent = Cast<FWaitSequenceEvent>(DestEvent))
+                    {
+                        DEvent->Property.Duration = SourceEvent_Wait->Property.Duration;
+                    }
                 }
-            }
-            else if (SourceEventStruct.GetScriptStruct()->IsChildOf(FSequenceEvent_BREAK::StaticStruct()))
-            {
-                const FSequenceEvent_BREAK* SourceEvent = SourceEventStruct.GetPtr<FSequenceEvent_BREAK>();
-                FSequenceEvent_BREAK* DEvent = RuntimeEvent.GetMutablePtr<FSequenceEvent_BREAK>();
-                if (SourceEvent && DEvent)
+                // 选择事件
+                else if (const FChoiceSequenceEvent* SourceDelayEvent = SourceEventStruct.GetPtr<FChoiceSequenceEvent>())
                 {
-                    DEvent->BreakDepth = SourceEvent->BreakDepth;
+                    if (FChoiceSequenceEvent* DEvent = Cast<FChoiceSequenceEvent>(DestEvent))
+                    {
+                    }
                 }
+                
+                DestEvent->SetState(EEventState::Idle);
+                EventSequenceRunning->AddEvent(RuntimeEventStruct);
             }
-            else if (SourceEventStruct.GetScriptStruct()->IsChildOf(FSequenceEvent_RETURN::StaticStruct()))
-            {
-                const FSequenceEvent_RETURN* SourceEvent = SourceEventStruct.GetPtr<FSequenceEvent_RETURN>();
-                FSequenceEvent_RETURN* DEvent = RuntimeEvent.GetMutablePtr<FSequenceEvent_RETURN>();
-                if (SourceEvent && DEvent)
-                {
-                    DEvent->ReturnValue = SourceEvent->ReturnValue;
-                    DEvent->ReturnCode = SourceEvent->ReturnCode;
-                }
-            }
-            // 实际具体事件
-            else if (SourceEventStruct.GetScriptStruct()->IsChildOf(FMoveSequenceEvent::StaticStruct()))
-            {
-                // NPC移动事件特殊处理
-                const FMoveSequenceEvent* SourceEvent = SourceEventStruct.GetPtr<FMoveSequenceEvent>();
-                FMoveSequenceEvent* DEvent = RuntimeEvent.GetMutablePtr<FMoveSequenceEvent>();
-                if (SourceEvent && DEvent)
-                {
-                    DEvent->Property.TargetLocation = SourceEvent->Property.TargetLocation;
-                    DEvent->Property.ApproachDistance = SourceEvent->Property.ApproachDistance;
-                    DEvent->bMoving = false;
-                }
-            }
-            else if (SourceEventStruct.GetScriptStruct()->IsChildOf(FDialogSequenceEvent::StaticStruct()))
-            {
-                // 对话事件特殊处理
-                const FDialogSequenceEvent* SourceEvent = SourceEventStruct.GetPtr<FDialogSequenceEvent>();
-                FDialogSequenceEvent* DEvent = RuntimeEvent.GetMutablePtr<FDialogSequenceEvent>();
-                if (SourceEvent && DEvent)
-                {
-                    DEvent->Property.DialogLines = SourceEvent->Property.DialogLines;
-                    DEvent->Property.TextDisplaySpeed = SourceEvent->Property.TextDisplaySpeed;
-                }
-            }
-            else if (SourceEventStruct.GetScriptStruct()->IsChildOf(FWaitSequenceEvent::StaticStruct()))
-            {
-                // 延迟事件特殊处理
-                const FWaitSequenceEvent* SourceEvent = SourceEventStruct.GetPtr<FWaitSequenceEvent>();
-                FWaitSequenceEvent* DEvent = RuntimeEvent.GetMutablePtr<FWaitSequenceEvent>();
-                if (SourceEvent && DEvent)
-                {
-                    DEvent->Property.Duration = SourceEvent->Property.Duration;
-                }
-            }
-            else if (SourceEventStruct.GetScriptStruct()->IsChildOf(FChoiceSequenceEvent::StaticStruct()))
-            {
-                // 延迟事件特殊处理
-                const FChoiceSequenceEvent* SourceDelayEvent = SourceEventStruct.GetPtr<FChoiceSequenceEvent>();
-                FChoiceSequenceEvent* DEvent = RuntimeEvent.GetMutablePtr<FChoiceSequenceEvent>();
-                if (SourceDelayEvent && DEvent)
-                {
-                }
-            }
-            
-            DestEvent->SetState(EEventState::Idle);
-            
-            EventSequenceRunning->AddEvent(RuntimeEvent);
         }
     }
 }

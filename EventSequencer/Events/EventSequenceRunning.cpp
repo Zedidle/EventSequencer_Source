@@ -4,6 +4,7 @@
 #include "EventSequenceRunning.h"
 #include "../Events/SequenceEvent/CommonStructs.h"
 #include "EventSequencer/EventSequenceSystem.h"
+#include "SequenceEvent/SequenceEvent_GOTO.h"
 
 void UEventSequenceRunning::AddEvent(FInstancedStruct& Event)
 {
@@ -64,6 +65,12 @@ FInstancedStruct& UEventSequenceRunning::GetCurEvent()
 	return EventQueue[CurEventIndex];
 }
 
+void UEventSequenceRunning::AddLabel(FName Label)
+{
+	// 暂不考虑Label重复问题
+	Label2Index.Add(Label,EventQueue.Num());
+}
+
 void UEventSequenceRunning::Start()
 {
 	bPause = false;
@@ -113,8 +120,16 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 {
 	if (bPause) return;
         
-	FInstancedStruct& CurrentEvent = EventQueue[CurEventIndex];
-	if (FBaseSequenceEvent* Event = CurrentEvent.GetMutablePtr<FBaseSequenceEvent>())
+	FInstancedStruct& CurEventStruct = EventQueue[CurEventIndex];
+	if (const FSequenceEvent_GOTO* CurEvent_GOTO = CurEventStruct.GetPtr<FSequenceEvent_GOTO>())
+	{
+		Goto(CurEvent_GOTO->TargetLabel);
+	}
+	else if (const FSequenceEvent_GOTO* CurEvent = CurEventStruct.GetPtr<FSequenceEvent_GOTO>())
+	{
+		
+	}
+	else if (FBaseSequenceEvent* Event = CurEventStruct.GetMutablePtr<FBaseSequenceEvent>())
 	{
 		switch (Event->GetState())
 		{

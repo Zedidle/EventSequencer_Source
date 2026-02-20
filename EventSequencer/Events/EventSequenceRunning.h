@@ -9,6 +9,11 @@
 #include "EventSequenceRunning.generated.h"
 
 
+
+
+
+
+
 UCLASS(BlueprintType)
 class EVENTSEQUENCER_API UEventSequenceRunning : public UObject
 {
@@ -22,6 +27,9 @@ public:
 	int CurEventIndex = 0;
 	TArray<FInstancedStruct> EventQueue;
 
+	// 当前循环状态栈
+	
+	
 	// 初始化定义的DA，存储了 InstancedPropertyBag 数据
 	UPROPERTY()
 	UEventSequenceDA* InitDataAsset;
@@ -39,6 +47,9 @@ public:
 	bool IsCompleted() const;
     
 	FInstancedStruct& GetCurEvent();
+
+	UFUNCTION(BlueprintCallable, Category = "Event Sequence")
+	void AddLabel(FName Label);
 	
 	UFUNCTION(BlueprintCallable, Category = "Event Sequence")
 	void Goto(FName Label);

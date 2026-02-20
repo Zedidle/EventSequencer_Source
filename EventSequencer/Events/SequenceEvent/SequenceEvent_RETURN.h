@@ -12,9 +12,5 @@ struct FSequenceEvent_RETURN : public FBaseSequenceEvent
 	// 返回值（可选）
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Return")
 	FString ReturnValue;
-    
-	// 返回码（用于错误处理）
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Return")
-	int32 ReturnCode = 0;
 	
 };
