@@ -5,18 +5,23 @@
 #include "../Events/SequenceEvent/CommonStructs.h"
 #include "EventSequencer/EventSequenceSystem.h"
 
-void UEventSequenceRunning::AddEventStruct(FInstancedStruct& EventStruct)
+void UEventSequenceRunning::AddEvent(FInstancedStruct& Event)
 {
-	if(!EventStruct.IsValid()) return;
+	if(!Event.IsValid()) return;
     
-	if (auto* DestEvent = EventStruct.GetMutablePtr<FBaseSequenceEvent>())
+	if (auto* DestEvent = Event.GetMutablePtr<FBaseSequenceEvent>())
 	{
-		// if (!DestEvent->Label.IsNone())
-		// {
-		// 	// 暂时忽略 Label 重复的问题
-		// 	Label2Index.Add(DestEvent->Label, EventQueue.Num());
-		// }
-		EventQueue.Add(EventStruct);
+		EventQueue.Add(Event);
+	}
+}
+
+void UEventSequenceRunning::AppendEvents(TArray<FInstancedStruct>& Events)
+{
+	if (Events.IsEmpty()) return;
+	
+	for (auto& Event : Events)
+	{
+		AddEvent(Event);
 	}
 }
 
@@ -97,7 +102,11 @@ void UEventSequenceRunning::Destroy()
 
 void UEventSequenceRunning::SetDataAsset(UEventSequenceDA* DataAsset)
 {
+	if (!DataAsset) return;
+	
 	InitDataAsset = DataAsset;
+	PropertyBagRuntime = InitDataAsset->PropertyBagDefault;
+	PropertyBagRuntime.MigrateToNewBagInstance(InitDataAsset->PropertyBagInput);
 }
 
 void UEventSequenceRunning::Tick(float DeltaTime)

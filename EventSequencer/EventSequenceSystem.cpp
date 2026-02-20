@@ -6,6 +6,12 @@
 #include "UObject/UnrealType.h"
 #include "Engine/World.h"
 #include "Events/SequenceEvent/CommonStructs.h"
+#include "Events/SequenceEvent/SequenceEvent_BREAK.h"
+#include "Events/SequenceEvent/SequenceEvent_GOTO.h"
+#include "Events/SequenceEvent/SequenceEvent_IF.h"
+#include "Events/SequenceEvent/SequenceEvent_LABEL.h"
+#include "Events/SequenceEvent/SequenceEvent_LOOP.h"
+#include "Events/SequenceEvent/SequenceEvent_RETURN.h"
 #include "Events/SequenceEvent/SpecificEvents/ChoiceSequenceEvent.h"
 #include "Events/SequenceEvent/SpecificEvents/DialogSequenceEvent.h"
 #include "Events/SequenceEvent/SpecificEvents/MoveSequenceEvent.h"
@@ -13,6 +19,149 @@
 
 class AAIController;
 
+
+void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequenceRunning, const TArray<FInstancedStruct>& EventSequence)
+{
+    if (!EventSequenceRunning) return;
+    
+    for (int32 i = 0; i < EventSequence.Num(); ++i)
+    {
+        if (!EventSequence.IsValidIndex(i)) continue;
+
+        const FInstancedStruct& SourceEventStruct = EventSequence[i];
+        
+        // 创建事件的运行时副本
+        FInstancedStruct RuntimeEvent;
+        RuntimeEvent.InitializeAs(SourceEventStruct.GetScriptStruct());
+        
+        if (auto* DestEvent = RuntimeEvent.GetMutablePtr<FBaseSequenceEvent>())
+        {
+            // 基础事件数据复制，后续可以简化状态设置
+            DestEvent->SetState(EEventState::Pending);
+            
+            if (SourceEventStruct.GetScriptStruct()->IsChildOf(FSequenceEvent_LABEL::StaticStruct()))
+            {
+                // NPC移动事件特殊处理
+                const FSequenceEvent_LABEL* SourceEvent = SourceEventStruct.GetPtr<FSequenceEvent_LABEL>();
+                FSequenceEvent_LABEL* DEvent = RuntimeEvent.GetMutablePtr<FSequenceEvent_LABEL>();
+                if (SourceEvent && DEvent)
+                {
+                    DEvent->LabelName = SourceEvent->LabelName;
+                    DEvent->LabelDescription = SourceEvent->LabelDescription;
+                }
+            }
+            else if (SourceEventStruct.GetScriptStruct()->IsChildOf(FSequenceEvent_GOTO::StaticStruct()))
+            {
+                const FSequenceEvent_GOTO* SourceEvent = SourceEventStruct.GetPtr<FSequenceEvent_GOTO>();
+                FSequenceEvent_GOTO* DEvent = RuntimeEvent.GetMutablePtr<FSequenceEvent_GOTO>();
+                if (SourceEvent && DEvent)
+                {
+                    DEvent->TargetLabel = SourceEvent->TargetLabel;
+                    DEvent->JumpCondition = SourceEvent->JumpCondition;
+                }
+            }
+            else if (SourceEventStruct.GetScriptStruct()->IsChildOf(FSequenceEvent_IF::StaticStruct()))
+            {
+                const FSequenceEvent_IF* SourceEvent = SourceEventStruct.GetPtr<FSequenceEvent_IF>();
+                FSequenceEvent_IF* DEvent = RuntimeEvent.GetMutablePtr<FSequenceEvent_IF>();
+                if (SourceEvent && DEvent)
+                {
+                    DEvent->Condition = SourceEvent->Condition;
+                    DEvent->TrueEvents = SourceEvent->TrueEvents;
+                    DEvent->FalseEvents = SourceEvent->FalseEvents;
+
+                    if (DEvent->EvaluateCondition(EventSequenceRunning->PropertyBagRuntime))
+                    {
+                        ParseEventSequence(EventSequenceRunning, DEvent->TrueEvents);
+                        // EventSequenceRunning->AppendEvents(DEvent->TrueEvents);
+                    }
+                    else
+                    {
+                        ParseEventSequence(EventSequenceRunning, DEvent->FalseEvents);
+                        // EventSequenceRunning->AppendEvents(DEvent->FalseEvents);
+                    }
+                }
+            }
+            else if (SourceEventStruct.GetScriptStruct()->IsChildOf(FSequenceEvent_LOOP::StaticStruct()))
+            {
+                const FSequenceEvent_LOOP* SourceEvent = SourceEventStruct.GetPtr<FSequenceEvent_LOOP>();
+                FSequenceEvent_LOOP* DEvent = RuntimeEvent.GetMutablePtr<FSequenceEvent_LOOP>();
+                if (SourceEvent && DEvent)
+                {
+                    DEvent->LoopEvents = SourceEvent->LoopEvents;
+                    DEvent->MaxIterations = SourceEvent->MaxIterations;
+                    DEvent->LoopCondition = SourceEvent->LoopCondition;
+                }
+            }
+            else if (SourceEventStruct.GetScriptStruct()->IsChildOf(FSequenceEvent_BREAK::StaticStruct()))
+            {
+                const FSequenceEvent_BREAK* SourceEvent = SourceEventStruct.GetPtr<FSequenceEvent_BREAK>();
+                FSequenceEvent_BREAK* DEvent = RuntimeEvent.GetMutablePtr<FSequenceEvent_BREAK>();
+                if (SourceEvent && DEvent)
+                {
+                    DEvent->BreakDepth = SourceEvent->BreakDepth;
+                }
+            }
+            else if (SourceEventStruct.GetScriptStruct()->IsChildOf(FSequenceEvent_RETURN::StaticStruct()))
+            {
+                const FSequenceEvent_RETURN* SourceEvent = SourceEventStruct.GetPtr<FSequenceEvent_RETURN>();
+                FSequenceEvent_RETURN* DEvent = RuntimeEvent.GetMutablePtr<FSequenceEvent_RETURN>();
+                if (SourceEvent && DEvent)
+                {
+                    DEvent->ReturnValue = SourceEvent->ReturnValue;
+                    DEvent->ReturnCode = SourceEvent->ReturnCode;
+                }
+            }
+            // 实际具体事件
+            else if (SourceEventStruct.GetScriptStruct()->IsChildOf(FMoveSequenceEvent::StaticStruct()))
+            {
+                // NPC移动事件特殊处理
+                const FMoveSequenceEvent* SourceEvent = SourceEventStruct.GetPtr<FMoveSequenceEvent>();
+                FMoveSequenceEvent* DEvent = RuntimeEvent.GetMutablePtr<FMoveSequenceEvent>();
+                if (SourceEvent && DEvent)
+                {
+                    DEvent->Property.TargetLocation = SourceEvent->Property.TargetLocation;
+                    DEvent->Property.ApproachDistance = SourceEvent->Property.ApproachDistance;
+                    DEvent->bMoving = false;
+                }
+            }
+            else if (SourceEventStruct.GetScriptStruct()->IsChildOf(FDialogSequenceEvent::StaticStruct()))
+            {
+                // 对话事件特殊处理
+                const FDialogSequenceEvent* SourceEvent = SourceEventStruct.GetPtr<FDialogSequenceEvent>();
+                FDialogSequenceEvent* DEvent = RuntimeEvent.GetMutablePtr<FDialogSequenceEvent>();
+                if (SourceEvent && DEvent)
+                {
+                    DEvent->Property.DialogLines = SourceEvent->Property.DialogLines;
+                    DEvent->Property.TextDisplaySpeed = SourceEvent->Property.TextDisplaySpeed;
+                }
+            }
+            else if (SourceEventStruct.GetScriptStruct()->IsChildOf(FWaitSequenceEvent::StaticStruct()))
+            {
+                // 延迟事件特殊处理
+                const FWaitSequenceEvent* SourceEvent = SourceEventStruct.GetPtr<FWaitSequenceEvent>();
+                FWaitSequenceEvent* DEvent = RuntimeEvent.GetMutablePtr<FWaitSequenceEvent>();
+                if (SourceEvent && DEvent)
+                {
+                    DEvent->Property.Duration = SourceEvent->Property.Duration;
+                }
+            }
+            else if (SourceEventStruct.GetScriptStruct()->IsChildOf(FChoiceSequenceEvent::StaticStruct()))
+            {
+                // 延迟事件特殊处理
+                const FChoiceSequenceEvent* SourceDelayEvent = SourceEventStruct.GetPtr<FChoiceSequenceEvent>();
+                FChoiceSequenceEvent* DEvent = RuntimeEvent.GetMutablePtr<FChoiceSequenceEvent>();
+                if (SourceDelayEvent && DEvent)
+                {
+                }
+            }
+            
+            DestEvent->SetState(EEventState::Idle);
+            
+            EventSequenceRunning->AddEvent(RuntimeEvent);
+        }
+    }
+}
 
 UEventSequenceSystem* UEventSequenceSystem::GetInstance(UWorld* World)
 {
@@ -34,95 +183,30 @@ TStatId UEventSequenceSystem::GetStatId() const
     return TStatId();  // 或其他安全的返回值
 }
 
-UEventSequenceRunning* UEventSequenceSystem::CreateEventSequence(UEventSequenceDA* TargetDataAsset, UEventSequenceComponent* Component, UPropertyBagWrapper* PropertyWrapper)
+UEventSequenceRunning* UEventSequenceSystem::CreateEventSequence(UEventSequenceDA* TargetDataAsset, UEventSequenceComponent* Component, UPropertyBagWrapper* PropertyBagInput)
 {
     if (!TargetDataAsset) return nullptr;
     if (TargetDataAsset->GetSequenceLength() == 0) return nullptr;
     
-    UEventSequenceRunning* EventSequence = NewObject<UEventSequenceRunning>();
+    UEventSequenceRunning* EventSequenceRunning = NewObject<UEventSequenceRunning>();
 
-    if (PropertyWrapper)
+    if (PropertyBagInput)
     {
-        TargetDataAsset->SetPropertyBagInput(PropertyWrapper->GetPropertyBag());
+        TargetDataAsset->SetPropertyBagInput(PropertyBagInput->GetPropertyBag());
     }
-    EventSequence->SetDataAsset(TargetDataAsset);
+    EventSequenceRunning->SetDataAsset(TargetDataAsset);
 
-    // TargetDataAsset
+    ParseEventSequence(EventSequenceRunning, TargetDataAsset->EventSequence);
     
-    for (int32 i = 0; i < TargetDataAsset->GetSequenceLength(); ++i)
-    {
-        FInstancedStruct EventStruct;
-        if (TargetDataAsset->GetEventAtIndex(i, EventStruct))
-        {
-            // 创建事件的运行时副本
-            FInstancedStruct RuntimeEvent;
-            RuntimeEvent.InitializeAs(EventStruct.GetScriptStruct());
-            
-            if (auto* DestEvent = RuntimeEvent.GetMutablePtr<FBaseSequenceEvent>())
-            {
-                // 基础事件数据复制
-                DestEvent->SetState(EEventState::Pending);
-                
-                // 根据具体类型进行特殊处理
-                if (EventStruct.GetScriptStruct()->IsChildOf(FMoveSequenceEvent::StaticStruct()))
-                {
-                    // NPC移动事件特殊处理
-                    const FMoveSequenceEvent* SourceEvent = EventStruct.GetPtr<FMoveSequenceEvent>();
-                    FMoveSequenceEvent* DEvent = RuntimeEvent.GetMutablePtr<FMoveSequenceEvent>();
-                    if (SourceEvent && DEvent)
-                    {
-                        DEvent->Property.TargetLocation = SourceEvent->Property.TargetLocation;
-                        DEvent->Property.ApproachDistance = SourceEvent->Property.ApproachDistance;
-                        DEvent->bMoving = false;
-                    }
-                }
-                else if (EventStruct.GetScriptStruct()->IsChildOf(FDialogSequenceEvent::StaticStruct()))
-                {
-                    // 对话事件特殊处理
-                    const FDialogSequenceEvent* SourceEvent = EventStruct.GetPtr<FDialogSequenceEvent>();
-                    FDialogSequenceEvent* DEvent = RuntimeEvent.GetMutablePtr<FDialogSequenceEvent>();
-                    if (SourceEvent && DEvent)
-                    {
-                        DEvent->Property.DialogLines = SourceEvent->Property.DialogLines;
-                        DEvent->Property.TextDisplaySpeed = SourceEvent->Property.TextDisplaySpeed;
-                    }
-                }
-                else if (EventStruct.GetScriptStruct()->IsChildOf(FWaitSequenceEvent::StaticStruct()))
-                {
-                    // 延迟事件特殊处理
-                    const FWaitSequenceEvent* SourceEvent = EventStruct.GetPtr<FWaitSequenceEvent>();
-                    FWaitSequenceEvent* DEvent = RuntimeEvent.GetMutablePtr<FWaitSequenceEvent>();
-                    if (SourceEvent && DEvent)
-                    {
-                        DEvent->Property.Duration = SourceEvent->Property.Duration;
-                    }
-                }
-                else if (EventStruct.GetScriptStruct()->IsChildOf(FChoiceSequenceEvent::StaticStruct()))
-                {
-                    // 延迟事件特殊处理
-                    const FChoiceSequenceEvent* SourceDelayEvent = EventStruct.GetPtr<FChoiceSequenceEvent>();
-                    FChoiceSequenceEvent* DEvent = RuntimeEvent.GetMutablePtr<FChoiceSequenceEvent>();
-                    if (SourceDelayEvent && DEvent)
-                    {
-                    }
-                }
-                
-                DestEvent->SetState(EEventState::Idle);
-                
-                EventSequence->AddEventStruct(RuntimeEvent);
-            }
-        }
-    }
-
     if (Component)
     {
         EventSequenceComponents.Add(Component);
     }
     else
     {
-        EventSequencesRunning.Add(EventSequence);
+        EventSequencesRunning.Add(EventSequenceRunning);
     }
-    return EventSequence;
+    return EventSequenceRunning;
 }
 
 

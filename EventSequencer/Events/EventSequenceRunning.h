@@ -26,13 +26,16 @@ public:
 	UPROPERTY()
 	UEventSequenceDA* InitDataAsset;
 
+	FInstancedPropertyBag PropertyBagRuntime;
+	
 	UFUNCTION()
 	void SetDataAsset(UEventSequenceDA* DataAsset);
 	
 	void Tick(float DeltaTime);
 	
-	void AddEventStruct(FInstancedStruct& EventStruct);
-    
+	void AddEvent(FInstancedStruct& Event);
+	void AppendEvents(TArray<FInstancedStruct>& Events);
+	
 	bool IsCompleted() const;
     
 	FInstancedStruct& GetCurEvent();

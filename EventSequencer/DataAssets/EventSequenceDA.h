@@ -36,7 +36,6 @@ public:
 	UPROPERTY(EditAnywhere)
 	FInstancedPropertyBag PropertyBagDefault;
 	FInstancedPropertyBag PropertyBagInput;
-	FInstancedPropertyBag PropertyBagRuntime;
 
 	void SetPropertyBagInput(const FInstancedPropertyBag& PropertyBag);
 	

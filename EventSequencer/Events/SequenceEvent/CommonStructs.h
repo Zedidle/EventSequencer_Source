@@ -101,8 +101,8 @@ struct FBaseSequenceEvent
 	UPROPERTY(BlueprintReadOnly)
 	EEventType Type = EEventType::None;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Event Sequence", meta = (ShowOnlyInnerProperties, BaseStruct = "/Script/EventSequencer.BaseSequenceEvent"))
-	TArray<FInstancedStruct> EventSequence;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Nested Events", meta = (BaseStruct = "/Script/EventSequencer.BaseSequenceEvent"))
+	TArray<FInstancedStruct> NestedEvents;
 	
 	virtual void OnPending() { State = EEventState::Pending; }
 	// 事件生命周期方法
