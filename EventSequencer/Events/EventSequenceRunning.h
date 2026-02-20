@@ -27,6 +27,8 @@ public:
 	int CurEventIndex = 0;
 	TArray<FInstancedStruct> EventQueue;
 
+	int GetEventsNum() { return EventQueue.Num(); }
+	
 	// 当前循环状态栈
 	
 	
@@ -53,6 +55,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "Event Sequence")
 	void Goto(FName Label);
+	void Goto(int Index);
+	
+
 	
 	UFUNCTION(BlueprintCallable, Category = "Event Sequence")
 	void Start();

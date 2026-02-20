@@ -4,7 +4,11 @@
 #include "EventSequenceRunning.h"
 #include "../Events/SequenceEvent/CommonStructs.h"
 #include "EventSequencer/EventSequenceSystem.h"
+#include "SequenceEvent/SequenceEvent_BREAK.h"
 #include "SequenceEvent/SequenceEvent_GOTO.h"
+#include "SequenceEvent/SequenceEvent_IF.h"
+#include "SequenceEvent/SequenceEvent_LOOP.h"
+#include "SequenceEvent/SequenceEvent_RETURN.h"
 
 void UEventSequenceRunning::AddEvent(FInstancedStruct& Event)
 {
@@ -30,17 +34,19 @@ void UEventSequenceRunning::Goto(FName Label)
 {
 	if(int* index = Label2Index.Find(Label))
 	{
-		CurEventIndex = *index;
-		for (int i = CurEventIndex; i < EventQueue.Num(); i++)
+		Goto(*index);
+	}
+}
+
+void UEventSequenceRunning::Goto(int Index)
+{
+	if(EventQueue.IsValidIndex(Index))
+	{
+		CurEventIndex = Index;
+		if (auto* DestEvent =  EventQueue[Index].GetMutablePtr<FBaseSequenceEvent>())
 		{
-			if(EventQueue.IsValidIndex(i))
-			{
-				if (auto* DestEvent =  EventQueue[i].GetMutablePtr<FBaseSequenceEvent>())
-				{
-					DestEvent->SetState(EEventState::Idle);
-				}
-			}
-		} 
+			DestEvent->SetState(EEventState::Idle);
+		}
 	}
 }
 
@@ -125,8 +131,24 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 	{
 		Goto(CurEvent_GOTO->TargetLabel);
 	}
-	else if (const FSequenceEvent_GOTO* CurEvent = CurEventStruct.GetPtr<FSequenceEvent_GOTO>())
+	else if (const FSequenceEvent_BREAK* CurEvent_BREAK = CurEventStruct.GetPtr<FSequenceEvent_BREAK>())
 	{
+		// 跳出一层循环状态
+		
+	}
+	else if (const FSequenceEvent_LOOP* CurEvent_LOOP = CurEventStruct.GetPtr<FSequenceEvent_LOOP>())
+	{
+		// 进入循环状态
+		
+	}
+	else if (const FSequenceEvent_IF* CurEvent_IF = CurEventStruct.GetPtr<FSequenceEvent_IF>())
+	{
+		// 进入条件分支判断
+		
+	}
+	else if (const FSequenceEvent_RETURN* CurEvent_RETURN = CurEventStruct.GetPtr<FSequenceEvent_RETURN>())
+	{
+		// 结束该序列
 		
 	}
 	else if (FBaseSequenceEvent* Event = CurEventStruct.GetMutablePtr<FBaseSequenceEvent>())

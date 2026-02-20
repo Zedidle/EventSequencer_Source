@@ -42,7 +42,6 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Event Sequencer")
     UEventSequenceRunning* CreateEventSequence(UEventSequenceDA* TargetDataAsset, UEventSequenceComponent* Component = nullptr, UPropertyBagWrapper* PropertyBagInput = nullptr);
 
-    
     UFUNCTION(BlueprintCallable, Category = "Event Sequencer")
     bool RemoveEventSequence(UEventSequenceRunning* EventSequence);
 

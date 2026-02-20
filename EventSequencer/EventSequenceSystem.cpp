@@ -61,17 +61,18 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
                 DEvent->Condition = SourceEvent_IF->Condition;
                 DEvent->TrueEvents = SourceEvent_IF->TrueEvents;
                 DEvent->FalseEvents = SourceEvent_IF->FalseEvents;
+                
+                EventSequenceRunning->AddEvent(RuntimeEventStruct);
+                
+                // 初步分析 TrueEvents 和 FalseEvents 开始的下标 以及 跳出的下标
+                // 下标未必准确，可能有 +-1 的差距
+                DEvent->TrueEventsStartIndex = EventSequenceRunning->GetEventsNum();
+                ParseEventSequence(EventSequenceRunning, DEvent->TrueEvents);
+                
+                DEvent->FalseEventsStartIndex = EventSequenceRunning->GetEventsNum();
+                ParseEventSequence(EventSequenceRunning, DEvent->FalseEvents);
 
-                if (DEvent->EvaluateCondition(EventSequenceRunning->PropertyBagRuntime))
-                {
-                    ParseEventSequence(EventSequenceRunning, DEvent->TrueEvents);
-                    // EventSequenceRunning->AppendEvents(DEvent->TrueEvents);
-                }
-                else
-                {
-                    ParseEventSequence(EventSequenceRunning, DEvent->FalseEvents);
-                    // EventSequenceRunning->AppendEvents(DEvent->FalseEvents);
-                }
+                DEvent->EndIndex = EventSequenceRunning->GetEventsNum();
             }
         }
         else if (const FSequenceEvent_LOOP* SourceEvent_LOOP = SourceEventStruct.GetPtr<FSequenceEvent_LOOP>())
@@ -80,9 +81,10 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
             {
                 // 关于Loop事件，由于解析的平扁化处理，需要记录下它在 EventSequenceRunning 的序列开始下标和结束下标，以便循环和Break跳出。
                 DEvent->LoopEvents = SourceEvent_LOOP->LoopEvents;
-                DEvent->MaxIterations = SourceEvent_LOOP->MaxIterations;
+                DEvent->MaxLoopTimes = SourceEvent_LOOP->MaxLoopTimes;
                 DEvent->LoopCondition = SourceEvent_LOOP->LoopCondition;
-                EventSequenceRunning->AddEvent(RuntimeEventStruct);
+                
+                ParseEventSequence(EventSequenceRunning, DEvent->LoopEvents);
             }
         }
         else if (const FSequenceEvent_BREAK* SourceEvent_BREAK = SourceEventStruct.GetPtr<FSequenceEvent_BREAK>())
@@ -108,7 +110,7 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
                 // 移动事件
                 if (const FMoveSequenceEvent* SourceEvent_Move = SourceEventStruct.GetPtr<FMoveSequenceEvent>())
                 {
-                    if (FMoveSequenceEvent* DEvent = Cast<FMoveSequenceEvent>(DestEvent))
+                    if (FMoveSequenceEvent* DEvent = RuntimeEventStruct.GetMutablePtr<FMoveSequenceEvent>())
                     {
                         DEvent->Property.TargetLocation = SourceEvent_Move->Property.TargetLocation;
                         DEvent->Property.ApproachDistance = SourceEvent_Move->Property.ApproachDistance;
@@ -118,7 +120,7 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
                 // 对话事件
                 else if (const FDialogSequenceEvent* SourceEvent = SourceEventStruct.GetPtr<FDialogSequenceEvent>())
                 {
-                    if (FDialogSequenceEvent* DEvent = Cast<FDialogSequenceEvent>(DestEvent))
+                    if (FDialogSequenceEvent* DEvent = RuntimeEventStruct.GetMutablePtr<FDialogSequenceEvent>())
                     {
                         DEvent->Property.DialogLines = SourceEvent->Property.DialogLines;
                         DEvent->Property.TextDisplaySpeed = SourceEvent->Property.TextDisplaySpeed;
@@ -127,7 +129,7 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
                 // 延迟等待事件
                 else if (const FWaitSequenceEvent* SourceEvent_Wait = SourceEventStruct.GetPtr<FWaitSequenceEvent>())
                 {
-                    if (FWaitSequenceEvent* DEvent = Cast<FWaitSequenceEvent>(DestEvent))
+                    if (FWaitSequenceEvent* DEvent = RuntimeEventStruct.GetMutablePtr<FWaitSequenceEvent>())
                     {
                         DEvent->Property.Duration = SourceEvent_Wait->Property.Duration;
                     }
@@ -135,7 +137,7 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
                 // 选择事件
                 else if (const FChoiceSequenceEvent* SourceDelayEvent = SourceEventStruct.GetPtr<FChoiceSequenceEvent>())
                 {
-                    if (FChoiceSequenceEvent* DEvent = Cast<FChoiceSequenceEvent>(DestEvent))
+                    if (FChoiceSequenceEvent* DEvent = RuntimeEventStruct.GetMutablePtr<FChoiceSequenceEvent>())
                     {
                     }
                 }

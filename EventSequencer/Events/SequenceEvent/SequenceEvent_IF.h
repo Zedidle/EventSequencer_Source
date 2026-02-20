@@ -11,6 +11,14 @@ struct FSequenceEvent_IF : public FBaseSequenceEvent
 	GENERATED_BODY()
     
 	FSequenceEvent_IF(){ Type = EEventType::IF; }
+
+	// True事件开始下标
+	int TrueEventsStartIndex = 0;
+	// False事件开始下标
+	int FalseEventsStartIndex = 0;
+	// 条件分支结束下标
+	int EndIndex = 0;
+	
 	// 条件定义
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Condition")
 	FSequenceCondition Condition;
