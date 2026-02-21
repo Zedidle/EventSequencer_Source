@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "EventSequencer/DataAssets/EventSequenceDA.h"
 #include "SequenceEvent/CommonStructs.h"
-#include "SequenceEvent/SequenceEvent_LOOP.h"
+#include "SequenceEvent/_SequenceEvent_LOOP.h"
 #include "StructUtils/InstancedStruct.h"
 #include "UObject/Object.h"
 #include "EventSequenceRunning.generated.h"

@@ -6,12 +6,12 @@
 #include "UObject/UnrealType.h"
 #include "Engine/World.h"
 #include "Events/SequenceEvent/CommonStructs.h"
-#include "Events/SequenceEvent/SequenceEvent_BREAK.h"
-#include "Events/SequenceEvent/SequenceEvent_GOTO.h"
-#include "Events/SequenceEvent/SequenceEvent_IF.h"
-#include "Events/SequenceEvent/SequenceEvent_LABEL.h"
-#include "Events/SequenceEvent/SequenceEvent_LOOP.h"
-#include "Events/SequenceEvent/SequenceEvent_RETURN.h"
+#include "Events/SequenceEvent/_SequenceEvent_BREAK.h"
+#include "Events/SequenceEvent/_SequenceEvent_GOTO.h"
+#include "Events/SequenceEvent/_SequenceEvent_IF.h"
+#include "Events/SequenceEvent/_SequenceEvent_LABEL.h"
+#include "Events/SequenceEvent/_SequenceEvent_LOOP.h"
+#include "Events/SequenceEvent/_SequenceEvent_RETURN.h"
 #include "Events/SequenceEvent/SpecificEvents/ChoiceSequenceEvent.h"
 #include "Events/SequenceEvent/SpecificEvents/DialogSequenceEvent.h"
 #include "Events/SequenceEvent/SpecificEvents/MoveSequenceEvent.h"
@@ -23,6 +23,7 @@ class AAIController;
 void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequenceRunning, const TArray<FInstancedStruct>& EventSequence)
 {
     if (!EventSequenceRunning) return;
+    if (EventSequence.IsEmpty()) return;
     
     for (int32 i = 0; i < EventSequence.Num(); ++i)
     {
@@ -34,29 +35,31 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
         FInstancedStruct RuntimeEventStruct;
         RuntimeEventStruct.InitializeAs(SourceEventStruct.GetScriptStruct());
 
-        if (const FSequenceEvent_LABEL* SourceEvent_LABEL = SourceEventStruct.GetPtr<FSequenceEvent_LABEL>())
+        if (const F_SequenceEvent_LABEL* SourceEvent_LABEL = SourceEventStruct.GetPtr<F_SequenceEvent_LABEL>())
         {
-            if (FSequenceEvent_LABEL* DEvent = RuntimeEventStruct.GetMutablePtr<FSequenceEvent_LABEL>())
+            if (F_SequenceEvent_LABEL* DEvent = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_LABEL>())
             {
                 DEvent->LabelName = SourceEvent_LABEL->LabelName;
                 DEvent->LabelDescription = SourceEvent_LABEL->LabelDescription;
                 EventSequenceRunning->AddLabel(DEvent->LabelName);
                 EventSequenceRunning->AddEvent(RuntimeEventStruct);
+                ParseEventSequence(EventSequenceRunning, DEvent->NestedEvents);
             }
         }
-        else if (const FSequenceEvent_GOTO* SourceEvent_GOTO = SourceEventStruct.GetPtr<FSequenceEvent_GOTO>())
+        else if (const F_SequenceEvent_GOTO* SourceEvent_GOTO = SourceEventStruct.GetPtr<F_SequenceEvent_GOTO>())
         {
-            if (FSequenceEvent_GOTO* DEvent = RuntimeEventStruct.GetMutablePtr<FSequenceEvent_GOTO>())
+            if (F_SequenceEvent_GOTO* DEvent = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_GOTO>())
             {
                 DEvent->TargetLabel = SourceEvent_GOTO->TargetLabel;
                 DEvent->Condition = SourceEvent_GOTO->Condition;
                 EventSequenceRunning->AddEvent(RuntimeEventStruct);
+                ParseEventSequence(EventSequenceRunning, DEvent->NestedEvents);
             }
         }
         // 目前if事件这里有个缺点，不能在运行时决定是执行 TrueEvents 还是 FalseEvents
-        else if (const FSequenceEvent_IF* SourceEvent_IF = SourceEventStruct.GetPtr<FSequenceEvent_IF>())
+        else if (const F_SequenceEvent_IF* SourceEvent_IF = SourceEventStruct.GetPtr<F_SequenceEvent_IF>())
         {
-            if (FSequenceEvent_IF* DEvent = RuntimeEventStruct.GetMutablePtr<FSequenceEvent_IF>())
+            if (F_SequenceEvent_IF* DEvent = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_IF>())
             {
                 DEvent->Condition = SourceEvent_IF->Condition;
                 DEvent->TrueEvents = SourceEvent_IF->TrueEvents;
@@ -73,11 +76,13 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
                 ParseEventSequence(EventSequenceRunning, DEvent->FalseEvents);
 
                 DEvent->EndIndex = EventSequenceRunning->GetEventsNum();
+
+                ParseEventSequence(EventSequenceRunning, DEvent->NestedEvents);
             }
         }
-        else if (const FSequenceEvent_LOOP* SourceEvent_LOOP = SourceEventStruct.GetPtr<FSequenceEvent_LOOP>())
+        else if (const F_SequenceEvent_LOOP* SourceEvent_LOOP = SourceEventStruct.GetPtr<F_SequenceEvent_LOOP>())
         {
-            if (FSequenceEvent_LOOP* DEvent = RuntimeEventStruct.GetMutablePtr<FSequenceEvent_LOOP>())
+            if (F_SequenceEvent_LOOP* DEvent = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_LOOP>())
             {
                 // 关于Loop事件，由于解析的平扁化处理，需要记录下它在 EventSequenceRunning 的序列开始下标和结束下标，以便循环和Break跳出。
                 DEvent->LoopEvents = SourceEvent_LOOP->LoopEvents;
@@ -85,21 +90,25 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
                 DEvent->Condition = SourceEvent_LOOP->Condition;
                 
                 ParseEventSequence(EventSequenceRunning, DEvent->LoopEvents);
+                
+                ParseEventSequence(EventSequenceRunning, DEvent->NestedEvents);
             }
         }
-        else if (const FSequenceEvent_BREAK* SourceEvent_BREAK = SourceEventStruct.GetPtr<FSequenceEvent_BREAK>())
+        else if (const F_SequenceEvent_BREAK* SourceEvent_BREAK = SourceEventStruct.GetPtr<F_SequenceEvent_BREAK>())
         {
-            if (FSequenceEvent_BREAK* DEvent = RuntimeEventStruct.GetMutablePtr<FSequenceEvent_BREAK>())
+            if (F_SequenceEvent_BREAK* DEvent = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_BREAK>())
             {
                 EventSequenceRunning->AddEvent(RuntimeEventStruct);
+                ParseEventSequence(EventSequenceRunning, DEvent->NestedEvents);
             }
         }
-        else if (const FSequenceEvent_RETURN* SourceEvent_RETURN = SourceEventStruct.GetPtr<FSequenceEvent_RETURN>())
+        else if (const F_SequenceEvent_RETURN* SourceEvent_RETURN = SourceEventStruct.GetPtr<F_SequenceEvent_RETURN>())
         {
-            if (FSequenceEvent_RETURN* DEvent = RuntimeEventStruct.GetMutablePtr<FSequenceEvent_RETURN>())
+            if (F_SequenceEvent_RETURN* DEvent = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_RETURN>())
             {
                 DEvent->ReturnValue = SourceEvent_RETURN->ReturnValue;
                 EventSequenceRunning->AddEvent(RuntimeEventStruct);
+                ParseEventSequence(EventSequenceRunning, DEvent->NestedEvents);
             }
         }
         // 具体事件
@@ -144,6 +153,7 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
                 
                 DestEvent->SetState(EEventState::Idle);
                 EventSequenceRunning->AddEvent(RuntimeEventStruct);
+                ParseEventSequence(EventSequenceRunning, DestEvent->NestedEvents);
             }
         }
     }

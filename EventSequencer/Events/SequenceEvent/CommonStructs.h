@@ -82,7 +82,7 @@ enum class EEventState : uint8
 };
  
 // 事件基类结构体
-USTRUCT(BlueprintType, meta = (TitleProperty = "Title"))
+USTRUCT(BlueprintType, meta = (TitleProperty = "Title", DisplayName = "——————————————————"))
 struct FBaseSequenceEvent
 {
 	GENERATED_BODY()

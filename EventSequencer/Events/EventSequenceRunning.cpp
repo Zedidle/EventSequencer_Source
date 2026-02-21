@@ -5,11 +5,11 @@
 #include "../Events/SequenceEvent/CommonStructs.h"
 #include "EventSequencer/EventSequenceSystem.h"
 #include "Misc/DefaultValueHelper.h"
-#include "SequenceEvent/SequenceEvent_BREAK.h"
-#include "SequenceEvent/SequenceEvent_GOTO.h"
-#include "SequenceEvent/SequenceEvent_IF.h"
-#include "SequenceEvent/SequenceEvent_LOOP.h"
-#include "SequenceEvent/SequenceEvent_RETURN.h"
+#include "SequenceEvent/_SequenceEvent_BREAK.h"
+#include "SequenceEvent/_SequenceEvent_GOTO.h"
+#include "SequenceEvent/_SequenceEvent_IF.h"
+#include "SequenceEvent/_SequenceEvent_LOOP.h"
+#include "SequenceEvent/_SequenceEvent_RETURN.h"
 
 void UEventSequenceRunning::AddEvent(FInstancedStruct& Event)
 {
@@ -628,14 +628,14 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 	if (bPause) return;
         
 	FInstancedStruct& CurEventStruct = EventQueue[CurEventIndex];
-	if (const FSequenceEvent_GOTO* CurEvent_GOTO = CurEventStruct.GetPtr<FSequenceEvent_GOTO>())
+	if (const F_SequenceEvent_GOTO* CurEvent_GOTO = CurEventStruct.GetPtr<F_SequenceEvent_GOTO>())
 	{
 		if (EvaluateCondition(CurEvent_GOTO->Condition))
 		{
 			GOTO(CurEvent_GOTO->TargetLabel);
 		}
 	}
-	else if (const FSequenceEvent_BREAK* CurEvent_BREAK = CurEventStruct.GetPtr<FSequenceEvent_BREAK>())
+	else if (const F_SequenceEvent_BREAK* CurEvent_BREAK = CurEventStruct.GetPtr<F_SequenceEvent_BREAK>())
 	{
 		// 跳出一层循环状态
 		if (EvaluateCondition(CurEvent_BREAK->Condition))
@@ -643,7 +643,7 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 			BREAK();
 		}
 	}
-	else if (const FSequenceEvent_LOOP* CurEvent_LOOP = CurEventStruct.GetPtr<FSequenceEvent_LOOP>())
+	else if (const F_SequenceEvent_LOOP* CurEvent_LOOP = CurEventStruct.GetPtr<F_SequenceEvent_LOOP>())
 	{
 		// 循环状态
 		if (EvaluateCondition(CurEvent_LOOP->Condition))
@@ -651,7 +651,7 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 			LOOP(CurEvent_LOOP->State);
 		}
 	}
-	else if (const FSequenceEvent_IF* CurEvent_IF = CurEventStruct.GetPtr<FSequenceEvent_IF>())
+	else if (const F_SequenceEvent_IF* CurEvent_IF = CurEventStruct.GetPtr<F_SequenceEvent_IF>())
 	{
 		// 进入条件分支判断
 		if (EvaluateCondition(CurEvent_IF->Condition))
@@ -663,7 +663,7 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 			GOTO(CurEvent_IF->FalseEventsStartIndex);
 		}
 	}
-	else if (const FSequenceEvent_RETURN* CurEvent_RETURN = CurEventStruct.GetPtr<FSequenceEvent_RETURN>())
+	else if (const F_SequenceEvent_RETURN* CurEvent_RETURN = CurEventStruct.GetPtr<F_SequenceEvent_RETURN>())
 	{
 		// 结束该序列
 		if (EvaluateCondition(CurEvent_RETURN->Condition))

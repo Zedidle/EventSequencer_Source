@@ -2,14 +2,14 @@
 #include "CoreMinimal.h"
 #include "CommonStructs.h"
 #include "StructUtils/PropertyBag.h"
-#include "SequenceEvent_LABEL.generated.h"
+#include "_SequenceEvent_LABEL.generated.h"
 
-USTRUCT(BlueprintType)
-struct FSequenceEvent_LABEL : public FBaseSequenceEvent
+USTRUCT(BlueprintType, meta = (DisplayName = "LABEL"))
+struct F_SequenceEvent_LABEL : public FBaseSequenceEvent
 {
 	GENERATED_BODY()
 	
-	FSequenceEvent_LABEL(){ Type = EEventType::LABEL; }
+	F_SequenceEvent_LABEL(){ Type = EEventType::LABEL; }
 	
 	// 标签名称
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Label")

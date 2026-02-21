@@ -2,15 +2,15 @@
 #include "CoreMinimal.h"
 #include "CommonStructs.h"
 #include "StructUtils/PropertyBag.h"
-#include "SequenceEvent_IF.generated.h"
+#include "_SequenceEvent_IF.generated.h"
 
 
-USTRUCT(BlueprintType)
-struct FSequenceEvent_IF : public FBaseSequenceEvent
+USTRUCT(BlueprintType, meta = (DisplayName = "IF"))
+struct F_SequenceEvent_IF : public FBaseSequenceEvent
 {
 	GENERATED_BODY()
     
-	FSequenceEvent_IF(){ Type = EEventType::IF; }
+	F_SequenceEvent_IF(){ Type = EEventType::IF; }
 
 	// True事件开始下标
 	int TrueEventsStartIndex = 0;

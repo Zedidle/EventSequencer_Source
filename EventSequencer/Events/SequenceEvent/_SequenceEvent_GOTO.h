@@ -2,14 +2,14 @@
 #include "CoreMinimal.h"
 #include "CommonStructs.h"
 #include "StructUtils/PropertyBag.h"
-#include "SequenceEvent_GOTO.generated.h"
+#include "_SequenceEvent_GOTO.generated.h"
 
-USTRUCT(BlueprintType)
-struct FSequenceEvent_GOTO : public FBaseSequenceEvent
+USTRUCT(BlueprintType, meta = (DisplayName = "GOTO"))
+struct F_SequenceEvent_GOTO : public FBaseSequenceEvent
 {
 	GENERATED_BODY()
 
-	FSequenceEvent_GOTO(){ Type = EEventType::GOTO; }
+	F_SequenceEvent_GOTO(){ Type = EEventType::GOTO; }
 	
 	// 目标标签
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Goto")

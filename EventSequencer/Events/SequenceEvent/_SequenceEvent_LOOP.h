@@ -2,9 +2,9 @@
 #include "CoreMinimal.h"
 #include "CommonStructs.h"
 #include "StructUtils/PropertyBag.h"
-#include "SequenceEvent_LOOP.generated.h"
+#include "_SequenceEvent_LOOP.generated.h"
 
-struct FSequenceEvent_LOOP;
+struct F_SequenceEvent_LOOP;
 
 
 USTRUCT(BlueprintType)
@@ -12,7 +12,7 @@ struct FEventState_LOOP
 {
 	GENERATED_BODY()
 
-	FSequenceEvent_LOOP* LoopEventSelf;
+	F_SequenceEvent_LOOP* LoopEventSelf;
 	
 	// 最大循环次数（0表示无限循环）
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loop", meta = (ClampMin = "0"))
@@ -27,12 +27,12 @@ struct FEventState_LOOP
 };
 
 
-USTRUCT(BlueprintType)
-struct FSequenceEvent_LOOP: public FBaseSequenceEvent
+USTRUCT(BlueprintType, meta = (DisplayName = "LOOP"))
+struct F_SequenceEvent_LOOP: public FBaseSequenceEvent
 {
 	GENERATED_BODY()
     
-	FSequenceEvent_LOOP()
+	F_SequenceEvent_LOOP()
 	{
 		Type = EEventType::LOOP;
 		State.LoopEventSelf = this;
