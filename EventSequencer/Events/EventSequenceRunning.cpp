@@ -118,6 +118,40 @@ void UEventSequenceRunning::Destroy()
 	}
 }
 
+bool UEventSequenceRunning::ExecuteBlueprintCallEvent(FSequenceEvent_BlueprintCall& BlueprintCallEvent, int32 EventIndex)
+{
+	// 1. 创建蓝图实例
+	if (!BlueprintCallEvent.BlueprintInstance)
+	{
+		BlueprintCallEvent.BlueprintInstance = BlueprintCallEvent.GetOrCreateBlueprintInstance(this);
+		if (!BlueprintCallEvent.BlueprintInstance)
+		{
+			return false;
+		}
+	}
+    
+	// 2. 创建执行上下文
+	FSequenceBlueprintContext Context;
+	Context.DeltaTime = GetWorld() ? GetWorld()->GetDeltaSeconds() : 0.0f;
+	Context.CurrentEventIndex = EventIndex;
+	Context.WorldContextObject = this;
+    
+	// 3. 执行蓝图
+	bool bResult = BlueprintCallEvent.ExecuteBlueprint(
+		BlueprintCallEvent.BlueprintInstance,
+		Context,
+		PropertyBagRuntime
+	);
+    
+	// 4. 清理实例（如果需要）
+	// if (bResult && BlueprintCallEvent.bAutoDestroyInstance)
+	// {
+	// 	BlueprintCallEvent.DestroyBlueprintInstance();
+	// }
+    
+	return bResult;
+}
+
 
 bool UEventSequenceRunning::EvaluateCondition(const FSequenceCondition& Condition)
 {

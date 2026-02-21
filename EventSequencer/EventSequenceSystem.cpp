@@ -5,6 +5,7 @@
 #include "DataAssets/PropertyBagWrapper.h"
 #include "UObject/UnrealType.h"
 #include "Engine/World.h"
+#include "Events/EventSequenceBlueprintAction.h"
 #include "Events/SequenceEvent/CommonStructs.h"
 #include "Events/SequenceEvent/_SequenceEvent_BREAK.h"
 #include "Events/SequenceEvent/_SequenceEvent_GOTO.h"
@@ -234,6 +235,7 @@ bool UEventSequenceSystem::RemoveComponent(const UEventSequenceComponent* Compon
 
     return false;
 }
+
 
 void UEventSequenceSystem::TickSequences(float DeltaTime)
 {

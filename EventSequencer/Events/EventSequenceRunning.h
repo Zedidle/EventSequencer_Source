@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SequenceEvent_BlueprintCall.h"
 #include "EventSequencer/DataAssets/EventSequenceDA.h"
 #include "SequenceEvent/CommonStructs.h"
 #include "SequenceEvent/_SequenceEvent_LOOP.h"
@@ -94,5 +95,10 @@ public:
 	void Exit();
 	
 	void Destroy();
+
+
+
+
+	bool ExecuteBlueprintCallEvent(FSequenceEvent_BlueprintCall& BlueprintCallEvent, int32 EventIndex);
 	
 };

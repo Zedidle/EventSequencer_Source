@@ -9,6 +9,7 @@
 #include "UObject/Object.h"
 #include "Engine/DataAsset.h"
 #include "Events/EventSequenceRunning.h"
+#include "Events/SequenceEvent_BlueprintCall.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "EventSequenceSystem.generated.h"
 
