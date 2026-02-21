@@ -56,7 +56,6 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
                 ParseEventSequence(EventSequenceRunning, DEvent->NestedEvents);
             }
         }
-        // 目前if事件这里有个缺点，不能在运行时决定是执行 TrueEvents 还是 FalseEvents
         else if (const F_SequenceEvent_IF* SourceEvent_IF = SourceEventStruct.GetPtr<F_SequenceEvent_IF>())
         {
             if (F_SequenceEvent_IF* DEvent = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_IF>())
@@ -88,9 +87,11 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
                 DEvent->LoopEvents = SourceEvent_LOOP->LoopEvents;
                 DEvent->State = SourceEvent_LOOP->State;
                 DEvent->Condition = SourceEvent_LOOP->Condition;
-                
+
+                DEvent->State.LoopStartIndex = EventSequenceRunning->GetEventsNum();
                 ParseEventSequence(EventSequenceRunning, DEvent->LoopEvents);
-                
+
+                DEvent->State.LoopEndIndex = EventSequenceRunning->GetEventsNum();
                 ParseEventSequence(EventSequenceRunning, DEvent->NestedEvents);
             }
         }
@@ -121,9 +122,7 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
                 {
                     if (FMoveSequenceEvent* DEvent = RuntimeEventStruct.GetMutablePtr<FMoveSequenceEvent>())
                     {
-                        DEvent->Property.TargetLocation = SourceEvent_Move->Property.TargetLocation;
-                        DEvent->Property.ApproachDistance = SourceEvent_Move->Property.ApproachDistance;
-                        DEvent->bMoving = false;
+                        DEvent->Property = SourceEvent_Move->Property;
                     }
                 }
                 // 对话事件
@@ -131,8 +130,7 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
                 {
                     if (FDialogSequenceEvent* DEvent = RuntimeEventStruct.GetMutablePtr<FDialogSequenceEvent>())
                     {
-                        DEvent->Property.DialogLines = SourceEvent->Property.DialogLines;
-                        DEvent->Property.TextDisplaySpeed = SourceEvent->Property.TextDisplaySpeed;
+                        DEvent->Property = SourceEvent->Property;
                     }
                 }
                 // 延迟等待事件
@@ -140,14 +138,15 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
                 {
                     if (FWaitSequenceEvent* DEvent = RuntimeEventStruct.GetMutablePtr<FWaitSequenceEvent>())
                     {
-                        DEvent->Property.Duration = SourceEvent_Wait->Property.Duration;
+                        DEvent->Property = SourceEvent_Wait->Property;
                     }
                 }
                 // 选择事件
-                else if (const FChoiceSequenceEvent* SourceDelayEvent = SourceEventStruct.GetPtr<FChoiceSequenceEvent>())
+                else if (const FChoiceSequenceEvent* SourceEvent_Choice = SourceEventStruct.GetPtr<FChoiceSequenceEvent>())
                 {
                     if (FChoiceSequenceEvent* DEvent = RuntimeEventStruct.GetMutablePtr<FChoiceSequenceEvent>())
                     {
+                        DEvent->Property = SourceEvent_Choice->Property;
                     }
                 }
                 
