@@ -844,6 +844,7 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 			Exit();
 		}
 	}
+	// 具体事件
 	else if (FBaseSequenceEvent* Event = CurEventStruct.GetMutablePtr<FBaseSequenceEvent>())
 	{
 		switch (Event->GetState())

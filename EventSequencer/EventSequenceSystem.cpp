@@ -40,8 +40,8 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
         {
             if (F_SequenceEvent_LABEL* DEvent = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_LABEL>())
             {
-                DEvent->LabelName = SourceEvent_LABEL->LabelName;
-                DEvent->LabelDescription = SourceEvent_LABEL->LabelDescription;
+                // 直接赋值可能因为 NestedEvents 嵌套导致性能问题，可以考虑移动语义
+                *DEvent = *SourceEvent_LABEL;
                 EventSequenceRunning->AddLabel(DEvent->LabelName);
                 EventSequenceRunning->AddEvent(RuntimeEventStruct);
                 ParseEventSequence(EventSequenceRunning, DEvent->NestedEvents);
@@ -51,8 +51,7 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
         {
             if (F_SequenceEvent_GOTO* DEvent = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_GOTO>())
             {
-                DEvent->TargetLabel = SourceEvent_GOTO->TargetLabel;
-                DEvent->Condition = SourceEvent_GOTO->Condition;
+                *DEvent = *SourceEvent_GOTO;
                 EventSequenceRunning->AddEvent(RuntimeEventStruct);
                 ParseEventSequence(EventSequenceRunning, DEvent->NestedEvents);
             }
@@ -61,10 +60,7 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
         {
             if (F_SequenceEvent_IF* DEvent = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_IF>())
             {
-                DEvent->Condition = SourceEvent_IF->Condition;
-                DEvent->TrueEvents = SourceEvent_IF->TrueEvents;
-                DEvent->FalseEvents = SourceEvent_IF->FalseEvents;
-                
+                *DEvent = *SourceEvent_IF;
                 EventSequenceRunning->AddEvent(RuntimeEventStruct);
                 
                 // 初步分析 TrueEvents 和 FalseEvents 开始的下标 以及 跳出的下标
@@ -85,10 +81,7 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
             if (F_SequenceEvent_LOOP* DEvent = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_LOOP>())
             {
                 // 关于Loop事件，由于解析的平扁化处理，需要记录下它在 EventSequenceRunning 的序列开始下标和结束下标，以便循环和Break跳出。
-                DEvent->LoopEvents = SourceEvent_LOOP->LoopEvents;
-                DEvent->State = SourceEvent_LOOP->State;
-                DEvent->Condition = SourceEvent_LOOP->Condition;
-
+                *DEvent = *SourceEvent_LOOP;
                 DEvent->State.LoopStartIndex = EventSequenceRunning->GetEventsNum();
                 ParseEventSequence(EventSequenceRunning, DEvent->LoopEvents);
 
@@ -100,6 +93,7 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
         {
             if (F_SequenceEvent_BREAK* DEvent = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_BREAK>())
             {
+                *DEvent = *SourceEvent_BREAK;
                 EventSequenceRunning->AddEvent(RuntimeEventStruct);
                 ParseEventSequence(EventSequenceRunning, DEvent->NestedEvents);
             }
@@ -108,7 +102,7 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
         {
             if (F_SequenceEvent_RETURN* DEvent = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_RETURN>())
             {
-                DEvent->ReturnValue = SourceEvent_RETURN->ReturnValue;
+                *DEvent = *SourceEvent_RETURN;
                 EventSequenceRunning->AddEvent(RuntimeEventStruct);
                 ParseEventSequence(EventSequenceRunning, DEvent->NestedEvents);
             }
