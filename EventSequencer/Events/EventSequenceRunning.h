@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "EventSequencer/DataAssets/EventSequenceDA.h"
 #include "SequenceEvent/CommonStructs.h"
+#include "SequenceEvent/SequenceEvent_LOOP.h"
 #include "StructUtils/InstancedStruct.h"
 #include "UObject/Object.h"
 #include "EventSequenceRunning.generated.h"
@@ -48,7 +49,7 @@ public:
 	int GetEventsNum() { return EventQueue.Num(); }
 	
 	// 当前循环状态栈
-	
+	TArray<FEventState_LOOP> LoopStateStack;
 	
 	// 初始化定义的DA，存储了 InstancedPropertyBag 数据
 	UPROPERTY()
@@ -57,7 +58,10 @@ public:
 	
 	UFUNCTION()
 	void SetDataAsset(UEventSequenceDA* DataAsset);
-	
+
+
+
+
 	void Tick(float DeltaTime);
 	
 	void AddEvent(FInstancedStruct& Event);
@@ -71,10 +75,11 @@ public:
 	void AddLabel(FName Label);
 	
 	UFUNCTION(BlueprintCallable, Category = "Event Sequence")
-	void Goto(FName Label);
-	void Goto(int Index);
+	void GOTO(FName Label);
+	void GOTO(int Index);
 	
-
+	void LOOP(const FEventState_LOOP& LoopState);
+	void BREAK();
 	
 	UFUNCTION(BlueprintCallable, Category = "Event Sequence")
 	void Start();
@@ -84,11 +89,10 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "Event Sequence")
 	void Next();
-	
-	UFUNCTION(BlueprintCallable, Category = "Event Sequence")
-	void Destroy();
-	
-	
 
+	UFUNCTION(BlueprintCallable, Category = "Event Sequence")
+	void Exit();
+	
+	void Destroy();
 	
 };

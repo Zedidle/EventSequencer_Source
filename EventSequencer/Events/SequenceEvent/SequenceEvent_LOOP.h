@@ -4,7 +4,27 @@
 #include "StructUtils/PropertyBag.h"
 #include "SequenceEvent_LOOP.generated.h"
 
+struct FSequenceEvent_LOOP;
 
+
+USTRUCT(BlueprintType)
+struct FEventState_LOOP
+{
+	GENERATED_BODY()
+
+	FSequenceEvent_LOOP* LoopEventSelf;
+	
+	// 最大循环次数（0表示无限循环）
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loop", meta = (ClampMin = "0"))
+	int32 MaxLoopTimes = 0;
+    
+	// 当前迭代计数（运行时）
+	int32 CurLoopTimes = 0;
+	// 循环体开始位置（初始扁平化处理序列时）
+	int32 LoopStartIndex = 0;
+	// 循环结束位置（初始扁平化处理序列时设定）
+	int32 LoopEndIndex = 0;    
+};
 
 
 USTRUCT(BlueprintType)
@@ -12,27 +32,19 @@ struct FSequenceEvent_LOOP: public FBaseSequenceEvent
 {
 	GENERATED_BODY()
     
-	FSequenceEvent_LOOP(){ Type = EEventType::IF; }
+	FSequenceEvent_LOOP()
+	{
+		Type = EEventType::LOOP;
+		State.LoopEventSelf = this;
+	}
+
+	// 循环条件（可选，为空表示无条件循环）
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loop")
+	FSequenceCondition Condition;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loop Body", meta = (BaseStruct = "/Script/EventSequencer.BaseSequenceEvent"))
 	TArray<FInstancedStruct> LoopEvents;
-    
-	// 最大循环次数（0表示无限循环）
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loop", meta = (ClampMin = "0"))
-	int32 MaxLoopTimes = 0;
-    
-	// 循环条件（可选，为空表示无条件循环）
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loop")
-	FSequenceCondition LoopCondition;
-    
-	// 当前迭代计数（运行时）
-	int32 CurLoopTimes = 0;
-	// 循环体开始位置（扁平化序列中）
-	int32 LoopStartIndex = -1;
-	// 循环结束位置（跳出后的位置）
-	int32 LoopEndIndex = -1;    
-	
-	// 检查是否应该继续循环
-	bool ShouldContinue(const FInstancedPropertyBag& PropertyBag) const;
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loop Body")
+	FEventState_LOOP State;
 };

@@ -49,7 +49,7 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
             if (FSequenceEvent_GOTO* DEvent = RuntimeEventStruct.GetMutablePtr<FSequenceEvent_GOTO>())
             {
                 DEvent->TargetLabel = SourceEvent_GOTO->TargetLabel;
-                DEvent->JumpCondition = SourceEvent_GOTO->JumpCondition;
+                DEvent->Condition = SourceEvent_GOTO->Condition;
                 EventSequenceRunning->AddEvent(RuntimeEventStruct);
             }
         }
@@ -81,8 +81,8 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
             {
                 // 关于Loop事件，由于解析的平扁化处理，需要记录下它在 EventSequenceRunning 的序列开始下标和结束下标，以便循环和Break跳出。
                 DEvent->LoopEvents = SourceEvent_LOOP->LoopEvents;
-                DEvent->MaxLoopTimes = SourceEvent_LOOP->MaxLoopTimes;
-                DEvent->LoopCondition = SourceEvent_LOOP->LoopCondition;
+                DEvent->State = SourceEvent_LOOP->State;
+                DEvent->Condition = SourceEvent_LOOP->Condition;
                 
                 ParseEventSequence(EventSequenceRunning, DEvent->LoopEvents);
             }

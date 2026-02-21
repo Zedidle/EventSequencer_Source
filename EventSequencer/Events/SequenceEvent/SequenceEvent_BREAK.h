@@ -8,6 +8,11 @@ USTRUCT(BlueprintType)
 struct FSequenceEvent_BREAK : public FBaseSequenceEvent
 {
 	GENERATED_BODY()
-    
 
+	FSequenceEvent_BREAK(){ Type = EEventType::BREAK; }
+	
+	// 循环退出的条件
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loop")
+	FSequenceCondition Condition;
+	
 };

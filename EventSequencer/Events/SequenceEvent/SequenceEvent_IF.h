@@ -32,7 +32,4 @@ struct FSequenceEvent_IF : public FBaseSequenceEvent
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Branches",
 			  meta = (BaseStruct = "/Script/EventSequencer.BaseSequenceEvent"))
 	TArray<FInstancedStruct> FalseEvents;
-    
-	// 评估条件
-	bool EvaluateCondition(const FInstancedPropertyBag& PropertyBag) const;
 };

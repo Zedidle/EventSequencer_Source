@@ -8,7 +8,9 @@ USTRUCT(BlueprintType)
 struct FSequenceEvent_LABEL : public FBaseSequenceEvent
 {
 	GENERATED_BODY()
-    
+	
+	FSequenceEvent_LABEL(){ Type = EEventType::LABEL; }
+	
 	// 标签名称
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Label")
 	FName LabelName;

@@ -31,15 +31,15 @@ void UEventSequenceRunning::AppendEvents(TArray<FInstancedStruct>& Events)
 	}
 }
 
-void UEventSequenceRunning::Goto(FName Label)
+void UEventSequenceRunning::GOTO(FName Label)
 {
 	if(int* index = Label2Index.Find(Label))
 	{
-		Goto(*index);
+		GOTO(*index);
 	}
 }
 
-void UEventSequenceRunning::Goto(int Index)
+void UEventSequenceRunning::GOTO(int Index)
 {
 	if(EventQueue.IsValidIndex(Index))
 	{
@@ -105,6 +105,11 @@ void UEventSequenceRunning::Next()
 	}
 }
 
+void UEventSequenceRunning::Exit()
+{
+	Destroy();
+}
+
 void UEventSequenceRunning::Destroy()
 {
 	if (UEventSequenceSystem* EventSequenceSystem = UEventSequenceSystem::GetInstance(GetWorld()))
@@ -116,10 +121,7 @@ void UEventSequenceRunning::Destroy()
 
 bool UEventSequenceRunning::EvaluateCondition(const FSequenceCondition& Condition)
 {
-	if (Condition.PropertyName.IsNone())
-    {
-        return false;
-    }
+	if (Condition.PropertyName.IsNone()) return true;
     
     // 获取属性描述
     const FPropertyBagPropertyDesc* Desc = PropertyBagRuntime.FindPropertyDescByName(Condition.PropertyName);
@@ -577,6 +579,50 @@ void UEventSequenceRunning::SetDataAsset(UEventSequenceDA* DataAsset)
 	PropertyBagRuntime.MigrateToNewBagInstance(InitDataAsset->PropertyBagInput);
 }
 
+void UEventSequenceRunning::LOOP(const FEventState_LOOP& LoopState)
+{
+	if (LoopStateStack.IsEmpty())
+	{
+		LoopStateStack.Push(LoopState);
+		GOTO(LoopState.LoopStartIndex);
+		return;
+	}
+	
+	FEventState_LOOP& CurLoopState = LoopStateStack.Last();
+	if (CurLoopState.LoopEventSelf == LoopState.LoopEventSelf)
+	{
+		CurLoopState.CurLoopTimes ++;
+		if (CurLoopState.MaxLoopTimes > 0 && CurLoopState.CurLoopTimes == CurLoopState.MaxLoopTimes)
+		{
+			GOTO(CurLoopState.LoopEndIndex);
+			LoopStateStack.Pop();
+		}
+		// 无限循环，只能等Break或Return跳出
+		else if (CurLoopState.MaxLoopTimes == 0)
+		{
+			GOTO(CurLoopState.LoopStartIndex);
+		}
+	}
+	else
+	{
+		LoopStateStack.Push(LoopState);
+		GOTO(LoopState.LoopStartIndex);
+	}
+}
+
+void UEventSequenceRunning::BREAK()
+{
+	if (LoopStateStack.IsEmpty())
+	{
+		return;
+	}
+
+	FEventState_LOOP& CurLoopState = LoopStateStack.Last();
+	GOTO(CurLoopState.LoopEndIndex);
+	LoopStateStack.Pop();
+}
+
+
 void UEventSequenceRunning::Tick(float DeltaTime)
 {
 	if (bPause) return;
@@ -584,27 +630,46 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 	FInstancedStruct& CurEventStruct = EventQueue[CurEventIndex];
 	if (const FSequenceEvent_GOTO* CurEvent_GOTO = CurEventStruct.GetPtr<FSequenceEvent_GOTO>())
 	{
-		Goto(CurEvent_GOTO->TargetLabel);
+		if (EvaluateCondition(CurEvent_GOTO->Condition))
+		{
+			GOTO(CurEvent_GOTO->TargetLabel);
+		}
 	}
 	else if (const FSequenceEvent_BREAK* CurEvent_BREAK = CurEventStruct.GetPtr<FSequenceEvent_BREAK>())
 	{
 		// 跳出一层循环状态
-		
+		if (EvaluateCondition(CurEvent_BREAK->Condition))
+		{
+			BREAK();
+		}
 	}
 	else if (const FSequenceEvent_LOOP* CurEvent_LOOP = CurEventStruct.GetPtr<FSequenceEvent_LOOP>())
 	{
-		// 进入循环状态
-		
+		// 循环状态
+		if (EvaluateCondition(CurEvent_LOOP->Condition))
+		{
+			LOOP(CurEvent_LOOP->State);
+		}
 	}
 	else if (const FSequenceEvent_IF* CurEvent_IF = CurEventStruct.GetPtr<FSequenceEvent_IF>())
 	{
 		// 进入条件分支判断
-		
+		if (EvaluateCondition(CurEvent_IF->Condition))
+		{
+			GOTO(CurEvent_IF->TrueEventsStartIndex);
+		}
+		else
+		{
+			GOTO(CurEvent_IF->FalseEventsStartIndex);
+		}
 	}
 	else if (const FSequenceEvent_RETURN* CurEvent_RETURN = CurEventStruct.GetPtr<FSequenceEvent_RETURN>())
 	{
 		// 结束该序列
-		
+		if (EvaluateCondition(CurEvent_RETURN->Condition))
+		{
+			Exit();
+		}
 	}
 	else if (FBaseSequenceEvent* Event = CurEventStruct.GetMutablePtr<FBaseSequenceEvent>())
 	{
