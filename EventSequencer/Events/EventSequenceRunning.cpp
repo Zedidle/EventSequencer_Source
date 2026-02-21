@@ -4,6 +4,7 @@
 #include "EventSequenceRunning.h"
 #include "../Events/SequenceEvent/CommonStructs.h"
 #include "EventSequencer/EventSequenceSystem.h"
+#include "EventSequencer/DataAssets/PropertyBagWrapper.h"
 #include "Misc/DefaultValueHelper.h"
 #include "SequenceEvent/_SequenceEvent_BREAK.h"
 #include "SequenceEvent/_SequenceEvent_GOTO.h"
@@ -83,9 +84,25 @@ void UEventSequenceRunning::Start()
 	bPause = false;
 }
 
+bool UEventSequenceRunning::Pause()
+{
+	return false;
+}
+
+bool UEventSequenceRunning::Resume()
+{
+	return false;
+}
+
 void UEventSequenceRunning::Stop()
 {
 	bPause = true;
+}
+
+bool UEventSequenceRunning::ExecuteStep()
+{
+	return false;
+	
 }
 
 void UEventSequenceRunning::Next()
@@ -116,6 +133,128 @@ void UEventSequenceRunning::Destroy()
 	{
 		EventSequenceSystem->RemoveEventSequence(this);
 	}
+}
+
+UPropertyBagWrapper* UEventSequenceRunning::GetPropertyBagWrapper() const
+{
+	UPropertyBagWrapper* Wrapper = NewObject<UPropertyBagWrapper>();
+	Wrapper->SetPropertyBag(PropertyBagRuntime);
+	return Wrapper;
+}
+
+bool UEventSequenceRunning::IsWaitingForAsync() const
+{
+	return WaitingForAsyncEventIndex != -1 && WaitingForAsyncOperationID.IsValid();
+}
+
+void UEventSequenceRunning::OnAsyncOperationCompleted(int32 EventIndex, EAsyncActionResult Result,
+	const FString& Reason)
+{
+	if (EventIndex != WaitingForAsyncEventIndex)
+	{
+		return;
+	}
+    
+	// 查找对应的异步事件
+	if (EventIndex >= 0 && EventIndex < EventSequenceRuntime.Num())
+	{
+		FInstancedStruct& Event = EventSequenceRuntime[EventIndex];
+		if (FSequenceEvent_AsyncBlueprintCall* AsyncEvent = Event.GetMutablePtr<FSequenceEvent_AsyncBlueprintCall>())
+		{
+			AsyncEvent->HandleAsyncComplete(Result, Reason);
+            
+			if (Result == EAsyncActionResult::Success)
+			{
+				// 同步输出数据
+				if (AsyncEvent->AsyncInstance)
+				{
+					SyncPortData(AsyncEvent->AsyncInstance, AsyncEvent->PortBindings, false);
+				}
+                
+				// 如果实例不支持缓存，销毁它
+				if (AsyncEvent->AsyncInstance->GetInterruptBehavior() == EAsyncInterruptBehavior::Skip)
+				{
+					AsyncEvent->AsyncInstance->ConditionalBeginDestroy();
+					AsyncEvent->AsyncInstance = nullptr;
+				}
+			}
+            
+			// 序列化状态（如果支持）
+			if (AsyncEvent->AsyncInstance && AsyncEvent->AsyncInstance->SupportsStateSerialization())
+			{
+				AsyncEvent->SerializedState = AsyncEvent->AsyncInstance->SerializeState();
+			}
+		}
+	}
+    
+	// 停止等待
+	StopWaitingForAsync();
+    
+	// 如果序列在等待，恢复执行
+	if (State == ESequenceState::WaitingForAsync)
+	{
+		SetState(ESequenceState::Running);
+	}
+}
+
+TArray<FName> UEventSequenceRunning::GetAllLabels() const
+{
+	TArray<FName> LabelNames;
+	Label2Index.GetKeys(LabelNames);
+	return LabelNames;
+}
+
+int32 UEventSequenceRunning::FindLabelIndex(const FName& LabelName) const
+{
+	return Label2Index.FindRef(LabelName);
+}
+
+
+bool UEventSequenceRunning::ExecuteEvent(FInstancedStruct& Event, int32 EventIndex)
+{
+	return false;
+}
+
+bool UEventSequenceRunning::ExecuteAsyncBlueprintCallEvent(FSequenceEvent_AsyncBlueprintCall& AsyncEvent,
+	int32 EventIndex)
+{
+	return false;
+}
+
+bool UEventSequenceRunning::ExecuteCatchBlock(FSequenceEvent_AsyncBlueprintCall& AsyncEvent, int32 EventIndex)
+{
+	return false;
+}
+
+void UEventSequenceRunning::StartWaitingForAsync(int32 EventIndex, const FGuid& AsyncOperationID)
+{
+}
+
+void UEventSequenceRunning::StopWaitingForAsync()
+{
+}
+
+bool UEventSequenceRunning::SyncPortData(UEventSequenceAsyncBlueprintAction* Instance, const TArray<FPortBinding>& PortBindings,
+	bool bToBlueprint)
+{
+	return false;
+}
+
+
+bool UEventSequenceRunning::HandleControlFlowEvent(FInstancedStruct& Event, int32 EventIndex)
+{
+	return false;
+}
+
+bool UEventSequenceRunning::HandleActionEvent(FInstancedStruct& Event, int32 EventIndex)
+{
+	return false;
+}
+
+
+
+void UEventSequenceRunning::SetState(ESequenceState NewState)
+{
 }
 
 bool UEventSequenceRunning::ExecuteBlueprintCallEvent(FSequenceEvent_BlueprintCall& BlueprintCallEvent, int32 EventIndex)

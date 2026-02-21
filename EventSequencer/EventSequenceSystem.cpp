@@ -237,6 +237,7 @@ bool UEventSequenceSystem::RemoveComponent(const UEventSequenceComponent* Compon
 }
 
 
+
 void UEventSequenceSystem::TickSequences(float DeltaTime)
 {
     if (EventSequencesRunning.IsEmpty()) return;
@@ -267,291 +268,226 @@ void UEventSequenceSystem::TickSequences(float DeltaTime)
     }
 }
 
+const FAsyncOperationInfo* UEventSequenceSystem::GetAsyncOperationInfo(const FGuid& AsyncOperationID) const
+{
+    return nullptr;
+}
 
-// 以下是参考目录
-/************************************************************************/
-/* FEventSequenceVariables 实现                                         */
-/************************************************************************/
-// void FEventSequenceVariables::Init(const TMap<FName, FInstancedStruct>& ExternalOverrides)
-// {
-//     RuntimeValues.Empty();
-//     for (const FEventSequenceVarDef& VarDef : VarDefs)
-//     {
-//         if (!VarDef.IsValid()) continue;
-//
-//         // FInstancedStruct VarValue;
-//         // // 优先使用外部覆写的值
-//         // if (VarDef.bIsReference && ExternalOverrides.Contains(VarDef.VarName))
-//         // {
-//         //     VarValue = ExternalOverrides.at(VarDef.VarName);
-//         // }
-//         // else
-//         // {
-//         //     VarValue = VarDef.DefaultValue;
-//         // }
-//         // RuntimeValues.Add(VarDef.VarName, VarValue);
-//     }
-// }
+UEventSequenceRunning* UEventSequenceSystem::GetAsyncEventSequence(const FGuid& Guid)
+{
+    return AsyncEventSequenceMap.FindRef(Guid);
+}
 
-/************************************************************************/
-/* UEventSequenceDataAsset 实现                                         */
-/************************************************************************/
-// bool UEventSequenceDataAsset2::IsSequenceValid() const
-// {
-//     if (!SequenceVariables.VarDefs.IsEmpty())
-//     {
-//         for (const FEventSequenceVarDef& VarDef : SequenceVariables.VarDefs)
-//         {
-//             if (!VarDef.IsValid()) return false;
-//         }
-//     }
-//     if (RootCommands.IsEmpty()) return false;
-//     if (MaxExecuteCountPerUpdate < 1) return false;
-//     return true;
-// }
+// 生成异步操作ID
+FGuid UEventSequenceSystem::GenerateAsyncOperationID()
+{
+    FGuid NewID = FGuid::NewGuid();
+    return NewID;
+}
 
-/************************************************************************/
-/* UEventSequenceInterpreter 实现                                       */
-/************************************************************************/
-// UEventSequenceInterpreter::UEventSequenceInterpreter()
-//     : CurrentCmdIndex(0)
-//     , ExecuteCountInCurrentUpdate(0)
-// {
-//     bIsRunning = false;
-//     bIsWaiting = false;
-// }
-//
-// bool UEventSequenceInterpreter::InitInterpreter(UEventSequenceDataAsset2* InSequenceDA, UObject* InContext, const TMap<FName, FInstancedStruct>& ExternalVarOverrides)
-// {
-//     // 合法性检查
-//     if (!InSequenceDA || !InSequenceDA->IsSequenceValid() || !InContext || !InContext->IsA(InSequenceDA->ContextClass))
-//     {
-//         UE_LOG(LogTemp, Error, TEXT("EventSequence Interpreter Init Failed: Invalid DA/Context"));
-//         return false;
-//     }
-//
-//     // 初始化核心成员
-//     SequenceDA = InSequenceDA;
-//     Context = InContext;
-//     InterpreterVariables = SequenceDA->SequenceVariables;
-//     InterpreterVariables.Init(ExternalVarOverrides);
-//
-//     // 扁平化解命令树
-//     FlattenCommandTree();
-//
-//     // 重置执行状态
-//     CurrentCmdIndex = 0;
-//     RemainingWaitTime = 0.0f;
-//     bIsWaiting = false;
-//     bIsRunning = true;
-//
-//     UE_LOG(LogTemp, Log, TEXT("EventSequence Interpreter Init Success: %s"), *InSequenceDA->SequenceName.ToString());
-//     return true;
-// }
-//
-// void UEventSequenceInterpreter::Update(float DeltaTime)
-// {
-//     if (!bIsRunning || !SequenceDA || FlattenedCommands.IsEmpty()) return;
-//
-//     // 处理等待状态
-//     if (bIsWaiting)
-//     {
-//         RemainingWaitTime -= DeltaTime;
-//         if (RemainingWaitTime <= 0.0f)
-//         {
-//             bIsWaiting = false;
-//             RemainingWaitTime = 0.0f;
-//         }
-//         else
-//         {
-//             return; // 仍在等待，直接返回
-//         }
-//     }
-//
-//     // 重置本次Update的执行计数
-//     ExecuteCountInCurrentUpdate = 0;
-//     const int32 MaxExecuteCount = SequenceDA->MaxExecuteCountPerUpdate;
-//
-//     // 循环执行指令，直到达到阈值/需要等待/执行完毕
-//     while (bIsRunning && !bIsWaiting && CurrentCmdIndex < FlattenedCommands.Num() && ExecuteCountInCurrentUpdate < MaxExecuteCount)
-//     {
-//         int32 NextCmdIndex = CurrentCmdIndex + 1; // 默认下一条指令
-//         // 执行当前指令
-//         if (ExecuteSingleCommand(CurrentCmdIndex, NextCmdIndex))
-//         {
-//             CurrentCmdIndex = NextCmdIndex;
-//         }
-//         else
-//         {
-//             StopInterpreter(false); // 指令执行失败，强制停止
-//             break;
-//         }
-//         ExecuteCountInCurrentUpdate++;
-//     }
-//
-//     // 检查是否执行完毕
-//     if (CurrentCmdIndex >= FlattenedCommands.Num())
-//     {
-//         StopInterpreter(true); // 正常结束
-//     }
-// }
-//
-// void UEventSequenceInterpreter::StopInterpreter(bool bIsNormalQuit)
-// {
-//     bIsRunning = false;
-//     bIsWaiting = false;
-//     RemainingWaitTime = 0.0f;
-//
-//     if (bIsNormalQuit)
-//     {
-//         UE_LOG(LogTemp, Log, TEXT("EventSequence Interpreter Stop Normal: %s"), *SequenceDA->SequenceName.ToString());
-//     }
-//     else
-//     {
-//         UE_LOG(LogTemp, Warning, TEXT("EventSequence Interpreter Stop Abnormal: %s"), *SequenceDA->SequenceName.ToString());
-//     }
-// }
-//
-// UWorld* UEventSequenceInterpreter::GetWorldContext() const
-// {
-//     if (Context)
-//     {
-//         return Context->GetWorld();
-//     }
-//     return GetWorld();
-// }
+void UEventSequenceSystem::CleanupCompletedAsyncOperations()
+{
+}
 
-// void UEventSequenceInterpreter::OnAsyncCommandComplete(EAsyncExecuteResult Result, const FInstancedStruct& ResultData)
-// {
-//     bIsWaiting = false;
-//     RemainingWaitTime = 0.0f;
-//     // 此处可扩展：将异步结果写入解释器变量，供后续命令使用
-//     // 示例：InterpreterVariables.SetVarValue(TEXT("AsyncResult"), Result);
-//     //      InterpreterVariables.SetVarValue(TEXT("AsyncResultData"), ResultData);
-// }
+void UEventSequenceSystem::ProcessAsyncOperations(float DeltaTime)
+{
+}
 
-// void UEventSequenceInterpreter::Serialize(FArchive& Ar)
-// {
-//     Super::Serialize(Ar);
-//     // 序列化执行状态（核心：支持存档/读档）
-//     Ar << bIsRunning;
-//     Ar << bIsWaiting;
-//     Ar << CurrentCmdIndex;
-//     Ar << RemainingWaitTime;
-//     Ar << CurrentAsyncInterruptPolicy;
-//     // 序列化解释器变量（运行时值）
-//     Ar << InterpreterVariables.RuntimeValues;
-// }
-//
-// void UEventSequenceInterpreter::FlattenCommandTree()
-// {
-//     FlattenedCommands.Empty();
-//     LabelIndexMap.Empty();
-//
-//     if (!SequenceDA || SequenceDA->RootCommands.IsEmpty()) return;
-//
-//     // 遍历根命令，扁平化解所有嵌套命令
-//     // for (const FInstancedStruct& RootCmd : SequenceDA->RootCommands)
-//     // {
-//     //     if (RootCmd.IsValid() && RootCmd.GetStruct()->IsChildOf(FEventSequenceCommand::StaticStruct()))
-//     //     {
-//     //         const FEventSequenceCommand* Cmd = RootCmd.GetPtr<FEventSequenceCommand>();
-//     //         if (Cmd)
-//     //         {
-//     //             Cmd->Flatten(FlattenedCommands, LabelIndexMap);
-//     //         }
-//     //     }
-//     // }
-//
-//     UE_LOG(LogTemp, Log, TEXT("EventSequence Flatten Success: %d Commands, %d Labels"), FlattenedCommands.Num(), LabelIndexMap.Num());
-// }
-//
-// bool UEventSequenceInterpreter::ExecuteSingleCommand(int32 CmdIndex, int32& OutNextCmdIndex)
-// {
-//     if (CmdIndex < 0 || CmdIndex >= FlattenedCommands.Num()) return false;
-//
-//     const FInstancedStruct& CmdStruct = FlattenedCommands[CmdIndex];
-//     if (!CmdStruct.IsValid()) return false;
-//
-//     // 执行命令的核心逻辑
-//     // const FEventSequenceCommand* Cmd = CmdStruct.GetPtr<FEventSequenceCommand>();
-//     // if (Cmd && Cmd->IsValid())
-//     // {
-//     //     return Cmd->Execute(this, CmdIndex, OutNextCmdIndex);
-//     // }
-//
-//     UE_LOG(LogTemp, Error, TEXT("Execute Command Failed: Invalid Command at Index %d"), CmdIndex);
-//     return false;
-// }
+FGuid UEventSequenceSystem::StartAsyncOperation(UEventSequenceRunning* Instance, int32 EventIndex,
+                                                UEventSequenceAsyncBlueprintAction* AsyncAction)
+{
+    if (!Instance || !AsyncAction)
+    {
+        return FGuid();
+    }
+    
+    FGuid AsyncOperationID = GenerateAsyncOperationID();
+    
+    FAsyncOperationInfo OperationInfo;
+    // OperationInfo.SequenceID = Instance->GetSequenceID();
+    OperationInfo.EventIndex = EventIndex;
+    OperationInfo.AsyncAction = AsyncAction;
+    // OperationInfo.AsyncActionID = AsyncAction->GetUniqueID();
+    OperationInfo.StartTime = GetWorld()->GetTimeSeconds();
+    
+    // 添加到映射
+    AsyncOperations.Add(AsyncOperationID, OperationInfo);
+    
+    TArray<FGuid>& SequenceOperations = SequenceToAsyncOperations.FindOrAdd(Instance->GetSequenceID());
+    SequenceOperations.Add(AsyncOperationID);
+    
+    // 绑定委托
+    // AsyncAction->OnCompleted.AddDynamic(this, &UEventSequenceSystem::OnAsyncActionCompleted, AsyncOperationID);
+    // AsyncAction->OnFailed.AddUObject(this, &UEventSequenceSystem::OnAsyncActionFailed, AsyncAction->GetUniqueID());
+    
+    // 广播事件
+    OnAsyncOperationStarted.Broadcast(Instance->GetSequenceID(), AsyncOperationID, AsyncAction);
+    
+    return AsyncOperationID;
+}
 
-/************************************************************************/
-/* UEventSequenceSyncBlueprint 实现                                     */
-/************************************************************************/
-// 空实现（策划蓝图重载Execute_Implementation）
+// 取消异步操作
+bool UEventSequenceSystem::CancelAsyncOperation(const FGuid& AsyncOperationID, const FString& Reason)
+{
+    FAsyncOperationInfo* OperationInfo = AsyncOperations.Find(AsyncOperationID);
+    if (!OperationInfo)
+    {
+        return false;
+    }
+    
+    UEventSequenceAsyncBlueprintAction* AsyncAction = OperationInfo->AsyncAction.Get();
+    if (AsyncAction)
+    {
+        AsyncAction->CompleteFailure(Reason);
+    }
+    
+    return true;
+}
 
-/************************************************************************/
-/* UEventSequenceAsyncBlueprint 实现                                    */
-/************************************************************************/
-// void UEventSequenceAsyncBlueprint::Resolve(const FInstancedStruct& ResultData)
-// {
-//     if (Interpreter)
-//     {
-//         Interpreter->OnAsyncCommandComplete(EAsyncExecuteResult::Success, ResultData);
-//     }
-// }
-//
-// void UEventSequenceAsyncBlueprint::Reject(EAsyncExecuteResult FailReason, const FInstancedStruct& ResultData)
-// {
-//     if (Interpreter)
-//     {
-//         Interpreter->OnAsyncCommandComplete(FailReason, ResultData);
-//     }
-// }
+// 检查是否有挂起的异步操作
+bool UEventSequenceSystem::HasPendingAsyncOperation(const FGuid& SequenceID) const
+{
+    const TArray<FGuid>* Operations = SequenceToAsyncOperations.Find(SequenceID);
+    if (!Operations)
+    {
+        return false;
+    }
+    
+    for (const FGuid& OperationID : *Operations)
+    {
+        const FAsyncOperationInfo* Info = AsyncOperations.Find(OperationID);
+        if (Info && Info->AsyncAction.IsValid() && !Info->AsyncAction->IsCompleted())
+        {
+            return true;
+        }
+    }
+    
+    return false;
+}
 
-/************************************************************************/
-/* UEventSequenceBlueprintLibrary 实现                                  */
-/************************************************************************/
-// UEventSequenceInterpreter* UEventSequenceBlueprintLibrary::CreateInterpreter(UObject* WorldContextObject)
-// {
-//     if (!WorldContextObject) return nullptr;
-//     UWorld* World = WorldContextObject->GetWorld();
-//     if (!World) return nullptr;
-//
-//     // 创建解释器实例（可挂载到任意UObject，此处默认挂载到WorldContext）
-//     UEventSequenceInterpreter* Interpreter = NewObject<UEventSequenceInterpreter>(WorldContextObject);
-//     Interpreter->AddToRoot(); // 防止被GC
-//     return Interpreter;
-// }
-//
-// UEventSequenceInterpreter* UEventSequenceBlueprintLibrary::StartEventSequence(UObject* WorldContextObject, UEventSequenceDataAsset2* SequenceDA, UObject* Context, const TMap<FName, FInstancedStruct>& ExternalVarOverrides)
-// {
-//     UEventSequenceInterpreter* Interpreter = CreateInterpreter(WorldContextObject);
-//     if (Interpreter && Interpreter->InitInterpreter(SequenceDA, Context, ExternalVarOverrides))
-//     {
-//         return Interpreter;
-//     }
-//     // 初始化失败，销毁实例
-//     if (Interpreter)
-//     {
-//         Interpreter->RemoveFromRoot();
-//         Interpreter->MarkAsGarbage();
-//     }
-//     return nullptr;
-// }
-//
-// void UEventSequenceBlueprintLibrary::SetInterpreterVar(UEventSequenceInterpreter* Interpreter, FName VarName, const FInstancedStruct& Value)
-// {
-//     if (Interpreter && Interpreter->GetInterpreterVariables())
-//     {
-//         Interpreter->GetInterpreterVariables()->RuntimeValues.FindOrAdd(VarName) = Value;
-//     }
-// }
-//
-// FInstancedStruct UEventSequenceBlueprintLibrary::GetInterpreterVar(UEventSequenceInterpreter* Interpreter, FName VarName)
-// {
-//     if (Interpreter && Interpreter->GetInterpreterVariables() && Interpreter->GetInterpreterVariables()->RuntimeValues.Contains(VarName))
-//     {
-//         return Interpreter->GetInterpreterVariables()->RuntimeValues[VarName];
-//     }
-//     return FInstancedStruct();
-// }
+TArray<FGuid> UEventSequenceSystem::GetPendingAsyncOperations(const FGuid& SequenceID) const
+{
+    return TArray<FGuid>();
+}
+
+// 异步操作完成回调
+void UEventSequenceSystem::OnAsyncActionCompleted(const FGuid& AsyncActionID)
+{
+    // 查找对应的异步操作
+    FGuid FoundOperationID;
+    FAsyncOperationInfo* FoundOperation = nullptr;
+    
+    for (auto& Pair : AsyncOperations)
+    {
+        if (Pair.Value.AsyncActionID == AsyncActionID)
+        {
+            FoundOperationID = Pair.Key;
+            FoundOperation = &Pair.Value;
+            break;
+        }
+    }
+    
+    if (!FoundOperation)
+    {
+        return;
+    }
+    
+    // 获取序列实例
+    UEventSequenceRunning* Instance = GetAsyncEventSequence(FoundOperation->SequenceID);
+    if (Instance)
+    {
+        // 通知序列实例异步操作完成
+        Instance->OnAsyncOperationCompleted(FoundOperation->EventIndex, EAsyncActionResult::Success, TEXT(""));
+    }
+    
+    // 广播完成事件
+    OnAsyncOperationCompleted.Broadcast(FoundOperation->SequenceID, FoundOperationID, EAsyncActionResult::Success);
+    
+    // 从映射中移除
+    AsyncOperations.Remove(FoundOperationID);
+    
+    TArray<FGuid>* SequenceOperations = SequenceToAsyncOperations.Find(FoundOperation->SequenceID);
+    if (SequenceOperations)
+    {
+        SequenceOperations->Remove(FoundOperationID);
+    }
+}
+
+void UEventSequenceSystem::OnAsyncActionFailed(const FString& Reason, const FGuid& AsyncActionID)
+{
+    // 查找对应的异步操作
+    FGuid FoundOperationID;
+    FAsyncOperationInfo* FoundOperation = nullptr;
+    
+    for (auto& Pair : AsyncOperations)
+    {
+        if (Pair.Value.AsyncActionID == AsyncActionID)
+        {
+            FoundOperationID = Pair.Key;
+            FoundOperation = &Pair.Value;
+            break;
+        }
+    }
+    
+    if (!FoundOperation)
+    {
+        return;
+    }
+    
+    // 获取序列实例
+    UEventSequenceRunning* Instance = GetAsyncEventSequence(FoundOperation->SequenceID);
+    if (Instance)
+    {
+        // 通知序列实例异步操作失败
+        Instance->OnAsyncOperationCompleted(FoundOperation->EventIndex, EAsyncActionResult::Failed, Reason);
+    }
+    
+    // 广播完成事件
+    OnAsyncOperationCompleted.Broadcast(FoundOperation->SequenceID, FoundOperationID, EAsyncActionResult::Failed);
+    
+    // 从映射中移除
+    AsyncOperations.Remove(FoundOperationID);
+    
+    TArray<FGuid>* SequenceOperations = SequenceToAsyncOperations.Find(FoundOperation->SequenceID);
+    if (SequenceOperations)
+    {
+        SequenceOperations->Remove(FoundOperationID);
+    }
+}
+
+void UEventSequenceSystem::SerializeAsyncOperations(const FGuid& SequenceID, TArray<FString>& OutSerializedStates)
+{
+    
+}
+
+void UEventSequenceSystem::DeserializeAsyncOperations(const FGuid& SequenceID, const TArray<FString>& SerializedStates)
+{
+    
+}
+
+// 处理中断恢复
+void UEventSequenceSystem::HandleInterruptRecovery( UEventSequenceRunning* Instance, FSequenceEvent_AsyncBlueprintCall& AsyncEvent)
+{
+    if (!Instance)
+    {
+        return;
+    }
+    
+    switch (AsyncEvent.InterruptBehavior)
+    {
+    case EAsyncInterruptBehavior::Restart:
+        // 重启语义：重新创建异步实例
+        if (AsyncEvent.AsyncInstance)
+        {
+            AsyncEvent.AsyncInstance->ResetState();
+        }
+        AsyncEvent.AsyncResult = EAsyncActionResult::Pending;
+        AsyncEvent.FailureReason.Empty();
+        break;
+        
+    case EAsyncInterruptBehavior::Skip:
+        // 跳过语义：直接视为失败
+        AsyncEvent.HandleAsyncComplete(EAsyncActionResult::Failed, TEXT("Interrupted"));
+        break;
+    }
+}

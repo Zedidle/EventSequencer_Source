@@ -18,6 +18,9 @@ public:
     UPropertyBagWrapper();
 
 	FORCEINLINE FInstancedPropertyBag& GetPropertyBag() { return PropertyBag; }
+
+	void SetPropertyBag(const FInstancedPropertyBag& Bag) { PropertyBag = Bag;}
+	
     // FORCEINLINE const FInstancedPropertyBag& GetPropertyBag() const { return PropertyBag; }
 
 	bool AddProperty(const FName& Name, const EPropertyBagPropertyType& Type);
