@@ -10,7 +10,7 @@ struct F_SequenceEvent_IF : public FBaseSequenceEvent
 {
 	GENERATED_BODY()
     
-	F_SequenceEvent_IF(){ Type = EEventType::IF; }
+	F_SequenceEvent_IF(){}
 
 	// True事件开始下标
 	int TrueEventsStartIndex = 0;

@@ -36,10 +36,6 @@ UCLASS(Blueprintable, MinimalAPI)
 class UEventAsyncObject : public UBlueprintAsyncActionBase
 {
 	GENERATED_BODY()
-
-	UPROPERTY(EditDefaultsOnly)
-	EEventType EventType = EEventType::None;
-    
 	
 public:
 

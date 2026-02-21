@@ -22,7 +22,7 @@ struct FChoiceSequenceEvent : public FBaseSequenceEvent
 {
 	GENERATED_BODY()
 	
-	FChoiceSequenceEvent() { Type = EEventType::Choice; }
+	FChoiceSequenceEvent() {}
 	virtual FString GetDisplayName() const override;
 	virtual void OnEnter() override;
 	virtual bool Execute(int Index = 0) override;

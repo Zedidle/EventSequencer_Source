@@ -9,7 +9,7 @@ struct F_SequenceEvent_LABEL : public FBaseSequenceEvent
 {
 	GENERATED_BODY()
 	
-	F_SequenceEvent_LABEL(){ Type = EEventType::LABEL; }
+	F_SequenceEvent_LABEL(){}
 	
 	// 标签名称
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Label")

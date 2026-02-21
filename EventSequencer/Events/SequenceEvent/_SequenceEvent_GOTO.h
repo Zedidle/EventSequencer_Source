@@ -9,7 +9,7 @@ struct F_SequenceEvent_GOTO : public FBaseSequenceEvent
 {
 	GENERATED_BODY()
 
-	F_SequenceEvent_GOTO(){ Type = EEventType::GOTO; }
+	F_SequenceEvent_GOTO(){ }
 	
 	// 目标标签
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Goto")

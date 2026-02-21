@@ -50,27 +50,6 @@ class EVENTSEQUENCER_API UCommonStructs : public UObject
 	GENERATED_BODY()
 };
 
-UENUM(BlueprintType)
-enum class EEventType : uint8
-{
-	None        UMETA(DisplayName = "None"),
-
-	// 控制流事件
-	IF,
-	LOOP,
-	BREAK,
-	RETURN,
-	LABEL,
-	GOTO,
-	
-	// 事件类型预设
-	Move    UMETA(DisplayName = "Move"), 
-	Dialog    UMETA(DisplayName = "Dialog"),
-	Wait UMETA(DisplayName = "Wait"),
-	Choice UMETA(DisplayName = "Choice")
-	// ... 其他类型
-};
-
 // 事件状态枚举
 UENUM(BlueprintType)
 enum class EEventState : uint8
@@ -97,10 +76,6 @@ struct FBaseSequenceEvent
 
 	AActor* GetContext() { return ContextActor.Get(); }
 	
-	// 核心：事件类型枚举，用于在编辑器中进行选择
-	UPROPERTY(BlueprintReadOnly)
-	EEventType Type = EEventType::None;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Nested Events", meta = (BaseStruct = "/Script/EventSequencer.BaseSequenceEvent"))
 	TArray<FInstancedStruct> NestedEvents;
 	
@@ -117,9 +92,6 @@ struct FBaseSequenceEvent
     
 	void SetState(EEventState NewState) { State = NewState; }
 	EEventState GetState() const { return State; }
-	EEventType GetEventType() const { return Type; }
-
-
 	
 protected:
 	EEventState State = EEventState::Pending;

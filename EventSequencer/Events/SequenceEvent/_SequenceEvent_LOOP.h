@@ -34,7 +34,6 @@ struct F_SequenceEvent_LOOP: public FBaseSequenceEvent
     
 	F_SequenceEvent_LOOP()
 	{
-		Type = EEventType::LOOP;
 		State.LoopEventSelf = this;
 	}
 

@@ -34,7 +34,7 @@ struct FDialogSequenceEvent : public FBaseSequenceEvent
 {
 	GENERATED_BODY()
     
-	FDialogSequenceEvent() { Type = EEventType::Dialog; }
+	FDialogSequenceEvent() {}
 	virtual FString GetDisplayName() const override;
 	virtual void OnEnter() override;
 	virtual bool Execute(int Index = 0) override;

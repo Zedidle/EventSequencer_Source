@@ -13,7 +13,7 @@ enum class EAsyncActionResult : uint8
 	Pending,    // 等待中
 	Success,    // 成功
 	Failed,      // 失败
-	Cancelled
+	Cancelled  // 取消
 };
 
 // 异步中断语义

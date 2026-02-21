@@ -26,7 +26,7 @@ struct FMoveSequenceEvent : public FBaseSequenceEvent
 {
 	GENERATED_BODY()
     
-	FMoveSequenceEvent(){ Type = EEventType::Move;}
+	FMoveSequenceEvent(){}
 	virtual FString GetDisplayName() const override;
 	virtual void OnEnter() override;
 	virtual bool Execute(int Index = 0) override;

@@ -20,7 +20,7 @@ struct FWaitSequenceEvent : public FBaseSequenceEvent
 {
 	GENERATED_BODY()
     
-	FWaitSequenceEvent() { Type = EEventType::Wait; }
+	FWaitSequenceEvent() {}
 	virtual FString GetDisplayName() const override;
 	virtual void OnEnter() override;
 	virtual bool Execute(int Index = 0) override;
