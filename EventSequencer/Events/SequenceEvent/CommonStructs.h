@@ -54,10 +54,9 @@ class EVENTSEQUENCER_API UCommonStructs : public UObject
 UENUM(BlueprintType)
 enum class EEventState : uint8
 {
-	Idle,		// 未就绪
 	Pending,    // 等待中
 	Active,     // 进行中
-	Completed   // 已完成
+	CurFinished, // 当前已完成，准备切换回Pending，并让事件序列执行下一事件
 };
  
 // 事件基类结构体
@@ -79,7 +78,6 @@ struct FBaseSequenceEvent
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Nested Events", meta = (BaseStruct = "/Script/EventSequencer.BaseSequenceEvent"))
 	TArray<FInstancedStruct> NestedEvents;
 	
-	virtual void OnPending() { State = EEventState::Pending; }
 	// 事件生命周期方法
 	virtual void OnEnter() { State = EEventState::Active; }
 	virtual void Tick(float DeltaTime) {}
@@ -88,7 +86,7 @@ struct FBaseSequenceEvent
 	// 例如主动触发对话选择之类的
 	virtual bool Execute(int Index = 0) { return true; }
 
-	virtual void OnExit() { State = EEventState::Completed; }
+	virtual void OnFinished() { State = EEventState::Pending; }
     
 	void SetState(EEventState NewState) { State = NewState; }
 	EEventState GetState() const { return State; }

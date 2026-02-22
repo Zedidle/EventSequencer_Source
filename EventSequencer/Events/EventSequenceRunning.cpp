@@ -48,7 +48,7 @@ void UEventSequenceRunning::GOTO(int Index)
 		CurEventIndex = Index;
 		if (auto* DestEvent =  EventQueue[Index].GetMutablePtr<FBaseSequenceEvent>())
 		{
-			DestEvent->SetState(EEventState::Idle);
+			DestEvent->SetState(EEventState::Pending);
 		}
 	}
 }
@@ -845,7 +845,10 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 			if (EvaluateCondition(Condition))
 			{
 				GOTO(E.CaseEventIndex);
-				break;
+				if (E.AutoBreak)
+				{
+					break;
+				}
 			}
 		}
 		GOTO(CurEvent_SWITCH->EndIndex);
@@ -861,22 +864,18 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 	// 具体事件
 	else if (FBaseSequenceEvent* Event = CurEventStruct.GetMutablePtr<FBaseSequenceEvent>())
 	{
-		switch (Event->GetState())
+		EEventState CurEventState = Event->GetState();
+		if (CurEventState == EEventState::Pending)
 		{
-		case EEventState::Idle:
-			Event->OnPending();
-			break;
-			
-		case EEventState::Pending:
 			Event->OnEnter();
-			break;
-            
-		case EEventState::Active:
+		}
+		if (CurEventState == EEventState::Active)
+		{
 			Event->Tick(DeltaTime);
-			break;
-            
-		case EEventState::Completed:
-			Event->OnExit();
+		}
+		if (CurEventState == EEventState::CurFinished)
+		{
+			Event->OnFinished();
 			CurEventIndex++;
             
 			if (CurEventIndex >= EventQueue.Num())
@@ -884,7 +883,6 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 				UE_LOG(LogTemp, Log, TEXT("Sequence Completed!"));
 				CurEventIndex = INDEX_NONE;
 			}
-			break;
 		}
 	}
 }

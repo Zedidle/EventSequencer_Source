@@ -42,7 +42,7 @@ void FChoiceSequenceEvent::Tick(float DeltaTime)
 	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, *FString::Printf(TEXT("FChoiceSequenceEvent::Tick Waiting")));
 }
 
-void FChoiceSequenceEvent::OnExit()
+void FChoiceSequenceEvent::OnFinished()
 {
-	FBaseSequenceEvent::OnExit();
+	FBaseSequenceEvent::OnFinished();
 }

@@ -20,6 +20,9 @@ struct FEventCase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SequenceEvent | SwitchCase Branch",
 		meta = (BaseStruct = "/Script/EventSequencer.BaseSequenceEvent"))
 	TArray<FInstancedStruct> CaseEvents;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SequenceEvent | SWITCH")
+	bool AutoBreak = true;
 };
 
 
@@ -31,13 +34,15 @@ struct F_SequenceEvent_SWITCH : public FBaseSequenceEvent
     
 	F_SequenceEvent_SWITCH(){}
 
-	// 条件属性名
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Condition")
-	FName PropertyName;
-
 	int EndIndex;
 	
 	// Value To Events;
 	TArray<FEventCase> EventCases;
 	
+	// 条件属性名
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SequenceEvent | SWITCH")
+	FName PropertyName;
+
+
+
 };

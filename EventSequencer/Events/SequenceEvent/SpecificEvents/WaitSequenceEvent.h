@@ -25,7 +25,7 @@ struct FWaitSequenceEvent : public FBaseSequenceEvent
 	virtual void OnEnter() override;
 	virtual bool Execute(int Index = 0) override;
 	virtual void Tick(float DeltaTime) override;
-	virtual void OnExit() override;
+	virtual void OnFinished() override;
 	
 	UPROPERTY(EditAnywhere)
 	FWaitSequenceProperty Property;

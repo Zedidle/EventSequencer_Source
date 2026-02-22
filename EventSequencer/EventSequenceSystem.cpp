@@ -162,7 +162,7 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
                     }
                 }
                 
-                DestEvent->SetState(EEventState::Idle);
+                DestEvent->SetState(EEventState::Pending);
                 EventSequenceRunning->AddEvent(RuntimeEventStruct);
                 ParseEventSequence(EventSequenceRunning, DestEvent->NestedEvents);
             }

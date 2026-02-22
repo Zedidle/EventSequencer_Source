@@ -16,7 +16,7 @@ void FWaitSequenceEvent::OnEnter()
 bool FWaitSequenceEvent::Execute(int Index)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, *FString::Printf(TEXT("FWaitSequenceEvent::Next")));
-	OnExit();
+	OnFinished();
 	return true;
 }
 
@@ -31,9 +31,9 @@ void FWaitSequenceEvent::Tick(float DeltaTime)
 	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, *FString::Printf(TEXT("FWaitSequenceEvent::Tick Waiting")));
 }
 
-void FWaitSequenceEvent::OnExit()
+void FWaitSequenceEvent::OnFinished()
 {
-	FBaseSequenceEvent::OnExit();
+	FBaseSequenceEvent::OnFinished();
 }
 
 
