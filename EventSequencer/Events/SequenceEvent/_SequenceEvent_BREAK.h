@@ -10,6 +10,11 @@ struct F_SequenceEvent_BREAK : public FBaseSequenceEvent
 	GENERATED_BODY()
 
 	F_SequenceEvent_BREAK(){}
+
+	virtual FString GetDisplayName() const override
+	{
+		return TEXT("BREAK");
+	}
 	
 	// 循环退出的条件
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loop")

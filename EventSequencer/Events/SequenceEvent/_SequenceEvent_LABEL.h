@@ -10,6 +10,11 @@ struct F_SequenceEvent_LABEL : public FBaseSequenceEvent
 	GENERATED_BODY()
 	
 	F_SequenceEvent_LABEL(){}
+	virtual FString GetDisplayName() const override
+	{
+		return TEXT("LABEL");
+	}
+
 	
 	// 标签名称
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Label")

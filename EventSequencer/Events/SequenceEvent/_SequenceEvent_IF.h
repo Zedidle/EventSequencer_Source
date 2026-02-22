@@ -11,7 +11,12 @@ struct F_SequenceEvent_IF : public FBaseSequenceEvent
 	GENERATED_BODY()
     
 	F_SequenceEvent_IF(){}
+	virtual FString GetDisplayName() const override
+	{
+		return TEXT("IF");
+	}
 
+	
 	// True事件开始下标
 	int TrueEventsStartIndex = 0;
 	// False事件开始下标

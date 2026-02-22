@@ -36,6 +36,11 @@ struct F_SequenceEvent_LOOP: public FBaseSequenceEvent
 	{
 		State.LoopEventSelf = this;
 	}
+	virtual FString GetDisplayName() const override
+	{
+		return TEXT("LOOP");
+	}
+	
 
 	// 循环条件（可选，为空表示无条件循环）
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loop")

@@ -8,16 +8,49 @@
 #include "StructUtils/PropertyBag.h"
 #include "EventSequenceDA.generated.h"
 
+// 前置声明：确保所有序列事件结构体都有 GetDisplayName() 方法
+template<typename T>
+concept HasGetDisplayName = requires(const T* Event) {
+	{ Event->GetDisplayName() } -> std::convertible_to<FString>;
+};
+
+/**
+ * 通用模板函数：提取指定类型序列事件的显示标题
+ * @tparam T 序列事件结构体类型（如 FMoveSequenceEvent、FDialogSequenceEvent 等）
+ * @param Event 待判断的结构体实例
+ * @return 事件的显示标题（若类型不匹配/指针获取失败，返回空字符串）
+ */
+template<typename T>
+requires HasGetDisplayName<T>
+FString GetSequenceEventTitle(const FInstancedStruct& Event)
+{
+	// 1. 判断结构体类型是否匹配（是否是 T 或 T 的子类）
+	if (Event.GetScriptStruct()->IsChildOf(T::StaticStruct()))
+	{
+		// 2. 安全获取指定类型的指针
+		if (const T* SourceEvent = Event.GetPtr<T>())
+		{
+			// 3. 提取显示标题
+			return SourceEvent->GetDisplayName();
+		}
+	}
+	// 类型不匹配/指针获取失败，返回空字符串
+	return TEXT("");
+}
+
 
 struct FBaseSequenceEvent;
 
-UCLASS(BlueprintType,  meta = (TitleProperty = "DisplayName"))
+UCLASS(BlueprintType)
 class EVENTSEQUENCER_API UEventSequenceDA : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 	
 
 	void ResetDisplayName();
+
+	int CurNum = 0;
+
 	
 public:
 	virtual void Serialize(FStructuredArchiveRecord Record) override;

@@ -49,6 +49,7 @@ class EVENTSEQUENCER_API UEventSequenceRunning : public UObject
 	bool TryParseName(const FString& StringValue, FName& OutValue);
 	bool TryParseText(const FString& StringValue, FText& OutValue);
 
+	bool bCompleted = false;
 
 	float PreEventRemainTime = 0.0f;
 	

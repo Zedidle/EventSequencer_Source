@@ -34,6 +34,11 @@ struct F_SequenceEvent_SWITCH : public FBaseSequenceEvent
     
 	F_SequenceEvent_SWITCH(){}
 
+	virtual FString GetDisplayName() const override
+	{
+		return TEXT("SWITCH");
+	}
+
 	int EndIndex;
 	
 	// Value To Events;

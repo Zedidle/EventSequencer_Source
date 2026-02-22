@@ -10,6 +10,10 @@ struct F_SequenceEvent_GOTO : public FBaseSequenceEvent
 	GENERATED_BODY()
 
 	F_SequenceEvent_GOTO(){ }
+	virtual FString GetDisplayName() const override
+	{
+		return TEXT("GOTO");
+	}
 	
 	// 目标标签
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Goto")

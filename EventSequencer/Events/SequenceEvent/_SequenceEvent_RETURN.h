@@ -10,6 +10,11 @@ struct F_SequenceEvent_RETURN : public FBaseSequenceEvent
 	GENERATED_BODY()
 
 	F_SequenceEvent_RETURN(){}
+	virtual FString GetDisplayName() const override
+	{
+		return TEXT("RETURN");
+	}
+
 	
 	// 返回值（可选）
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Return")

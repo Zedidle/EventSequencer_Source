@@ -56,17 +56,7 @@ void UEventSequenceRunning::GOTO(int Index)
 
 bool UEventSequenceRunning::IsCompleted() const
 {
-	for (auto Event : EventQueue)
-	{
-		if (const FBaseSequenceEvent* E = Event.GetPtr<FBaseSequenceEvent>())
-		{
-			if (E->GetState() != EEventState::Completed)
-			{
-				return false;
-			}
-		}
-	}
-	return true;
+	return bCompleted;
 }
 
 FInstancedStruct& UEventSequenceRunning::GetCurEvent()
@@ -882,6 +872,7 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 			{
 				UE_LOG(LogTemp, Log, TEXT("Sequence Completed!"));
 				CurEventIndex = INDEX_NONE;
+				bCompleted = true;
 			}
 		}
 	}

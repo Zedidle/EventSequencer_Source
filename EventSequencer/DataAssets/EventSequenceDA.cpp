@@ -2,46 +2,55 @@
 
 #include "EventSequenceDA.h"
 
+#include "EventSequencer/Events/SequenceEvent/_SequenceEvent_BREAK.h"
+#include "EventSequencer/Events/SequenceEvent/_SequenceEvent_GOTO.h"
+#include "EventSequencer/Events/SequenceEvent/_SequenceEvent_IF.h"
+#include "EventSequencer/Events/SequenceEvent/_SequenceEvent_LABEL.h"
+#include "EventSequencer/Events/SequenceEvent/_SequenceEvent_LOOP.h"
+#include "EventSequencer/Events/SequenceEvent/_SequenceEvent_RETURN.h"
+#include "EventSequencer/Events/SequenceEvent/_SequenceEvent_SWITCH.h"
 #include "EventSequencer/Events/SequenceEvent/SpecificEvents/ChoiceSequenceEvent.h"
 #include "EventSequencer/Events/SequenceEvent/SpecificEvents/DialogSequenceEvent.h"
 #include "EventSequencer/Events/SequenceEvent/SpecificEvents/MoveSequenceEvent.h"
 #include "EventSequencer/Events/SequenceEvent/SpecificEvents/WaitSequenceEvent.h"
 
 
+
+#define TRY_GET_EVENT_TITLE(Type) \
+	if (EventTitle.IsEmpty()) EventTitle = GetSequenceEventTitle<Type>(Event);
+
 void UEventSequenceDA::ResetDisplayName()
 {
+	CurNum = 0;
 	DisplayName = "";
 
 	for (auto& Event : EventSequence )
 	{
-		if (Event.GetScriptStruct()->IsChildOf(FMoveSequenceEvent::StaticStruct()))
+		FString EventTitle;
+		TRY_GET_EVENT_TITLE(F_SequenceEvent_BREAK)
+		TRY_GET_EVENT_TITLE(F_SequenceEvent_GOTO)
+		TRY_GET_EVENT_TITLE(F_SequenceEvent_IF)
+		TRY_GET_EVENT_TITLE(F_SequenceEvent_LABEL)
+		TRY_GET_EVENT_TITLE(F_SequenceEvent_LOOP)
+		TRY_GET_EVENT_TITLE(F_SequenceEvent_RETURN)
+		TRY_GET_EVENT_TITLE(F_SequenceEvent_SWITCH)
+		
+		TRY_GET_EVENT_TITLE(FMoveSequenceEvent)
+		TRY_GET_EVENT_TITLE(FDialogSequenceEvent)
+		TRY_GET_EVENT_TITLE(FWaitSequenceEvent)
+		TRY_GET_EVENT_TITLE(FChoiceSequenceEvent)
+
+		if (!EventTitle.IsEmpty())
 		{
-			if (const FMoveSequenceEvent* SourceEvent = Event.GetPtr<FMoveSequenceEvent>())
-			{
-				DisplayName += "\n" + SourceEvent->GetDisplayName();
-			}
+			FString FormattedNum = FString::Printf(TEXT("%03d"), CurNum);
+			DisplayName += "\n" + FormattedNum + " " +EventTitle;
+			CurNum++;
 		}
-		else if (Event.GetScriptStruct()->IsChildOf(FDialogSequenceEvent::StaticStruct()))
-		{
-			if (const FDialogSequenceEvent* SourceEvent = Event.GetPtr<FDialogSequenceEvent>())
-			{
-				DisplayName += "\n" + SourceEvent->GetDisplayName();
-			}
-		}
-		else if (Event.GetScriptStruct()->IsChildOf(FWaitSequenceEvent::StaticStruct()))
-		{
-			if (const FWaitSequenceEvent* SourceEvent = Event.GetPtr<FWaitSequenceEvent>())
-			{
-				DisplayName += "\n" + SourceEvent->GetDisplayName();
-			}
-		}
-		else if (Event.GetScriptStruct()->IsChildOf(FChoiceSequenceEvent::StaticStruct()))
-		{
-			if (const FChoiceSequenceEvent* SourceEvent = Event.GetPtr<FChoiceSequenceEvent>())
-			{
-				DisplayName += "\n" + SourceEvent->GetDisplayName();
-			}
-		}
+	}
+
+	if (DisplayName.StartsWith(TEXT("\n")))
+	{
+		DisplayName = DisplayName.RightChop(1);
 	}
 }
 
