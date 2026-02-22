@@ -21,8 +21,8 @@ bool FDialogSequenceEvent::Execute(int Index)
 	return true;
 }
 
-void FDialogSequenceEvent::Tick(float DeltaTime)
+float FDialogSequenceEvent::Tick(float DeltaTime, float PreRemainTime)
 {
-	FBaseSequenceEvent::Tick(DeltaTime);
 	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, *FString::Printf(TEXT("FDialogSequenceEvent::Tick")));
+	return 0;
 }

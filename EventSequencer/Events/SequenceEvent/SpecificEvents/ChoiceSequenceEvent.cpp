@@ -37,9 +37,10 @@ bool FChoiceSequenceEvent::Execute(int Index)
 	return true;
 }
 
-void FChoiceSequenceEvent::Tick(float DeltaTime)
+float FChoiceSequenceEvent::Tick(float DeltaTime, float PreRemainTime)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, *FString::Printf(TEXT("FChoiceSequenceEvent::Tick Waiting")));
+	return 0;
 }
 
 void FChoiceSequenceEvent::OnFinished()

@@ -20,15 +20,17 @@ bool FWaitSequenceEvent::Execute(int Index)
 	return true;
 }
 
-void FWaitSequenceEvent::Tick(float DeltaTime)
+float FWaitSequenceEvent::Tick(float DeltaTime, float PreRemainTime)
 {
-	CurTime += DeltaTime;
+	CurTime += DeltaTime + PreRemainTime;
 	if (CurTime >= Property.Duration)
 	{
 		Execute();
+		return CurTime - Property.Duration;
 	}
 	
 	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, *FString::Printf(TEXT("FWaitSequenceEvent::Tick Waiting")));
+	return 0;
 }
 
 void FWaitSequenceEvent::OnFinished()

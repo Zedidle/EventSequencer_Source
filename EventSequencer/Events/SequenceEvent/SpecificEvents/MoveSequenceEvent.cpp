@@ -24,22 +24,21 @@ bool FMoveSequenceEvent::Execute(int Index)
 	return true;
 }
 
-void FMoveSequenceEvent::Tick(float DeltaTime)
+float FMoveSequenceEvent::Tick(float DeltaTime, float PreRemainTime)
 {
-	FBaseSequenceEvent::Tick(DeltaTime);
 	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, *FString::Printf(TEXT("MoveSequenceEvent::Tick")));
 
 	if (!IsValid(NPCPawn))
 	{
-		State = EEventState::Completed;
-		return;
+		State = EEventState::CurFinished;
+		return 0;
 	}
 		
 	FVector CurLocation = NPCPawn->GetActorLocation();
     
 	if (FVector::Distance(CurLocation, Property.TargetLocation) < Property.ApproachDistance)
 	{
-		State = EEventState::Completed;
+		State = EEventState::CurFinished;
 	}
 	else if (!bMoving)
 	{
@@ -49,4 +48,6 @@ void FMoveSequenceEvent::Tick(float DeltaTime)
 		}
 		bMoving = true;
 	}
+
+	return 0;
 }

@@ -871,7 +871,7 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 		}
 		if (CurEventState == EEventState::Active)
 		{
-			Event->Tick(DeltaTime);
+			PreEventRemainTime = Event->Tick(DeltaTime, PreEventRemainTime);
 		}
 		if (CurEventState == EEventState::CurFinished)
 		{

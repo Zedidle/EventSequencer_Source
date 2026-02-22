@@ -24,7 +24,7 @@ struct FWaitSequenceEvent : public FBaseSequenceEvent
 	virtual FString GetDisplayName() const override;
 	virtual void OnEnter() override;
 	virtual bool Execute(int Index = 0) override;
-	virtual void Tick(float DeltaTime) override;
+	virtual float Tick(float DeltaTime, float PreRemainTime = 0) override;
 	virtual void OnFinished() override;
 	
 	UPROPERTY(EditAnywhere)

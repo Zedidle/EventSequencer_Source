@@ -48,6 +48,9 @@ class EVENTSEQUENCER_API UEventSequenceRunning : public UObject
 	bool TryParseString(const FString& StringValue, FString& OutValue);
 	bool TryParseName(const FString& StringValue, FName& OutValue);
 	bool TryParseText(const FString& StringValue, FText& OutValue);
+
+
+	float PreEventRemainTime = 0.0f;
 	
 public:
 	// 可能某些Event标记有Label，则需要记录下来方便跳转
