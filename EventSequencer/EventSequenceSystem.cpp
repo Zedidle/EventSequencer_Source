@@ -13,6 +13,7 @@
 #include "Events/SequenceEvent/_SequenceEvent_LABEL.h"
 #include "Events/SequenceEvent/_SequenceEvent_LOOP.h"
 #include "Events/SequenceEvent/_SequenceEvent_RETURN.h"
+#include "Events/SequenceEvent/_SequenceEvent_SWITCH.h"
 #include "Events/SequenceEvent/SpecificEvents/ChoiceSequenceEvent.h"
 #include "Events/SequenceEvent/SpecificEvents/DialogSequenceEvent.h"
 #include "Events/SequenceEvent/SpecificEvents/MoveSequenceEvent.h"
@@ -72,7 +73,23 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
                 ParseEventSequence(EventSequenceRunning, DEvent->FalseEvents);
 
                 DEvent->EndIndex = EventSequenceRunning->GetEventsNum();
+                ParseEventSequence(EventSequenceRunning, DEvent->NestedEvents);
+            }
+        }
+        else if (const F_SequenceEvent_SWITCH* SourceEvent_SWITCH = SourceEventStruct.GetPtr<F_SequenceEvent_SWITCH>())
+        {
+            if (F_SequenceEvent_SWITCH* DEvent = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_SWITCH>())
+            {
+                *DEvent = *SourceEvent_SWITCH;
+                EventSequenceRunning->AddEvent(RuntimeEventStruct);
 
+                for (auto& E : DEvent->EventCases)
+                {
+                    E.CaseEventIndex = EventSequenceRunning->GetEventsNum();
+                    ParseEventSequence(EventSequenceRunning, E.CaseEvents);
+                }
+
+                DEvent->EndIndex = EventSequenceRunning->GetEventsNum();
                 ParseEventSequence(EventSequenceRunning, DEvent->NestedEvents);
             }
         }

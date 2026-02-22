@@ -11,6 +11,7 @@
 #include "SequenceEvent/_SequenceEvent_IF.h"
 #include "SequenceEvent/_SequenceEvent_LOOP.h"
 #include "SequenceEvent/_SequenceEvent_RETURN.h"
+#include "SequenceEvent/_SequenceEvent_SWITCH.h"
 
 void UEventSequenceRunning::AddEvent(FInstancedStruct& Event)
 {
@@ -835,6 +836,19 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 		{
 			GOTO(CurEvent_IF->FalseEventsStartIndex);
 		}
+	}
+	else if (const F_SequenceEvent_SWITCH* CurEvent_SWITCH = CurEventStruct.GetPtr<F_SequenceEvent_SWITCH>())
+	{
+		for (auto& E : CurEvent_SWITCH->EventCases)
+		{
+			FSequenceCondition Condition = FSequenceCondition(CurEvent_SWITCH->PropertyName, ESequenceConditionOperator::Equal, E.ComparisonValue);
+			if (EvaluateCondition(Condition))
+			{
+				GOTO(E.CaseEventIndex);
+				break;
+			}
+		}
+		GOTO(CurEvent_SWITCH->EndIndex);
 	}
 	else if (const F_SequenceEvent_RETURN* CurEvent_RETURN = CurEventStruct.GetPtr<F_SequenceEvent_RETURN>())
 	{
