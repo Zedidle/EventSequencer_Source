@@ -19,34 +19,63 @@
 #define TRY_GET_EVENT_TITLE(Type) \
 	if (EventTitle.IsEmpty()) EventTitle = GetSequenceEventTitle<Type>(Event);
 
+void UEventSequenceDA::ParseEventsToDisplayName(TArray<FInstancedStruct>& Events)
+{
+	if (Events.IsEmpty()) return;
+	
+	for (auto& Event : Events)
+    {
+    	FString EventTitle;
+    	// TRY_GET_EVENT_TITLE(F_SequenceEvent_BREAK)
+    	// TRY_GET_EVENT_TITLE(F_SequenceEvent_GOTO)
+    	// TRY_GET_EVENT_TITLE(F_SequenceEvent_LOOP)
+    	// TRY_GET_EVENT_TITLE(F_SequenceEvent_RETURN)
+    	// TRY_GET_EVENT_TITLE(F_SequenceEvent_SWITCH)
+		
+		TRY_GET_EVENT_TITLE(F_SequenceEvent_LABEL)
+
+    	TRY_GET_EVENT_TITLE(FMoveSequenceEvent)
+    	TRY_GET_EVENT_TITLE(FDialogSequenceEvent)
+    	TRY_GET_EVENT_TITLE(FWaitSequenceEvent)
+    	TRY_GET_EVENT_TITLE(FChoiceSequenceEvent)
+
+    	if (!EventTitle.IsEmpty())
+    	{
+    		FString FormattedNum = FString::Printf(TEXT("%03d"), CurNum);
+    		DisplayName += "\n" + FormattedNum + " " +EventTitle;
+    		CurNum++;
+    	}
+
+		if (F_SequenceEvent_IF* SourceEvent_IF = Event.GetMutablePtr<F_SequenceEvent_IF>())
+		{
+			// 全段设置应该统一
+    		TRY_GET_EVENT_TITLE(F_SequenceEvent_IF)
+			
+			if (!SourceEvent_IF->TrueEvents.IsEmpty())
+			{
+				SourceEvent_IF->TrueEventsStartIndex = CurNum;
+				ParseEventsToDisplayName(SourceEvent_IF->TrueEvents);
+			}
+			if (!SourceEvent_IF->FalseEvents.IsEmpty())
+			{
+				SourceEvent_IF->FalseEventsStartIndex = CurNum;
+				ParseEventsToDisplayName(SourceEvent_IF->FalseEvents);
+			}
+		}
+		
+		if (FBaseSequenceEvent* DestEvent = Event.GetMutablePtr<FBaseSequenceEvent>())
+		{
+			ParseEventsToDisplayName(DestEvent->NestedEvents);
+		}
+    }
+}
+
 void UEventSequenceDA::ResetDisplayName()
 {
 	CurNum = 0;
 	DisplayName = "";
 
-	for (auto& Event : EventSequence )
-	{
-		FString EventTitle;
-		TRY_GET_EVENT_TITLE(F_SequenceEvent_BREAK)
-		TRY_GET_EVENT_TITLE(F_SequenceEvent_GOTO)
-		TRY_GET_EVENT_TITLE(F_SequenceEvent_IF)
-		TRY_GET_EVENT_TITLE(F_SequenceEvent_LABEL)
-		TRY_GET_EVENT_TITLE(F_SequenceEvent_LOOP)
-		TRY_GET_EVENT_TITLE(F_SequenceEvent_RETURN)
-		TRY_GET_EVENT_TITLE(F_SequenceEvent_SWITCH)
-		
-		TRY_GET_EVENT_TITLE(FMoveSequenceEvent)
-		TRY_GET_EVENT_TITLE(FDialogSequenceEvent)
-		TRY_GET_EVENT_TITLE(FWaitSequenceEvent)
-		TRY_GET_EVENT_TITLE(FChoiceSequenceEvent)
-
-		if (!EventTitle.IsEmpty())
-		{
-			FString FormattedNum = FString::Printf(TEXT("%03d"), CurNum);
-			DisplayName += "\n" + FormattedNum + " " +EventTitle;
-			CurNum++;
-		}
-	}
+	ParseEventsToDisplayName(EventSequence);
 
 	if (DisplayName.StartsWith(TEXT("\n")))
 	{

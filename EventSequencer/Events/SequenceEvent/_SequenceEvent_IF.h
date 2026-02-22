@@ -13,16 +13,18 @@ struct F_SequenceEvent_IF : public FBaseSequenceEvent
 	F_SequenceEvent_IF(){}
 	virtual FString GetDisplayName() const override
 	{
-		return TEXT("IF");
+		FString TrueStartIndex = FString::Printf(TEXT("%03d"), TrueEventsStartIndex);
+    	FString FalseStartIndex = FString::Printf(TEXT("%03d"), FalseEventsStartIndex);
+		
+		return "IF [Condition: " + Condition.GetDisplayString()  + " ] [True: " + TrueStartIndex + ", False: " + FalseStartIndex + "]";
 	}
-
 	
 	// True事件开始下标
-	int TrueEventsStartIndex = 0;
+	int TrueEventsStartIndex = -1;
 	// False事件开始下标
-	int FalseEventsStartIndex = 0;
+	int FalseEventsStartIndex = -1;
 	// 条件分支结束下标
-	int EndIndex = 0;
+	int EndIndex = -1;
 	
 	// 条件定义
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Condition")

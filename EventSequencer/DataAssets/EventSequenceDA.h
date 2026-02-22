@@ -46,7 +46,7 @@ class EVENTSEQUENCER_API UEventSequenceDA : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 	
-
+	void ParseEventsToDisplayName(TArray<FInstancedStruct>& Events);
 	void ResetDisplayName();
 
 	int CurNum = 0;
@@ -64,21 +64,20 @@ public:
 
 	virtual void UpdateAssetBundleData() override;
 
-	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString DisplayName = TEXT("999");
+	
 	UPROPERTY(EditAnywhere)
 	FInstancedPropertyBag PropertyBagDefault;
 	FInstancedPropertyBag PropertyBagInput;
-
 	void SetPropertyBagInput(const FInstancedPropertyBag& PropertyBag);
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-	FString DisplayName = TEXT("666666666666666");  
-	
 	// 事件序列数组 - 使用FInstancedStruct支持多态事件
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Event Sequence", meta = (ShowOnlyInnerProperties, BaseStruct = "/Script/EventSequencer.BaseSequenceEvent"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ShowOnlyInnerProperties, BaseStruct = "/Script/EventSequencer.BaseSequenceEvent"))
 	TArray<FInstancedStruct> EventSequence;
-
+	
 	// 通过索引获取事件
 	UFUNCTION(BlueprintCallable, Category = "Event Sequence")
 	bool GetEventAtIndex(int32 Index, FInstancedStruct& OutEvent) const;

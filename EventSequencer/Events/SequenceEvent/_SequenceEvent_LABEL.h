@@ -12,7 +12,7 @@ struct F_SequenceEvent_LABEL : public FBaseSequenceEvent
 	F_SequenceEvent_LABEL(){}
 	virtual FString GetDisplayName() const override
 	{
-		return TEXT("LABEL");
+		return "LABEL [" + LabelName.ToString() + "]";
 	}
 
 	

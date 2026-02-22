@@ -12,7 +12,7 @@ struct F_SequenceEvent_GOTO : public FBaseSequenceEvent
 	F_SequenceEvent_GOTO(){ }
 	virtual FString GetDisplayName() const override
 	{
-		return TEXT("GOTO");
+		return "GOTO [Label " + TargetLabel.ToString() + "]";
 	}
 	
 	// 目标标签

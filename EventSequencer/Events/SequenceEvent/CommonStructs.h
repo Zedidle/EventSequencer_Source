@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "../../UI/ChoiceWidget.h"
+#include "Commandlets/GatherTextFromSourceCommandlet.h"
 #include "UObject/Object.h"
 #include "CommonStructs.generated.h"
 
@@ -28,7 +29,48 @@ USTRUCT(BlueprintType)
 struct FSequenceCondition
 {
 	GENERATED_BODY()
-    
+
+	FString GetDisplayString() const
+	{
+		FString OperatorString;
+		switch (Operator)
+		{
+		case ESequenceConditionOperator::Equal: 
+			OperatorString = "=="; 
+			break;
+		case ESequenceConditionOperator::NotEqual: 
+			OperatorString = "!="; 
+			break;
+		case ESequenceConditionOperator::Greater: 
+			OperatorString = ">"; 
+			break;
+		case ESequenceConditionOperator::GreaterEqual: 
+			OperatorString = ">="; 
+			break;
+		case ESequenceConditionOperator::Less: 
+			OperatorString = "<"; 
+			break;
+		case ESequenceConditionOperator::LessEqual: 
+			OperatorString = "<="; 
+			break;
+		case ESequenceConditionOperator::Contains: 
+			OperatorString = "Contains"; 
+			break;
+		case ESequenceConditionOperator::StartsWith: 
+			OperatorString = "StartsWith"; 
+			break;
+		case ESequenceConditionOperator::EndsWith: 
+			OperatorString = "EndsWith"; 
+			break;
+		default: 
+			// 兜底处理，避免空字符串（可选，增强鲁棒性）
+			OperatorString = "Unknown"; 
+			break;
+		}
+		
+		return PropertyName.ToString() + " " + OperatorString + " " + ComparisonValue;
+	}
+	
 	// 条件属性名
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Condition")
 	FName PropertyName;
