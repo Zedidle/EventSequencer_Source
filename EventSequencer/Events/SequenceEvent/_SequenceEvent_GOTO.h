@@ -19,7 +19,7 @@ struct F_SequenceEvent_GOTO : public FBaseSequenceEvent
 			return "GOTO " + TargetIndexString;
 		}
 
-		return "GOTO " + TargetIndexString + " [Label " + TargetLabel.ToString() + "]";
+		return "GOTO [Label " + TargetLabel.ToString() + "]";
 		
 	}
 	virtual int GetEventsCount() override

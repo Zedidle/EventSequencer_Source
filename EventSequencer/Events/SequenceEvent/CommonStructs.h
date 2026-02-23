@@ -68,7 +68,7 @@ struct FSequenceCondition
 			break;
 		}
 		
-		return PropertyName.ToString() + " " + OperatorString + " " + ComparisonValue;
+		return "[Condition " + PropertyName.ToString() + " " + OperatorString + " " + ComparisonValue + " ]";
 	}
 	
 	// 条件属性名

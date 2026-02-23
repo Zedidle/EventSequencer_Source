@@ -16,7 +16,7 @@ struct F_SequenceEvent_IF : public FBaseSequenceEvent
 		FString TrueStartIndex = FString::Printf(TEXT("%03d"), TrueEventsStartIndex);
     	FString FalseStartIndex = FString::Printf(TEXT("%03d"), FalseEventsStartIndex);
 		
-		return "IF [Condition: " + Condition.GetDisplayString()  + " ] [True: " + TrueStartIndex + ", False: " + FalseStartIndex + "]";
+		return "IF " + Condition.GetDisplayString()  + " [True: " + TrueStartIndex + ", False: " + FalseStartIndex + "]";
 	}
 
 	virtual int GetEventsCount() override

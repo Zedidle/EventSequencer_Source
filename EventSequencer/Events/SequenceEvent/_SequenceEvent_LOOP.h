@@ -42,11 +42,12 @@ struct F_SequenceEvent_LOOP: public FBaseSequenceEvent
 		FString EndIndex = FString::Printf(TEXT("%03d"), State.LoopEndIndex);
 		FString MaxLoopTimesString = FString::Printf(TEXT("%d"), State.MaxLoopTimes);
 		
-		return "LOOP [Times: " + MaxLoopTimesString + "] [Condition: " + Condition.GetDisplayString()  + " ] [From " + StartIndex + " To " + EndIndex + "]";
+		return "LOOP [Times: " + MaxLoopTimesString + "]  " + Condition.GetDisplayString()  + " [From " + StartIndex + " To " + EndIndex + "]";
 	}
 	virtual int GetEventsCount() override
 	{
-		return Super::GetEventsCount() + GetEventListEventsCount(LoopEvents);
+		// 1 在于构造生成的Goto
+		return Super::GetEventsCount() + GetEventListEventsCount(LoopEvents) + 1;
 	}
 
 	// 循环条件（可选，为空表示无条件循环）

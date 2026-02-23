@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "EventSequencer/Events/SequenceEvent/_SequenceEvent_LOOP.h"
 #include "StructUtils/InstancedStruct.h"
 #include "StructUtils/PropertyBag.h"
 #include "EventSequenceDA.generated.h"
@@ -17,6 +18,9 @@ class EVENTSEQUENCER_API UEventSequenceDA : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 
+	// 解析所用循环状态栈
+	TArray<FEventState_LOOP> ParseLoopStateStack;
+	
 	void PushDisplayTitle(const FString& Title);
 	int GetEventSequenceLengthWithNested(TArray<FInstancedStruct>& Events);
 	void ParseEventsToDisplayName(TArray<FInstancedStruct>& Events);
