@@ -51,6 +51,10 @@ void UEventSequenceRunning::GOTO(int Index)
 			DestEvent->SetState(EEventState::Pending);
 		}
 	}
+	else
+	{
+		Exit();
+	}
 }
 
 

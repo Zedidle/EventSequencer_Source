@@ -9,7 +9,7 @@ FString FWaitSequenceEvent::GetDisplayName() const
 
 int FWaitSequenceEvent::GetEventsCount()
 {
-	return FBaseSequenceEvent::GetEventsCount();
+	return Super::GetEventsCount() + 1;
 }
 
 void FWaitSequenceEvent::OnEnter()

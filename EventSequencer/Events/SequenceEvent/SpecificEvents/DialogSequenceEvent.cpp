@@ -8,7 +8,7 @@ FString FDialogSequenceEvent::GetDisplayName() const
 
 int FDialogSequenceEvent::GetEventsCount()
 {
-	return FBaseSequenceEvent::GetEventsCount();
+	return Super::GetEventsCount() + 1;
 }
 
 void FDialogSequenceEvent::OnEnter()

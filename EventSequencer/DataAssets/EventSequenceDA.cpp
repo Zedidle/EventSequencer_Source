@@ -51,7 +51,7 @@ void UEventSequenceDA::ParseEventsToDisplayName(TArray<FInstancedStruct>& Events
 		if (F_SequenceEvent_IF* SourceEvent_IF = Event.GetMutablePtr<F_SequenceEvent_IF>())
 		{
 			SourceEvent_IF->TrueEventsStartIndex = CurNum;
-			SourceEvent_IF->FalseEventsStartIndex = 1 + FBaseSequenceEvent::GetEventListEventsCount(SourceEvent_IF->TrueEvents);
+			SourceEvent_IF->FalseEventsStartIndex = CurNum + FBaseSequenceEvent::GetEventListEventsCount(SourceEvent_IF->TrueEvents);
 
 			EventTitle = SourceEvent_IF->GetDisplayName();
 			
@@ -129,7 +129,13 @@ void UEventSequenceDA::PostEditChangeProperty(struct FPropertyChangedEvent& Prop
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 	UE_LOG(LogTemp, Warning , TEXT("UEventSequenceDA PostEditChangeProperty EventSequenceNum: %d"), EventSequence.Num());
-	ResetDisplayName();
+	// ResetDisplayName();
+
+	FCoreDelegates::OnEndFrame.AddLambda([this]
+	{
+		ResetDisplayName();
+	});
+	
 }
 
 

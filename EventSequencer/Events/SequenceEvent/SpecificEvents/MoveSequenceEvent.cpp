@@ -9,7 +9,8 @@ FString FMoveSequenceEvent::GetDisplayName() const
 
 int FMoveSequenceEvent::GetEventsCount()
 {
-	return FBaseSequenceEvent::GetEventsCount();
+	int SuperNum = Super::GetEventsCount();
+	return SuperNum + 1;
 }
 
 void FMoveSequenceEvent::OnEnter()

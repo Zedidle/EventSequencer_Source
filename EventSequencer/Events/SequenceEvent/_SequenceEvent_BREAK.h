@@ -23,5 +23,4 @@ struct F_SequenceEvent_BREAK : public FBaseSequenceEvent
 	// 循环退出的条件
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loop")
 	FSequenceCondition Condition;
-	
 };

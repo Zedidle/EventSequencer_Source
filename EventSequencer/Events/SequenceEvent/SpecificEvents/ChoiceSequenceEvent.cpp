@@ -8,7 +8,7 @@ FString FChoiceSequenceEvent::GetDisplayName() const
 
 int FChoiceSequenceEvent::GetEventsCount()
 {
-	return FBaseSequenceEvent::GetEventsCount();
+	return Super::GetEventsCount() + 1;
 }
 
 void FChoiceSequenceEvent::OnEnter()

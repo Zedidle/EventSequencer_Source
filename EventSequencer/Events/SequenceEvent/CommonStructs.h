@@ -124,7 +124,7 @@ struct FBaseSequenceEvent
 				Result += EventPtr->GetEventsCount();		
 			}
 		}
-		return Events.Num();
+		return Result;
 	}
 	
 	UPROPERTY()
