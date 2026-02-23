@@ -10,14 +10,25 @@ struct F_SequenceEvent_GOTO : public FBaseSequenceEvent
 	GENERATED_BODY()
 
 	F_SequenceEvent_GOTO(){ }
+	F_SequenceEvent_GOTO(int _TargetIndex){ TargetIndex = _TargetIndex; }
 	virtual FString GetDisplayName() const override
 	{
-		return "GOTO [Label " + TargetLabel.ToString() + "]";
+		FString TargetIndexString = FString::Printf(TEXT("%03d"), TargetIndex);
+		if (TargetLabel.IsNone())
+		{
+			return "GOTO " + TargetIndexString;
+		}
+		
+		return "GOTO [Label " + TargetLabel.ToString() + " | Index " + TargetIndexString + "]";
+		
 	}
 	virtual int GetEventsCount() override
 	{
 		return 1;
 	}
+
+	int TargetIndex = -1;
+	
 	// 目标标签
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Goto")
 	FName TargetLabel;
@@ -25,8 +36,5 @@ struct F_SequenceEvent_GOTO : public FBaseSequenceEvent
 	// 跳转条件（可选，为空表示无条件跳转）
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Condition")
 	FSequenceCondition Condition;
-    
-	// 是否应该跳转,传入 EventSequenceRunning 记录的 PropertyBagRuntime 
-	bool CanGoto(const FInstancedPropertyBag& PropertyBag) const;
 
 };

@@ -17,6 +17,7 @@ class EVENTSEQUENCER_API UEventSequenceDA : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 
+	void PushDisplayTitle(const FString& Title);
 	int GetEventSequenceLengthWithNested(TArray<FInstancedStruct>& Events);
 	void ParseEventsToDisplayName(TArray<FInstancedStruct>& Events);
 	void ResetDisplayName();

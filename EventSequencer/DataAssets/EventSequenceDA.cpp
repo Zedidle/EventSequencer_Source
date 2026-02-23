@@ -15,6 +15,15 @@
 #include "EventSequencer/Events/SequenceEvent/SpecificEvents/WaitSequenceEvent.h"
 
 
+void UEventSequenceDA::PushDisplayTitle(const FString& Title)
+{
+	if (!Title.IsEmpty())
+	{
+		FString FormattedNum = FString::Printf(TEXT("%03d"), CurNum);
+		DisplayName += "\n" + FormattedNum + " " + Title;
+		CurNum++;
+	}
+}
 
 int UEventSequenceDA::GetEventSequenceLengthWithNested(TArray<FInstancedStruct>& Events)
 {
@@ -32,39 +41,45 @@ void UEventSequenceDA::ParseEventsToDisplayName(TArray<FInstancedStruct>& Events
 	
 	for (auto& Event : Events)
     {
-    	FString EventTitle;
-		if (Event.GetScriptStruct()->IsChildOf(FBaseSequenceEvent::StaticStruct()))
+    	FString EventTitleString;
+		if (FBaseSequenceEvent* DestEvent = Event.GetMutablePtr<FBaseSequenceEvent>())
 		{
-			if (const FBaseSequenceEvent* SourceEvent = Event.GetPtr<FBaseSequenceEvent>())
-			{
-				EventTitle = SourceEvent->GetDisplayName();
-			}
+			EventTitleString = DestEvent->GetDisplayName();
 		}
+		
+		PushDisplayTitle(EventTitleString);
 
-    	if (!EventTitle.IsEmpty())
-    	{
-    		FString FormattedNum = FString::Printf(TEXT("%03d"), CurNum);
-    		DisplayName += "\n" + FormattedNum + " " +EventTitle;
-    		CurNum++;
-    	}
-
+		// if (F_SequenceEvent_GOTO* SourceEvent_GOTO = Event.GetMutablePtr<F_SequenceEvent_GOTO>())
+		// {
+		// 	
+		// }
+		
 		if (F_SequenceEvent_IF* SourceEvent_IF = Event.GetMutablePtr<F_SequenceEvent_IF>())
 		{
 			SourceEvent_IF->TrueEventsStartIndex = CurNum;
-			SourceEvent_IF->FalseEventsStartIndex = CurNum + FBaseSequenceEvent::GetEventListEventsCount(SourceEvent_IF->TrueEvents);
-
-			EventTitle = SourceEvent_IF->GetDisplayName();
+			SourceEvent_IF->FalseEventsStartIndex = CurNum + FBaseSequenceEvent::GetEventListEventsCount(SourceEvent_IF->TrueEvents) + 1;
+			SourceEvent_IF->EndIndex = CurNum + FBaseSequenceEvent::GetEventListEventsCount(SourceEvent_IF->TrueEvents) +
+												FBaseSequenceEvent::GetEventListEventsCount(SourceEvent_IF->FalseEvents) + 1;
 			
 			if (!SourceEvent_IF->TrueEvents.IsEmpty())
 			{
 				ParseEventsToDisplayName(SourceEvent_IF->TrueEvents);
 			}
+
+			PushDisplayTitle(F_SequenceEvent_GOTO(SourceEvent_IF->EndIndex).GetDisplayName());
+			
 			if (!SourceEvent_IF->FalseEvents.IsEmpty())
 			{
 				ParseEventsToDisplayName(SourceEvent_IF->FalseEvents);
 			}
 		}
 		
+		if (F_SequenceEvent_LOOP* SourceEvent_LOOP = Event.GetMutablePtr<F_SequenceEvent_LOOP>())
+		{
+			SourceEvent_LOOP->State.LoopStartIndex = CurNum;
+			SourceEvent_LOOP->State.LoopEndIndex = CurNum + FBaseSequenceEvent::GetEventListEventsCount(SourceEvent_LOOP->LoopEvents);
+		}
+
 		if (FNestedSequenceEvent* DestEvent = Event.GetMutablePtr<FNestedSequenceEvent>())
 		{
 			ParseEventsToDisplayName(DestEvent->NestedEvents);

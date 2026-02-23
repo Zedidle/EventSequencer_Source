@@ -38,11 +38,14 @@ struct F_SequenceEvent_LOOP: public FBaseSequenceEvent
 	}
 	virtual FString GetDisplayName() const override
 	{
-		return TEXT("LOOP");
+		FString StartIndex = FString::Printf(TEXT("%03d"), State.LoopStartIndex);
+		FString EndIndex = FString::Printf(TEXT("%03d"), State.LoopEndIndex);
+		
+		return "LOOP [Condition: " + Condition.GetDisplayString()  + " ] [From " + StartIndex + " To " + EndIndex + "]";
 	}
 	virtual int GetEventsCount() override
 	{
-		return 1;
+		return Super::GetEventsCount() + GetEventListEventsCount(LoopEvents);
 	}
 
 	// 循环条件（可选，为空表示无条件循环）
