@@ -45,7 +45,6 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
                 *DEvent = *SourceEvent_LABEL;
                 EventSequenceRunning->AddLabel(DEvent->LabelName);
                 EventSequenceRunning->AddEvent(RuntimeEventStruct);
-                ParseEventSequence(EventSequenceRunning, DEvent->NestedEvents);
             }
         }
         else if (const F_SequenceEvent_GOTO* SourceEvent_GOTO = SourceEventStruct.GetPtr<F_SequenceEvent_GOTO>())
@@ -54,7 +53,6 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
             {
                 *DEvent = *SourceEvent_GOTO;
                 EventSequenceRunning->AddEvent(RuntimeEventStruct);
-                ParseEventSequence(EventSequenceRunning, DEvent->NestedEvents);
             }
         }
         else if (const F_SequenceEvent_IF* SourceEvent_IF = SourceEventStruct.GetPtr<F_SequenceEvent_IF>())
@@ -73,7 +71,6 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
                 ParseEventSequence(EventSequenceRunning, DEvent->FalseEvents);
 
                 DEvent->EndIndex = EventSequenceRunning->GetEventsNum();
-                ParseEventSequence(EventSequenceRunning, DEvent->NestedEvents);
             }
         }
         else if (const F_SequenceEvent_SWITCH* SourceEvent_SWITCH = SourceEventStruct.GetPtr<F_SequenceEvent_SWITCH>())
@@ -90,7 +87,6 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
                 }
 
                 DEvent->EndIndex = EventSequenceRunning->GetEventsNum();
-                ParseEventSequence(EventSequenceRunning, DEvent->NestedEvents);
             }
         }
         else if (const F_SequenceEvent_LOOP* SourceEvent_LOOP = SourceEventStruct.GetPtr<F_SequenceEvent_LOOP>())
@@ -103,7 +99,6 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
                 ParseEventSequence(EventSequenceRunning, DEvent->LoopEvents);
 
                 DEvent->State.LoopEndIndex = EventSequenceRunning->GetEventsNum();
-                ParseEventSequence(EventSequenceRunning, DEvent->NestedEvents);
             }
         }
         else if (const F_SequenceEvent_BREAK* SourceEvent_BREAK = SourceEventStruct.GetPtr<F_SequenceEvent_BREAK>())
@@ -112,7 +107,6 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
             {
                 *DEvent = *SourceEvent_BREAK;
                 EventSequenceRunning->AddEvent(RuntimeEventStruct);
-                ParseEventSequence(EventSequenceRunning, DEvent->NestedEvents);
             }
         }
         else if (const F_SequenceEvent_RETURN* SourceEvent_RETURN = SourceEventStruct.GetPtr<F_SequenceEvent_RETURN>())
@@ -121,13 +115,12 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
             {
                 *DEvent = *SourceEvent_RETURN;
                 EventSequenceRunning->AddEvent(RuntimeEventStruct);
-                ParseEventSequence(EventSequenceRunning, DEvent->NestedEvents);
             }
         }
         // 具体事件
         else
         {
-            if (auto* DestEvent = RuntimeEventStruct.GetMutablePtr<FBaseSequenceEvent>())
+            if (auto* DestEvent = RuntimeEventStruct.GetMutablePtr<FNestedSequenceEvent>())
             {
                 CopySequenceEventProperty<FMoveSequenceEvent>(SourceEventStruct, RuntimeEventStruct) || 
                 CopySequenceEventProperty<FDialogSequenceEvent>(SourceEventStruct, RuntimeEventStruct) ||

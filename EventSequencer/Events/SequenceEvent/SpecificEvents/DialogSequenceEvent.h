@@ -30,7 +30,7 @@ struct FDialogSequenceProperty
 
 // 对话事件
 USTRUCT(BlueprintType)
-struct FDialogSequenceEvent : public FBaseSequenceEvent
+struct FDialogSequenceEvent : public FNestedSequenceEvent
 {
 	GENERATED_BODY()
     

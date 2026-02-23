@@ -22,7 +22,7 @@ struct FMoveSequenceProperty
 // 具体事件
 // 移动事件
 USTRUCT(BlueprintType)
-struct FMoveSequenceEvent : public FBaseSequenceEvent
+struct FMoveSequenceEvent : public FNestedSequenceEvent
 {
 	GENERATED_BODY()
     

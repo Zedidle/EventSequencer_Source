@@ -65,7 +65,7 @@ void UEventSequenceDA::ParseEventsToDisplayName(TArray<FInstancedStruct>& Events
 			}
 		}
 		
-		if (FBaseSequenceEvent* DestEvent = Event.GetMutablePtr<FBaseSequenceEvent>())
+		if (FNestedSequenceEvent* DestEvent = Event.GetMutablePtr<FNestedSequenceEvent>())
 		{
 			ParseEventsToDisplayName(DestEvent->NestedEvents);
 		}
@@ -114,8 +114,10 @@ void UEventSequenceDA::PostLoad()
 	Super::PostLoad();
 	UE_LOG(LogTemp, Warning , TEXT("UEventSequenceDA PostLoad EventSequenceNum: %d"), EventSequence.Num());
 
-	ResetDisplayName();
-
+	FCoreDelegates::OnEndFrame.AddLambda([this]
+	{
+		ResetDisplayName();
+	});
 }
 
 void UEventSequenceDA::UpdateAssetBundleData()

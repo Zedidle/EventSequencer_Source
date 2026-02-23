@@ -18,7 +18,7 @@ struct FChoiceSequenceProperty
 };
 
 USTRUCT(BlueprintType)
-struct FChoiceSequenceEvent : public FBaseSequenceEvent
+struct FChoiceSequenceEvent : public FNestedSequenceEvent
 {
 	GENERATED_BODY()
 	

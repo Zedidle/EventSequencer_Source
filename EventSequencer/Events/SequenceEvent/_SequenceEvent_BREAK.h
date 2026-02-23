@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "CommonStructs.h"
+#include "_SequenceEvent_LOOP.h"
 #include "StructUtils/PropertyBag.h"
 #include "_SequenceEvent_BREAK.generated.h"
 
@@ -13,12 +14,15 @@ struct F_SequenceEvent_BREAK : public FBaseSequenceEvent
 
 	virtual FString GetDisplayName() const override
 	{
-		return TEXT("BREAK");
+		// 显示为 跳出到循环的结尾。如果没有处于循环中，则跳过直接执行下一条。
+		return "BREAK [Goto " + FString::Printf(TEXT("%03d"), InLoopEndIndex) + "]";
 	}
 	virtual int GetEventsCount() override
 	{
 		return 1;
 	}
+
+	int InLoopEndIndex = -1;
 	
 	// 循环退出的条件
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loop")

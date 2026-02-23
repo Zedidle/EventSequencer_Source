@@ -16,7 +16,7 @@ struct FWaitSequenceProperty
 
 // 等待事件
 USTRUCT(BlueprintType)
-struct FWaitSequenceEvent : public FBaseSequenceEvent
+struct FWaitSequenceEvent : public FNestedSequenceEvent
 {
 	GENERATED_BODY()
     

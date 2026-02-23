@@ -102,7 +102,7 @@ enum class EEventState : uint8
 };
  
 // 事件基类结构体
-USTRUCT(BlueprintType, meta = (TitleProperty = "Title", DisplayName = "——————————————————"))
+USTRUCT(BlueprintType, meta = (DisplayName = "——————————————————"))
 struct FBaseSequenceEvent
 {
 	GENERATED_BODY()
@@ -111,7 +111,7 @@ struct FBaseSequenceEvent
 	virtual ~FBaseSequenceEvent() = default;
 
 	virtual FString GetDisplayName() const { return ""; }
-	virtual int GetEventsCount() { return GetEventListEventsCount(NestedEvents); }
+	virtual int GetEventsCount() { return 0; }
 	static int GetEventListEventsCount(TArray<FInstancedStruct>& Events)
 	{
 		if (Events.IsEmpty()) return 0;
@@ -132,9 +132,6 @@ struct FBaseSequenceEvent
 
 	AActor* GetContext() { return ContextActor.Get(); }
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Nested Events", meta = (BaseStruct = "/Script/EventSequencer.BaseSequenceEvent"))
-	TArray<FInstancedStruct> NestedEvents;
-	
 	// 事件生命周期方法
 	virtual void OnEnter() { State = EEventState::Active; }
 	virtual float Tick(float DeltaTime, float PreRemainTime = 0) { return 0; }
@@ -154,6 +151,17 @@ protected:
 
 
 
+// 事件基类结构体
+USTRUCT(BlueprintType)
+struct FNestedSequenceEvent : public FBaseSequenceEvent
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Nested Events", meta = (BaseStruct = "/Script/EventSequencer.BaseSequenceEvent"))
+	TArray<FInstancedStruct> NestedEvents;
 
+	virtual int GetEventsCount() { return GetEventListEventsCount(NestedEvents); }
+	
+};
 
 
