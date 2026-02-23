@@ -40,7 +40,8 @@ struct F_SequenceEvent_SWITCH : public FBaseSequenceEvent
 	}
 	virtual int GetEventsCount() override
 	{
-		return 1;
+		// SwitchCase 的处理包含哪些搭配 IF / GOTO 的优化？
+		return Super::GetEventsCount();
 	}
 
 	int EndIndex;

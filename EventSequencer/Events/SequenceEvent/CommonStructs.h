@@ -111,7 +111,7 @@ struct FBaseSequenceEvent
 	virtual ~FBaseSequenceEvent() = default;
 
 	virtual FString GetDisplayName() const { return ""; }
-	virtual int GetEventsCount() { return 0; }
+	virtual int GetEventsCount() { return 1; }
 	static int GetEventListEventsCount(TArray<FInstancedStruct>& Events)
 	{
 		if (Events.IsEmpty()) return 0;

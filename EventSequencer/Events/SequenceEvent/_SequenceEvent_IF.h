@@ -23,6 +23,8 @@ struct F_SequenceEvent_IF : public FBaseSequenceEvent
 	{
 		int TrueEventsCount = GetEventListEventsCount(TrueEvents);
 		int FalseEventsCount = GetEventListEventsCount(FalseEvents);
+		
+		// 1 包括了内部构造的GOTO
 		return Super::GetEventsCount() + TrueEventsCount + FalseEventsCount + 1;
 	}
 	

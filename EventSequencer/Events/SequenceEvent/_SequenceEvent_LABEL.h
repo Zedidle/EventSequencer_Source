@@ -17,7 +17,7 @@ struct F_SequenceEvent_LABEL : public FBaseSequenceEvent
 	
 	virtual int GetEventsCount() override
 	{
-		return 1;
+		return Super::GetEventsCount();
 	}
 	
 	// 标签名称

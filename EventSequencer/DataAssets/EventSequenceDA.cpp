@@ -78,6 +78,8 @@ void UEventSequenceDA::ParseEventsToDisplayName(TArray<FInstancedStruct>& Events
 		{
 			SourceEvent_LOOP->State.LoopStartIndex = CurNum;
 			SourceEvent_LOOP->State.LoopEndIndex = CurNum + FBaseSequenceEvent::GetEventListEventsCount(SourceEvent_LOOP->LoopEvents);
+			ParseEventsToDisplayName(SourceEvent_LOOP->LoopEvents);
+			PushDisplayTitle(F_SequenceEvent_GOTO(SourceEvent_LOOP->State.LoopStartIndex).GetDisplayName());
 		}
 
 		if (FNestedSequenceEvent* DestEvent = Event.GetMutablePtr<FNestedSequenceEvent>())

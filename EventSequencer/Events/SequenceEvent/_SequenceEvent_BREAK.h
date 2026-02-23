@@ -19,7 +19,7 @@ struct F_SequenceEvent_BREAK : public FBaseSequenceEvent
 	}
 	virtual int GetEventsCount() override
 	{
-		return 1;
+		return Super::GetEventsCount();
 	}
 
 	int InLoopEndIndex = -1;

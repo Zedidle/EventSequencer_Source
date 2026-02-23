@@ -16,7 +16,7 @@ struct F_SequenceEvent_RETURN : public FBaseSequenceEvent
 	}
 	virtual int GetEventsCount() override
 	{
-		return 1;
+		return Super::GetEventsCount();
 	}
 	
 	// 返回值（可选）

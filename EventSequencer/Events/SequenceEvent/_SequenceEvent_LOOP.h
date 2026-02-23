@@ -40,8 +40,9 @@ struct F_SequenceEvent_LOOP: public FBaseSequenceEvent
 	{
 		FString StartIndex = FString::Printf(TEXT("%03d"), State.LoopStartIndex);
 		FString EndIndex = FString::Printf(TEXT("%03d"), State.LoopEndIndex);
+		FString MaxLoopTimesString = FString::Printf(TEXT("%d"), State.MaxLoopTimes);
 		
-		return "LOOP [Condition: " + Condition.GetDisplayString()  + " ] [From " + StartIndex + " To " + EndIndex + "]";
+		return "LOOP [Times: " + MaxLoopTimesString + "] [Condition: " + Condition.GetDisplayString()  + " ] [From " + StartIndex + " To " + EndIndex + "]";
 	}
 	virtual int GetEventsCount() override
 	{

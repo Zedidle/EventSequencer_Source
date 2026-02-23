@@ -18,13 +18,13 @@ struct F_SequenceEvent_GOTO : public FBaseSequenceEvent
 		{
 			return "GOTO " + TargetIndexString;
 		}
-		
-		return "GOTO [Label " + TargetLabel.ToString() + " | Index " + TargetIndexString + "]";
+
+		return "GOTO " + TargetIndexString + " [Label " + TargetLabel.ToString() + "]";
 		
 	}
 	virtual int GetEventsCount() override
 	{
-		return 1;
+		return Super::GetEventsCount();
 	}
 
 	int TargetIndex = -1;
