@@ -14,7 +14,11 @@ struct F_SequenceEvent_LABEL : public FBaseSequenceEvent
 	{
 		return "LABEL [" + LabelName.ToString() + "]";
 	}
-
+	
+	virtual int GetEventsCount() override
+	{
+		return 1;
+	}
 	
 	// 标签名称
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Label")

@@ -18,6 +18,13 @@ struct F_SequenceEvent_IF : public FBaseSequenceEvent
 		
 		return "IF [Condition: " + Condition.GetDisplayString()  + " ] [True: " + TrueStartIndex + ", False: " + FalseStartIndex + "]";
 	}
+
+	virtual int GetEventsCount() override
+	{
+		int TrueEventsCount = GetEventListEventsCount(TrueEvents);
+		int FalseEventsCount = GetEventListEventsCount(FalseEvents);
+		return Super::GetEventsCount() + TrueEventsCount + FalseEventsCount + 1;
+	}
 	
 	// True事件开始下标
 	int TrueEventsStartIndex = -1;

@@ -7,6 +7,11 @@ FString FWaitSequenceEvent::GetDisplayName() const
 	return Super::GetDisplayName() + FString::Printf(TEXT("Wait For: %f"), Property.Duration);
 }
 
+int FWaitSequenceEvent::GetEventsCount()
+{
+	return FBaseSequenceEvent::GetEventsCount();
+}
+
 void FWaitSequenceEvent::OnEnter()
 {
 	FBaseSequenceEvent::OnEnter();

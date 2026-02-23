@@ -6,6 +6,11 @@ FString FChoiceSequenceEvent::GetDisplayName() const
 	return Super::GetDisplayName() + FString::Printf(TEXT("Choice Choices Num: %d"), Property.Choices.Num());
 }
 
+int FChoiceSequenceEvent::GetEventsCount()
+{
+	return FBaseSequenceEvent::GetEventsCount();
+}
+
 void FChoiceSequenceEvent::OnEnter()
 {
 	FBaseSequenceEvent::OnEnter();

@@ -129,38 +129,10 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
         {
             if (auto* DestEvent = RuntimeEventStruct.GetMutablePtr<FBaseSequenceEvent>())
             {
-                // 移动事件
-                if (const FMoveSequenceEvent* SourceEvent_Move = SourceEventStruct.GetPtr<FMoveSequenceEvent>())
-                {
-                    if (FMoveSequenceEvent* DEvent = RuntimeEventStruct.GetMutablePtr<FMoveSequenceEvent>())
-                    {
-                        DEvent->Property = SourceEvent_Move->Property;
-                    }
-                }
-                // 对话事件
-                else if (const FDialogSequenceEvent* SourceEvent = SourceEventStruct.GetPtr<FDialogSequenceEvent>())
-                {
-                    if (FDialogSequenceEvent* DEvent = RuntimeEventStruct.GetMutablePtr<FDialogSequenceEvent>())
-                    {
-                        DEvent->Property = SourceEvent->Property;
-                    }
-                }
-                // 延迟等待事件
-                else if (const FWaitSequenceEvent* SourceEvent_Wait = SourceEventStruct.GetPtr<FWaitSequenceEvent>())
-                {
-                    if (FWaitSequenceEvent* DEvent = RuntimeEventStruct.GetMutablePtr<FWaitSequenceEvent>())
-                    {
-                        DEvent->Property = SourceEvent_Wait->Property;
-                    }
-                }
-                // 选择事件
-                else if (const FChoiceSequenceEvent* SourceEvent_Choice = SourceEventStruct.GetPtr<FChoiceSequenceEvent>())
-                {
-                    if (FChoiceSequenceEvent* DEvent = RuntimeEventStruct.GetMutablePtr<FChoiceSequenceEvent>())
-                    {
-                        DEvent->Property = SourceEvent_Choice->Property;
-                    }
-                }
+                CopySequenceEventProperty<FMoveSequenceEvent>(SourceEventStruct, RuntimeEventStruct) || 
+                CopySequenceEventProperty<FDialogSequenceEvent>(SourceEventStruct, RuntimeEventStruct) ||
+                CopySequenceEventProperty<FWaitSequenceEvent>(SourceEventStruct, RuntimeEventStruct) ||
+                CopySequenceEventProperty<FChoiceSequenceEvent>(SourceEventStruct, RuntimeEventStruct);
                 
                 DestEvent->SetState(EEventState::Pending);
                 EventSequenceRunning->AddEvent(RuntimeEventStruct);

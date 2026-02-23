@@ -6,6 +6,11 @@ FString FDialogSequenceEvent::GetDisplayName() const
 	return Super::GetDisplayName() + FString::Printf(TEXT("Dialog Num: %d"), Property.DialogLines.Num());
 }
 
+int FDialogSequenceEvent::GetEventsCount()
+{
+	return FBaseSequenceEvent::GetEventsCount();
+}
+
 void FDialogSequenceEvent::OnEnter()
 {
 	FBaseSequenceEvent::OnEnter();

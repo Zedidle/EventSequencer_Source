@@ -38,6 +38,10 @@ struct F_SequenceEvent_SWITCH : public FBaseSequenceEvent
 	{
 		return TEXT("SWITCH");
 	}
+	virtual int GetEventsCount() override
+	{
+		return 1;
+	}
 
 	int EndIndex;
 	

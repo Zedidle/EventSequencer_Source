@@ -7,6 +7,11 @@ FString FMoveSequenceEvent::GetDisplayName() const
 	return Super::GetDisplayName() + FString::Printf(TEXT("Move ApproachDistance: %f"), Property.ApproachDistance);
 }
 
+int FMoveSequenceEvent::GetEventsCount()
+{
+	return FBaseSequenceEvent::GetEventsCount();
+}
+
 void FMoveSequenceEvent::OnEnter()
 {
 	FBaseSequenceEvent::OnEnter();

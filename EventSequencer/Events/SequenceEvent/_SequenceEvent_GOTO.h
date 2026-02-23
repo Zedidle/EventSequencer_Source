@@ -14,7 +14,10 @@ struct F_SequenceEvent_GOTO : public FBaseSequenceEvent
 	{
 		return "GOTO [Label " + TargetLabel.ToString() + "]";
 	}
-	
+	virtual int GetEventsCount() override
+	{
+		return 1;
+	}
 	// 目标标签
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Goto")
 	FName TargetLabel;

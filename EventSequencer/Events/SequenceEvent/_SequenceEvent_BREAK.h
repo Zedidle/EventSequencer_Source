@@ -15,6 +15,10 @@ struct F_SequenceEvent_BREAK : public FBaseSequenceEvent
 	{
 		return TEXT("BREAK");
 	}
+	virtual int GetEventsCount() override
+	{
+		return 1;
+	}
 	
 	// 循环退出的条件
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loop")

@@ -36,6 +36,7 @@ struct FDialogSequenceEvent : public FBaseSequenceEvent
     
 	FDialogSequenceEvent() {}
 	virtual FString GetDisplayName() const override;
+	virtual int GetEventsCount() override;
 	virtual void OnEnter() override;
 	virtual bool Execute(int Index = 0) override;
 	virtual float Tick(float DeltaTime, float PreRemainTime) override;

@@ -14,7 +14,10 @@ struct F_SequenceEvent_RETURN : public FBaseSequenceEvent
 	{
 		return TEXT("RETURN");
 	}
-
+	virtual int GetEventsCount() override
+	{
+		return 1;
+	}
 	
 	// 返回值（可选）
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Return")

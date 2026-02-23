@@ -16,8 +16,15 @@
 
 
 
-#define TRY_GET_EVENT_TITLE(Type) \
-	if (EventTitle.IsEmpty()) EventTitle = GetSequenceEventTitle<Type>(Event);
+int UEventSequenceDA::GetEventSequenceLengthWithNested(TArray<FInstancedStruct>& Events)
+{
+	if (Events.IsEmpty()) return 0;
+
+	int Result = 0;
+	
+	// int EventSequenceNum = GetEventSequenceNumWithNested(Events);
+	return Result;
+}
 
 void UEventSequenceDA::ParseEventsToDisplayName(TArray<FInstancedStruct>& Events)
 {
@@ -26,18 +33,13 @@ void UEventSequenceDA::ParseEventsToDisplayName(TArray<FInstancedStruct>& Events
 	for (auto& Event : Events)
     {
     	FString EventTitle;
-    	// TRY_GET_EVENT_TITLE(F_SequenceEvent_BREAK)
-    	// TRY_GET_EVENT_TITLE(F_SequenceEvent_GOTO)
-    	// TRY_GET_EVENT_TITLE(F_SequenceEvent_LOOP)
-    	// TRY_GET_EVENT_TITLE(F_SequenceEvent_RETURN)
-    	// TRY_GET_EVENT_TITLE(F_SequenceEvent_SWITCH)
-		
-		TRY_GET_EVENT_TITLE(F_SequenceEvent_LABEL)
-
-    	TRY_GET_EVENT_TITLE(FMoveSequenceEvent)
-    	TRY_GET_EVENT_TITLE(FDialogSequenceEvent)
-    	TRY_GET_EVENT_TITLE(FWaitSequenceEvent)
-    	TRY_GET_EVENT_TITLE(FChoiceSequenceEvent)
+		if (Event.GetScriptStruct()->IsChildOf(FBaseSequenceEvent::StaticStruct()))
+		{
+			if (const FBaseSequenceEvent* SourceEvent = Event.GetPtr<FBaseSequenceEvent>())
+			{
+				EventTitle = SourceEvent->GetDisplayName();
+			}
+		}
 
     	if (!EventTitle.IsEmpty())
     	{
@@ -48,17 +50,17 @@ void UEventSequenceDA::ParseEventsToDisplayName(TArray<FInstancedStruct>& Events
 
 		if (F_SequenceEvent_IF* SourceEvent_IF = Event.GetMutablePtr<F_SequenceEvent_IF>())
 		{
-			// 全段设置应该统一
-    		TRY_GET_EVENT_TITLE(F_SequenceEvent_IF)
+			SourceEvent_IF->TrueEventsStartIndex = CurNum;
+			SourceEvent_IF->FalseEventsStartIndex = 1 + FBaseSequenceEvent::GetEventListEventsCount(SourceEvent_IF->TrueEvents);
+
+			EventTitle = SourceEvent_IF->GetDisplayName();
 			
 			if (!SourceEvent_IF->TrueEvents.IsEmpty())
 			{
-				SourceEvent_IF->TrueEventsStartIndex = CurNum;
 				ParseEventsToDisplayName(SourceEvent_IF->TrueEvents);
 			}
 			if (!SourceEvent_IF->FalseEvents.IsEmpty())
 			{
-				SourceEvent_IF->FalseEventsStartIndex = CurNum;
 				ParseEventsToDisplayName(SourceEvent_IF->FalseEvents);
 			}
 		}

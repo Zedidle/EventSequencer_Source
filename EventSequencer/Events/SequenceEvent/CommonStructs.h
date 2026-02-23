@@ -111,6 +111,21 @@ struct FBaseSequenceEvent
 	virtual ~FBaseSequenceEvent() = default;
 
 	virtual FString GetDisplayName() const { return ""; }
+	virtual int GetEventsCount() { return GetEventListEventsCount(NestedEvents); }
+	static int GetEventListEventsCount(TArray<FInstancedStruct>& Events)
+	{
+		if (Events.IsEmpty()) return 0;
+		
+		int Result = 0;
+		for (auto& Event : Events)
+		{
+			if (FBaseSequenceEvent* EventPtr = Event.GetMutablePtr<FBaseSequenceEvent>())
+			{
+				Result += EventPtr->GetEventsCount();		
+			}
+		}
+		return Events.Num();
+	}
 	
 	UPROPERTY()
 	TWeakObjectPtr<AActor> ContextActor;
