@@ -36,17 +36,28 @@ struct F_SequenceEvent_SWITCH : public FBaseSequenceEvent
 
 	virtual FString GetDisplayName() const override
 	{
-		return TEXT("SWITCH");
+		FString StartIndexString = FString::Printf(TEXT("%03d"), StartIndex);
+		FString EndIndexString = FString::Printf(TEXT("%03d"), EndIndex);
+
+		return "SWITCH " + PropertyName.ToString() + " [From " + StartIndexString + " To " + EndIndexString + "]";
 	}
 	virtual int GetEventsCount() override
 	{
+		int R = 0;
+		for (FEventCase& Case : EventCases)
+		{
+			R += GetEventListEventsCount(Case.CaseEvents);
+		}
+		
 		// SwitchCase 的处理包含哪些搭配 IF / GOTO 的优化？
-		return Super::GetEventsCount();
+		return Super::GetEventsCount() + R;
 	}
 
-	int EndIndex;
+	int StartIndex = -1;
+	int EndIndex = -1;
 	
 	// Value To Events;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SequenceEvent | SWITCH")
 	TArray<FEventCase> EventCases;
 	
 	// 条件属性名

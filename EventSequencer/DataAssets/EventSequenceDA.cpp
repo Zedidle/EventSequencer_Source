@@ -48,15 +48,6 @@ void UEventSequenceDA::ParseEventsToDisplayName(TArray<FInstancedStruct>& Events
 		}
 		
 		PushDisplayTitle(EventTitleString);
-
-		if (F_SequenceEvent_BREAK* SourceEvent_BREAK = Event.GetMutablePtr<F_SequenceEvent_BREAK>())
-		{
-			if (!ParseLoopStateStack.IsEmpty())
-			{
-				const FEventState_LOOP& State_LOOP = ParseLoopStateStack.Last();
-				SourceEvent_BREAK->InLoopEndIndex = State_LOOP.LoopEndIndex + 1;
-			}
-		}
 		
 		if (F_SequenceEvent_IF* SourceEvent_IF = Event.GetMutablePtr<F_SequenceEvent_IF>())
 		{
@@ -77,7 +68,17 @@ void UEventSequenceDA::ParseEventsToDisplayName(TArray<FInstancedStruct>& Events
 				ParseEventsToDisplayName(SourceEvent_IF->FalseEvents);
 			}
 		}
-		
+
+		if (F_SequenceEvent_SWITCH* SourceEvent_SWITCH = Event.GetMutablePtr<F_SequenceEvent_SWITCH>())
+		{
+			SourceEvent_SWITCH->StartIndex = CurNum;
+			SourceEvent_SWITCH->EndIndex = CurNum + SourceEvent_SWITCH->GetEventsCount() - 2;
+			for (FEventCase& Case : SourceEvent_SWITCH->EventCases)
+			{
+				ParseEventsToDisplayName(Case.CaseEvents);
+			}
+		}
+
 		if (F_SequenceEvent_LOOP* SourceEvent_LOOP = Event.GetMutablePtr<F_SequenceEvent_LOOP>())
 		{
 			SourceEvent_LOOP->State.LoopStartIndex = CurNum;
@@ -88,7 +89,16 @@ void UEventSequenceDA::ParseEventsToDisplayName(TArray<FInstancedStruct>& Events
 			PushDisplayTitle(F_SequenceEvent_GOTO(SourceEvent_LOOP->State.LoopStartIndex).GetDisplayName());
 			ParseLoopStateStack.Pop();
 		}
-
+		
+		if (F_SequenceEvent_BREAK* SourceEvent_BREAK = Event.GetMutablePtr<F_SequenceEvent_BREAK>())
+		{
+			if (!ParseLoopStateStack.IsEmpty())
+			{
+				const FEventState_LOOP& State_LOOP = ParseLoopStateStack.Last();
+				SourceEvent_BREAK->InLoopEndIndex = State_LOOP.LoopEndIndex + 1;
+			}
+		}
+		
 		if (FNestedSequenceEvent* DestEvent = Event.GetMutablePtr<FNestedSequenceEvent>())
 		{
 			ParseEventsToDisplayName(DestEvent->NestedEvents);
