@@ -19,7 +19,7 @@ struct FEventCase
 	// 条件为真时执行的事件
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SequenceEvent | SwitchCase Branch",
 		meta = (BaseStruct = "/Script/EventSequencer.BaseSequenceEvent"))
-	TArray<FInstancedStruct> CaseEvents;
+	TArray<FEventWrapper> CaseEvents;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SequenceEvent | SWITCH")
 	bool AutoBreak = true;
@@ -57,7 +57,7 @@ struct F_SequenceEvent_SWITCH : public FBaseSequenceEvent
 	int EndIndex = -1;
 	
 	// Value To Events;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SequenceEvent | SWITCH")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SequenceEvent | SWITCH",  meta = (TitleProperty = "ComparisonValue"))
 	TArray<FEventCase> EventCases;
 	
 	// 条件属性名

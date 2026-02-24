@@ -13,6 +13,9 @@
 
 struct FBaseSequenceEvent;
 
+
+
+
 UCLASS(BlueprintType)
 class EVENTSEQUENCER_API UEventSequenceDA : public UPrimaryDataAsset
 {
@@ -23,7 +26,7 @@ class EVENTSEQUENCER_API UEventSequenceDA : public UPrimaryDataAsset
 	
 	void PushDisplayTitle(const FString& Title);
 	int GetEventSequenceLengthWithNested(TArray<FInstancedStruct>& Events);
-	void ParseEventsToDisplayName(TArray<FInstancedStruct>& Events);
+	void ParseEventsToDisplayName(TArray<FEventWrapper>& _EventWrappers);
 	void ResetDisplayName();
 
 	int CurNum = 0;
@@ -51,21 +54,16 @@ public:
 	FInstancedPropertyBag PropertyBagInput;
 	void SetPropertyBagInput(const FInstancedPropertyBag& PropertyBag);
 	
-	// 事件序列数组 - 使用FInstancedStruct支持多态事件
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ShowOnlyInnerProperties, BaseStruct = "/Script/EventSequencer.BaseSequenceEvent"))
-	TArray<FInstancedStruct> EventSequence;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (TitleProperty = "{EventTitle}"))
+	TArray<FEventWrapper> EventWrappers;
 	
 	// 通过索引获取事件
 	UFUNCTION(BlueprintCallable, Category = "Event Sequence")
 	bool GetEventAtIndex(int32 Index, FInstancedStruct& OutEvent) const;
 
-	// 添加新事件到序列
-	UFUNCTION()
-	void AddEvent(const FInstancedStruct& NewEvent);
-
 	// 获取序列长度
 	UFUNCTION(BlueprintPure, Category = "Event Sequence")
-	int32 GetSequenceLength() const { return EventSequence.Num(); }
+	int32 GetSequenceLength() const { return EventWrappers.Num(); }
 
 	// 查找特定类型的事件
 	UFUNCTION(BlueprintCallable, Category = "Event Sequence")

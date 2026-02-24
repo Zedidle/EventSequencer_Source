@@ -53,7 +53,7 @@ class EVENTSEQUENCER_API UEventSequenceSystem : public UTickableWorldSubsystem
     UPROPERTY()
     TArray<TWeakObjectPtr<UEventSequenceComponent>> EventSequenceComponents;
 
-    void ParseEventSequence(UEventSequenceRunning* EventSequenceRunning, const TArray<FInstancedStruct>& EventSequence);
+    void ParseEventSequence(UEventSequenceRunning* EventSequenceRunning, const TArray<FEventWrapper>& EventWrappers);
     
 public:
     static UEventSequenceSystem* GetInstance(UWorld* World);

@@ -22,16 +22,16 @@
 class AAIController;
 
 
-void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequenceRunning, const TArray<FInstancedStruct>& EventSequence)
+void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequenceRunning, const TArray<FEventWrapper>& EventWrappers)
 {
     if (!EventSequenceRunning) return;
-    if (EventSequence.IsEmpty()) return;
+    if (EventWrappers.IsEmpty()) return;
     
-    for (int32 i = 0; i < EventSequence.Num(); ++i)
+    for (int32 i = 0; i < EventWrappers.Num(); ++i)
     {
-        if (!EventSequence.IsValidIndex(i)) continue;
+        if (!EventWrappers.IsValidIndex(i)) continue;
 
-        const FInstancedStruct& SourceEventStruct = EventSequence[i];
+        const FInstancedStruct& SourceEventStruct = EventWrappers[i].Event;
         
         // 创建事件的运行时副本
         FInstancedStruct RuntimeEventStruct;
@@ -168,7 +168,7 @@ UEventSequenceRunning* UEventSequenceSystem::CreateEventSequence(UEventSequenceD
     }
     EventSequenceRunning->SetDataAsset(TargetDataAsset);
 
-    ParseEventSequence(EventSequenceRunning, TargetDataAsset->EventSequence);
+    ParseEventSequence(EventSequenceRunning, TargetDataAsset->EventWrappers);
     
     if (Component)
     {

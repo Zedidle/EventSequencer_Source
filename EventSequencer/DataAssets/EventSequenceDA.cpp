@@ -35,21 +35,21 @@ int UEventSequenceDA::GetEventSequenceLengthWithNested(TArray<FInstancedStruct>&
 	return Result;
 }
 
-void UEventSequenceDA::ParseEventsToDisplayName(TArray<FInstancedStruct>& Events)
+void UEventSequenceDA::ParseEventsToDisplayName(TArray<FEventWrapper>& _EventWrappers)
 {
-	if (Events.IsEmpty()) return;
+	if (_EventWrappers.IsEmpty()) return;
 	
-	for (auto& Event : Events)
+	for (auto& EventWrapper : _EventWrappers)
     {
     	FString EventTitleString;
-		if (FBaseSequenceEvent* DestEvent = Event.GetMutablePtr<FBaseSequenceEvent>())
+		if (FBaseSequenceEvent* DestEvent = EventWrapper.Event.GetMutablePtr<FBaseSequenceEvent>())
 		{
 			EventTitleString = DestEvent->GetDisplayName();
 		}
 		
 		PushDisplayTitle(EventTitleString);
 		
-		if (F_SequenceEvent_IF* SourceEvent_IF = Event.GetMutablePtr<F_SequenceEvent_IF>())
+		if (F_SequenceEvent_IF* SourceEvent_IF = EventWrapper.Event.GetMutablePtr<F_SequenceEvent_IF>())
 		{
 			SourceEvent_IF->TrueEventsStartIndex = CurNum;
 			SourceEvent_IF->FalseEventsStartIndex = CurNum + FBaseSequenceEvent::GetEventListEventsCount(SourceEvent_IF->TrueEvents) + 1;
@@ -69,7 +69,7 @@ void UEventSequenceDA::ParseEventsToDisplayName(TArray<FInstancedStruct>& Events
 			}
 		}
 
-		if (F_SequenceEvent_SWITCH* SourceEvent_SWITCH = Event.GetMutablePtr<F_SequenceEvent_SWITCH>())
+		if (F_SequenceEvent_SWITCH* SourceEvent_SWITCH = EventWrapper.Event.GetMutablePtr<F_SequenceEvent_SWITCH>())
 		{
 			SourceEvent_SWITCH->StartIndex = CurNum;
 			SourceEvent_SWITCH->EndIndex = CurNum + SourceEvent_SWITCH->GetEventsCount() - 2;
@@ -79,7 +79,7 @@ void UEventSequenceDA::ParseEventsToDisplayName(TArray<FInstancedStruct>& Events
 			}
 		}
 
-		if (F_SequenceEvent_LOOP* SourceEvent_LOOP = Event.GetMutablePtr<F_SequenceEvent_LOOP>())
+		if (F_SequenceEvent_LOOP* SourceEvent_LOOP = EventWrapper.Event.GetMutablePtr<F_SequenceEvent_LOOP>())
 		{
 			SourceEvent_LOOP->State.LoopStartIndex = CurNum;
 			SourceEvent_LOOP->State.LoopEndIndex = CurNum + FBaseSequenceEvent::GetEventListEventsCount(SourceEvent_LOOP->LoopEvents);
@@ -90,7 +90,7 @@ void UEventSequenceDA::ParseEventsToDisplayName(TArray<FInstancedStruct>& Events
 			ParseLoopStateStack.Pop();
 		}
 		
-		if (F_SequenceEvent_BREAK* SourceEvent_BREAK = Event.GetMutablePtr<F_SequenceEvent_BREAK>())
+		if (F_SequenceEvent_BREAK* SourceEvent_BREAK = EventWrapper.Event.GetMutablePtr<F_SequenceEvent_BREAK>())
 		{
 			if (!ParseLoopStateStack.IsEmpty())
 			{
@@ -99,7 +99,7 @@ void UEventSequenceDA::ParseEventsToDisplayName(TArray<FInstancedStruct>& Events
 			}
 		}
 		
-		if (FNestedSequenceEvent* DestEvent = Event.GetMutablePtr<FNestedSequenceEvent>())
+		if (FNestedSequenceEvent* DestEvent = EventWrapper.Event.GetMutablePtr<FNestedSequenceEvent>())
 		{
 			ParseEventsToDisplayName(DestEvent->NestedEvents);
 		}
@@ -111,12 +111,13 @@ void UEventSequenceDA::ResetDisplayName()
 	CurNum = 0;
 	DisplayName = "";
 
-	ParseEventsToDisplayName(EventSequence);
+	ParseEventsToDisplayName(EventWrappers);
 
 	if (DisplayName.StartsWith(TEXT("\n")))
 	{
 		DisplayName = DisplayName.RightChop(1);
 	}
+
 }
 
 void UEventSequenceDA::Serialize(FStructuredArchiveRecord Record)
@@ -133,20 +134,18 @@ void UEventSequenceDA::PostInitProperties()
 	Super::PostInitProperties();
 	if (GEngine)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, *FString::Printf(TEXT("UEventSequenceDA PostInitProperties EventSequenceNum: %d"), EventSequence.Num()));
+		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, *FString::Printf(TEXT("UEventSequenceDA PostInitProperties EventSequenceNum: %d"), EventWrappers.Num()));
 	}
 }
 
 void UEventSequenceDA::PostEditImport()
 {
 	Super::PostEditImport();
-	UE_LOG(LogTemp, Warning , TEXT("UEventSequenceDA PostEditImport EventSequenceNum: %d"), EventSequence.Num());
 }
 
 void UEventSequenceDA::PostLoad()
 {
 	Super::PostLoad();
-	UE_LOG(LogTemp, Warning , TEXT("UEventSequenceDA PostLoad EventSequenceNum: %d"), EventSequence.Num());
 
 	FCoreDelegates::OnEndFrame.AddLambda([this]
 	{
@@ -157,15 +156,12 @@ void UEventSequenceDA::PostLoad()
 void UEventSequenceDA::UpdateAssetBundleData()
 {
 	Super::UpdateAssetBundleData();
-	UE_LOG(LogTemp, Warning , TEXT("UEventSequenceDA UpdateAssetBundleData EventSequenceNum: %d"), EventSequence.Num());
 	
 }
 
 void UEventSequenceDA::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
-	UE_LOG(LogTemp, Warning , TEXT("UEventSequenceDA PostEditChangeProperty EventSequenceNum: %d"), EventSequence.Num());
-	// ResetDisplayName();
 
 	FCoreDelegates::OnEndFrame.AddLambda([this]
 	{
@@ -182,29 +178,23 @@ void UEventSequenceDA::SetPropertyBagInput(const FInstancedPropertyBag& Property
 
 bool UEventSequenceDA::GetEventAtIndex(int32 Index, FInstancedStruct& OutEvent) const
 {
-	if (EventSequence.IsValidIndex(Index))
+	if (EventWrappers.IsValidIndex(Index))
 	{
-		OutEvent = EventSequence[Index];
+		OutEvent = EventWrappers[Index].Event;
 		return true;
 	}
 	return false;
 }
 
-void UEventSequenceDA::AddEvent(const FInstancedStruct& NewEvent)
-{
-	if (NewEvent.IsValid() && NewEvent.GetPtr<FBaseSequenceEvent>())
-	{
-		EventSequence.Add(NewEvent);
-	}
-}
 
 void UEventSequenceDA::FindEventsByType(const UScriptStruct* EventType,
 	TArray<FInstancedStruct>& OutEvents) const
 {
 	OutEvents.Empty();
     
-	for (const FInstancedStruct& Event : EventSequence)
+	for (const FEventWrapper& EventWrapper : EventWrappers)
 	{
+		const FInstancedStruct& Event = EventWrapper.Event;
 		if (Event.IsValid() && Event.GetScriptStruct()->IsChildOf(EventType))
 		{
 			OutEvents.Add(Event);

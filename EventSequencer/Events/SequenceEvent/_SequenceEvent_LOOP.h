@@ -55,7 +55,7 @@ struct F_SequenceEvent_LOOP: public FBaseSequenceEvent
 	FSequenceCondition Condition;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loop Body", meta = (BaseStruct = "/Script/EventSequencer.BaseSequenceEvent"))
-	TArray<FInstancedStruct> LoopEvents;
+	TArray<FEventWrapper> LoopEvents;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loop Body")
 	FEventState_LOOP State;

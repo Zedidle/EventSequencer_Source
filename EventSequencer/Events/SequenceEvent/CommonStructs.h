@@ -4,11 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "../../UI/ChoiceWidget.h"
-#include "Commandlets/GatherTextFromSourceCommandlet.h"
 #include "UObject/Object.h"
 #include "CommonStructs.generated.h"
 
 
+struct FEventWrapper;
 // 条件操作符枚举
 UENUM(BlueprintType)
 enum class ESequenceConditionOperator : uint8
@@ -84,6 +84,21 @@ struct FSequenceCondition
 	FString ComparisonValue;
 };
 
+USTRUCT(BlueprintType)
+struct FEventWrapper
+{
+	GENERATED_BODY()
+	
+	FEventWrapper(){}
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString EventTitle;
+	
+	// 事件序列数组 - 使用FInstancedStruct支持多态事件
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ShowOnlyInnerProperties, BaseStruct = "/Script/EventSequencer.BaseSequenceEvent"))
+	FInstancedStruct Event;
+	
+};
 
 
 UCLASS()
@@ -112,14 +127,14 @@ struct FBaseSequenceEvent
 
 	virtual FString GetDisplayName() const { return ""; }
 	virtual int GetEventsCount() { return 1; }
-	static int GetEventListEventsCount(TArray<FInstancedStruct>& Events)
+	static int GetEventListEventsCount(TArray<FEventWrapper>& EventWrappers)
 	{
-		if (Events.IsEmpty()) return 0;
+		if (EventWrappers.IsEmpty()) return 0;
 		
 		int Result = 0;
-		for (auto& Event : Events)
+		for (FEventWrapper& EventWrapper : EventWrappers)
 		{
-			if (FBaseSequenceEvent* EventPtr = Event.GetMutablePtr<FBaseSequenceEvent>())
+			if (FBaseSequenceEvent* EventPtr = EventWrapper.Event.GetMutablePtr<FBaseSequenceEvent>())
 			{
 				Result += EventPtr->GetEventsCount();		
 			}
@@ -158,7 +173,7 @@ struct FNestedSequenceEvent : public FBaseSequenceEvent
 	GENERATED_BODY()
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Nested Events", meta = (BaseStruct = "/Script/EventSequencer.BaseSequenceEvent"))
-	TArray<FInstancedStruct> NestedEvents;
+	TArray<FEventWrapper> NestedEvents;
 
 	virtual int GetEventsCount() { return GetEventListEventsCount(NestedEvents); }
 	
