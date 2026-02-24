@@ -34,15 +34,13 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
         const FInstancedStruct& SourceEventStruct = EventWrappers[i].Event;
         
         // 创建事件的运行时副本
-        FInstancedStruct RuntimeEventStruct;
-        RuntimeEventStruct.InitializeAs(SourceEventStruct.GetScriptStruct());
-
+        FInstancedStruct RuntimeEventStruct = SourceEventStruct;
+        
         if (const F_SequenceEvent_LABEL* SourceEvent_LABEL = SourceEventStruct.GetPtr<F_SequenceEvent_LABEL>())
         {
             if (F_SequenceEvent_LABEL* DEvent = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_LABEL>())
             {
-                // 直接赋值可能因为 NestedEvents 嵌套导致性能问题，可以考虑移动语义
-                *DEvent = *SourceEvent_LABEL;
+                *DEvent = *SourceEvent_LABEL; // 应该已经在前面统一拷贝了 FInstancedStruct 的强大之处
                 EventSequenceRunning->AddLabel(DEvent->LabelName);
                 EventSequenceRunning->AddEvent(RuntimeEventStruct);
             }
@@ -122,10 +120,6 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
         {
             if (auto* DestEvent = RuntimeEventStruct.GetMutablePtr<FNestedSequenceEvent>())
             {
-                CopySequenceEventProperty<FMoveSequenceEvent>(SourceEventStruct, RuntimeEventStruct) || 
-                CopySequenceEventProperty<FDialogSequenceEvent>(SourceEventStruct, RuntimeEventStruct) ||
-                CopySequenceEventProperty<FWaitSequenceEvent>(SourceEventStruct, RuntimeEventStruct) ||
-                CopySequenceEventProperty<FChoiceSequenceEvent>(SourceEventStruct, RuntimeEventStruct);
                 
                 DestEvent->SetState(EEventState::Pending);
                 EventSequenceRunning->AddEvent(RuntimeEventStruct);
@@ -169,6 +163,14 @@ UEventSequenceRunning* UEventSequenceSystem::CreateEventSequence(UEventSequenceD
     EventSequenceRunning->SetDataAsset(TargetDataAsset);
 
     ParseEventSequence(EventSequenceRunning, TargetDataAsset->EventWrappers);
+    
+    for (FInstancedStruct& EventStruct : EventSequenceRunning->EventQueue)
+    {
+        if (const FBaseSequenceEvent* Event = EventStruct.GetPtr<FBaseSequenceEvent>())
+        {
+            UE_LOG(LogTemp, Log, TEXT("EventQueue: %s"), *Event->GetDisplayName());
+        }
+    }
     
     if (Component)
     {

@@ -172,7 +172,8 @@ struct FNestedSequenceEvent : public FBaseSequenceEvent
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Nested Events", meta = (BaseStruct = "/Script/EventSequencer.BaseSequenceEvent"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Nested Events", 
+		meta = (BaseStruct = "/Script/EventSequencer.BaseSequenceEvent", TitleProperty = "{EventTitle}"))
 	TArray<FEventWrapper> NestedEvents;
 
 	virtual int GetEventsCount() { return GetEventListEventsCount(NestedEvents); }

@@ -175,10 +175,6 @@ protected:
     UPROPERTY()
     UEventSequenceDA* SequenceDA = nullptr;
     
-    // 运行时属性包
-    // UPROPERTY()
-    // UPropertyBagWrapper* PropertyBagRuntime = nullptr;
-    
     // 运行时事件序列
     TArray<FInstancedStruct> EventSequenceRuntime;
     

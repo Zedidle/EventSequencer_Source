@@ -139,27 +139,8 @@ private:
     FGuid GenerateAsyncOperationID();
     void CleanupCompletedAsyncOperations();
     void ProcessAsyncOperations(float DeltaTime);
-
-    
     
     // 处理中断恢复
     void HandleInterruptRecovery(UEventSequenceRunning* Instance, FSequenceEvent_AsyncBlueprintCall& AsyncEvent);
 
-
-    template<typename TEvent>
-    bool CopySequenceEventProperty(const FInstancedStruct& SourceEventStruct, FInstancedStruct& RuntimeEventStruct)
-    {
-        // 1. 尝试获取源结构体的const指针
-        if (const TEvent* SourceEvent = SourceEventStruct.GetPtr<TEvent>())
-        {
-            // 2. 尝试获取目标结构体的可变指针
-            if (TEvent* DestEvent = RuntimeEventStruct.GetMutablePtr<TEvent>())
-            {
-                // 3. 拷贝Property（核心逻辑）
-                DestEvent->Property = SourceEvent->Property;
-                return true; // 拷贝成功
-            }
-        }
-        return false; // 任一指针为空，拷贝失败
-    }
 };
