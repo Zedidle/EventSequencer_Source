@@ -18,9 +18,9 @@ struct FEventCase
 
 	// 条件为真时执行的事件
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SequenceEvent | SwitchCase Branch",
-		meta = (BaseStruct = "/Script/EventSequencer.BaseSequenceEvent"))
+		meta = (BaseStruct = "/Script/EventSequencer.BaseSequenceEvent", TitleProperty = "EventTitle"))
 	TArray<FEventWrapper> CaseEvents;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SequenceEvent | SWITCH")
 	bool AutoBreak = true;
 };

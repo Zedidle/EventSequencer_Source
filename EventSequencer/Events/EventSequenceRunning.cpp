@@ -794,7 +794,13 @@ void UEventSequenceRunning::BREAK()
 void UEventSequenceRunning::Tick(float DeltaTime)
 {
 	if (bPause) return;
-        
+	
+	if (!EventQueue.IsValidIndex(CurEventIndex))
+	{
+		Exit();
+		return;
+	}
+	
 	FInstancedStruct& CurEventStruct = EventQueue[CurEventIndex];
 	if (const F_SequenceEvent_GOTO* CurEvent_GOTO = CurEventStruct.GetPtr<F_SequenceEvent_GOTO>())
 	{
@@ -838,6 +844,7 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 			FSequenceCondition Condition = FSequenceCondition(CurEvent_SWITCH->PropertyName, ESequenceConditionOperator::Equal, E.ComparisonValue);
 			if (EvaluateCondition(Condition))
 			{
+				// 这部分需要严格测试，跳出去有跳回来感觉有点怪。可能Switch的解析还需要更平铺直叙
 				GOTO(E.CaseEventIndex);
 				if (E.AutoBreak)
 				{

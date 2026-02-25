@@ -49,7 +49,13 @@ void UEventSequenceDA::ParseEventsToDisplayName(TArray<FEventWrapper>& _EventWra
 		
 		PushDisplayTitle(EventTitleString);
 		
-		if (F_SequenceEvent_IF* SourceEvent_IF = EventWrapper.Event.GetMutablePtr<F_SequenceEvent_IF>())
+		if (F_SequenceEvent_LABEL* SourceEvent_LABEL = EventWrapper.Event.GetMutablePtr<F_SequenceEvent_LABEL>())
+		{
+		}
+		else if (F_SequenceEvent_GOTO* SourceEvent_GOTO = EventWrapper.Event.GetMutablePtr<F_SequenceEvent_GOTO>())
+		{
+		}
+		else if (F_SequenceEvent_IF* SourceEvent_IF = EventWrapper.Event.GetMutablePtr<F_SequenceEvent_IF>())
 		{
 			SourceEvent_IF->TrueEventsStartIndex = CurNum;
 			SourceEvent_IF->FalseEventsStartIndex = CurNum + FBaseSequenceEvent::GetEventListEventsCount(SourceEvent_IF->TrueEvents) + 1;
@@ -68,8 +74,7 @@ void UEventSequenceDA::ParseEventsToDisplayName(TArray<FEventWrapper>& _EventWra
 				ParseEventsToDisplayName(SourceEvent_IF->FalseEvents);
 			}
 		}
-
-		if (F_SequenceEvent_SWITCH* SourceEvent_SWITCH = EventWrapper.Event.GetMutablePtr<F_SequenceEvent_SWITCH>())
+		else if (F_SequenceEvent_SWITCH* SourceEvent_SWITCH = EventWrapper.Event.GetMutablePtr<F_SequenceEvent_SWITCH>())
 		{
 			SourceEvent_SWITCH->StartIndex = CurNum;
 			SourceEvent_SWITCH->EndIndex = CurNum + SourceEvent_SWITCH->GetEventsCount() - 2;
@@ -78,8 +83,7 @@ void UEventSequenceDA::ParseEventsToDisplayName(TArray<FEventWrapper>& _EventWra
 				ParseEventsToDisplayName(Case.CaseEvents);
 			}
 		}
-
-		if (F_SequenceEvent_LOOP* SourceEvent_LOOP = EventWrapper.Event.GetMutablePtr<F_SequenceEvent_LOOP>())
+		else if (F_SequenceEvent_LOOP* SourceEvent_LOOP = EventWrapper.Event.GetMutablePtr<F_SequenceEvent_LOOP>())
 		{
 			SourceEvent_LOOP->State.LoopStartIndex = CurNum;
 			SourceEvent_LOOP->State.LoopEndIndex = CurNum + FBaseSequenceEvent::GetEventListEventsCount(SourceEvent_LOOP->LoopEvents);
@@ -89,8 +93,7 @@ void UEventSequenceDA::ParseEventsToDisplayName(TArray<FEventWrapper>& _EventWra
 			PushDisplayTitle(F_SequenceEvent_GOTO(SourceEvent_LOOP->State.LoopStartIndex).GetDisplayName());
 			ParseLoopStateStack.Pop();
 		}
-		
-		if (F_SequenceEvent_BREAK* SourceEvent_BREAK = EventWrapper.Event.GetMutablePtr<F_SequenceEvent_BREAK>())
+		else if (F_SequenceEvent_BREAK* SourceEvent_BREAK = EventWrapper.Event.GetMutablePtr<F_SequenceEvent_BREAK>())
 		{
 			if (!ParseLoopStateStack.IsEmpty())
 			{
@@ -98,11 +101,19 @@ void UEventSequenceDA::ParseEventsToDisplayName(TArray<FEventWrapper>& _EventWra
 				SourceEvent_BREAK->InLoopEndIndex = State_LOOP.LoopEndIndex + 1;
 			}
 		}
-		
-		if (FNestedSequenceEvent* DestEvent = EventWrapper.Event.GetMutablePtr<FNestedSequenceEvent>())
+		else if (F_SequenceEvent_RETURN* SourceEvent_RETURN = EventWrapper.Event.GetMutablePtr<F_SequenceEvent_RETURN>())
 		{
-			ParseEventsToDisplayName(DestEvent->NestedEvents);
 		}
+		// 具体事件
+		else
+		{
+			if (FNestedSequenceEvent* DestEvent = EventWrapper.Event.GetMutablePtr<FNestedSequenceEvent>())
+			{
+				ParseEventsToDisplayName(DestEvent->NestedEvents);
+			}
+		}
+		
+
     }
 }
 

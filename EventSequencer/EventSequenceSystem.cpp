@@ -36,93 +36,79 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
         // 创建事件的运行时副本
         FInstancedStruct RuntimeEventStruct = SourceEventStruct;
         
-        if (const F_SequenceEvent_LABEL* SourceEvent_LABEL = SourceEventStruct.GetPtr<F_SequenceEvent_LABEL>())
+        F_SequenceEvent_BREAK* EventBreak = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_BREAK>();
+        if (!EventBreak)
         {
-            if (F_SequenceEvent_LABEL* DEvent = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_LABEL>())
-            {
-                *DEvent = *SourceEvent_LABEL; // 应该已经在前面统一拷贝了 FInstancedStruct 的强大之处
-                EventSequenceRunning->AddLabel(DEvent->LabelName);
-                EventSequenceRunning->AddEvent(RuntimeEventStruct);
-            }
+            EventSequenceRunning->AddEvent(RuntimeEventStruct);
         }
-        else if (const F_SequenceEvent_GOTO* SourceEvent_GOTO = SourceEventStruct.GetPtr<F_SequenceEvent_GOTO>())
+        
+        
+        if (F_SequenceEvent_LABEL* Event_LABEL = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_LABEL>())
         {
-            if (F_SequenceEvent_GOTO* DEvent = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_GOTO>())
-            {
-                *DEvent = *SourceEvent_GOTO;
-                EventSequenceRunning->AddEvent(RuntimeEventStruct);
-            }
+            EventSequenceRunning->AddLabel(Event_LABEL->LabelName);
         }
-        else if (const F_SequenceEvent_IF* SourceEvent_IF = SourceEventStruct.GetPtr<F_SequenceEvent_IF>())
+        else if (F_SequenceEvent_GOTO* Event_GOTO = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_GOTO>())
         {
-            if (F_SequenceEvent_IF* DEvent = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_IF>())
-            {
-                *DEvent = *SourceEvent_IF;
-                EventSequenceRunning->AddEvent(RuntimeEventStruct);
-                
-                // 初步分析 TrueEvents 和 FalseEvents 开始的下标 以及 跳出的下标
-                // 下标未必准确，可能有 +-1 的差距
-                DEvent->TrueEventsStartIndex = EventSequenceRunning->GetEventsNum();
-                ParseEventSequence(EventSequenceRunning, DEvent->TrueEvents);
-                
-                DEvent->FalseEventsStartIndex = EventSequenceRunning->GetEventsNum();
-                ParseEventSequence(EventSequenceRunning, DEvent->FalseEvents);
+        }
+        else if (F_SequenceEvent_IF* Event_IF = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_IF>())
+        {
+            // 初步分析 TrueEvents 和 FalseEvents 开始的下标 以及 跳出的下标
+            // 下标未必准确，可能有 +-1 的差距
+            Event_IF->TrueEventsStartIndex = EventSequenceRunning->GetEventsNum();
+            ParseEventSequence(EventSequenceRunning, Event_IF->TrueEvents);
+            
+            Event_IF->FalseEventsStartIndex = EventSequenceRunning->GetEventsNum();
+            ParseEventSequence(EventSequenceRunning, Event_IF->FalseEvents);
 
-                DEvent->EndIndex = EventSequenceRunning->GetEventsNum();
-            }
+            Event_IF->EndIndex = EventSequenceRunning->GetEventsNum();
         }
-        else if (const F_SequenceEvent_SWITCH* SourceEvent_SWITCH = SourceEventStruct.GetPtr<F_SequenceEvent_SWITCH>())
+        else if (F_SequenceEvent_SWITCH* Event_SWITCH = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_SWITCH>())
         {
-            if (F_SequenceEvent_SWITCH* DEvent = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_SWITCH>())
+            // 当处于Switch中，（如果有Break）每次执行都需要判断是否到达下一个Case，直接跳到EndIndex
+            for (auto& E : Event_SWITCH->EventCases)
             {
-                *DEvent = *SourceEvent_SWITCH;
-                EventSequenceRunning->AddEvent(RuntimeEventStruct);
+                E.CaseEventIndex = EventSequenceRunning->GetEventsNum();
+                ParseEventSequence(EventSequenceRunning, E.CaseEvents);
+            }
 
-                for (auto& E : DEvent->EventCases)
-                {
-                    E.CaseEventIndex = EventSequenceRunning->GetEventsNum();
-                    ParseEventSequence(EventSequenceRunning, E.CaseEvents);
-                }
-
-                DEvent->EndIndex = EventSequenceRunning->GetEventsNum();
-            }
+            Event_SWITCH->EndIndex = EventSequenceRunning->GetEventsNum();
         }
-        else if (const F_SequenceEvent_LOOP* SourceEvent_LOOP = SourceEventStruct.GetPtr<F_SequenceEvent_LOOP>())
+        else if (F_SequenceEvent_LOOP* Event_LOOP = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_LOOP>())
         {
-            if (F_SequenceEvent_LOOP* DEvent = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_LOOP>())
-            {
-                // 关于Loop事件，由于解析的平扁化处理，需要记录下它在 EventSequenceRunning 的序列开始下标和结束下标，以便循环和Break跳出。
-                *DEvent = *SourceEvent_LOOP;
-                DEvent->State.LoopStartIndex = EventSequenceRunning->GetEventsNum();
-                ParseEventSequence(EventSequenceRunning, DEvent->LoopEvents);
-
-                DEvent->State.LoopEndIndex = EventSequenceRunning->GetEventsNum();
-            }
+            // 关于Loop事件，由于解析的平扁化处理，需要记录下它在 EventSequenceRunning 的序列开始下标和结束下标，以便循环和Break跳出。
+            Event_LOOP->State.LoopStartIndex = EventSequenceRunning->GetEventsNum();
+            Event_LOOP->State.LoopEndIndex = EventSequenceRunning->GetEventsNum() 
+                                        + FBaseSequenceEvent::GetEventListEventsCount(Event_LOOP->LoopEvents);
+            
+            EventSequenceRunning->LoopStateStack.Push(Event_LOOP->State);
+            
+            ParseEventSequence(EventSequenceRunning, Event_LOOP->LoopEvents);
+            
+            F_SequenceEvent_GOTO EventGoto = F_SequenceEvent_GOTO(Event_LOOP->State.LoopStartIndex);
+            FInstancedStruct EventStruct_GOTO;
+            EventStruct_GOTO.InitializeAs<F_SequenceEvent_GOTO>(EventGoto);
+            EventSequenceRunning->AddEvent(EventStruct_GOTO);
+            
+            EventSequenceRunning->LoopStateStack.Pop();
+            
         }
-        else if (const F_SequenceEvent_BREAK* SourceEvent_BREAK = SourceEventStruct.GetPtr<F_SequenceEvent_BREAK>())
+        else if (F_SequenceEvent_BREAK* Event_BREAK = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_BREAK>())
         {
-            if (F_SequenceEvent_BREAK* DEvent = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_BREAK>())
+            if (!EventSequenceRunning->LoopStateStack.IsEmpty())
             {
-                *DEvent = *SourceEvent_BREAK;
-                EventSequenceRunning->AddEvent(RuntimeEventStruct);
-            }
-        }
-        else if (const F_SequenceEvent_RETURN* SourceEvent_RETURN = SourceEventStruct.GetPtr<F_SequenceEvent_RETURN>())
-        {
-            if (F_SequenceEvent_RETURN* DEvent = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_RETURN>())
-            {
-                *DEvent = *SourceEvent_RETURN;
+                const FEventState_LOOP& State_LOOP = EventSequenceRunning->LoopStateStack.Last();
+                Event_BREAK->InLoopEndIndex = State_LOOP.LoopEndIndex + 1;
                 EventSequenceRunning->AddEvent(RuntimeEventStruct);
             }
+        }
+        else if (F_SequenceEvent_RETURN* Event_RETURN = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_RETURN>())
+        {
         }
         // 具体事件
         else
         {
             if (auto* DestEvent = RuntimeEventStruct.GetMutablePtr<FNestedSequenceEvent>())
             {
-                
-                DestEvent->SetState(EEventState::Pending);
-                EventSequenceRunning->AddEvent(RuntimeEventStruct);
                 ParseEventSequence(EventSequenceRunning, DestEvent->NestedEvents);
             }
         }
