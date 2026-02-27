@@ -46,7 +46,8 @@ struct F_SequenceEvent_SWITCH : public FBaseSequenceEvent
 		int R = 0;
 		for (FEventCase& Case : EventCases)
 		{
-			R += GetEventListEventsCount(Case.CaseEvents);
+			// +1 是每一条如果有Break的话，要补充跳跃到结尾的 Goto 
+			R += GetEventListEventsCount(Case.CaseEvents) + (Case.AutoBreak ? 1 : 0);
 		}
 		
 		// SwitchCase 的处理包含哪些搭配 IF / GOTO 的优化？

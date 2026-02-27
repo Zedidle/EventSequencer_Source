@@ -45,7 +45,10 @@ class EVENTSEQUENCER_API UEventSequenceSystem : public UTickableWorldSubsystem
 	
     UPROPERTY()
     TArray<UEventSequenceRunning*> EventSequencesRunning;
-
+    
+    UPROPERTY()
+    TArray<UEventSequenceRunning*> EventSequencesExiting;
+    
     // 序列实例映射
     UPROPERTY()
     TMap<FGuid, UEventSequenceRunning*> SequenceInstances;

@@ -76,8 +76,14 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
             {
                 E.CaseEventIndex = EventSequenceRunning->GetEventsNum();
                 ParseEventSequence(EventSequenceRunning, E.CaseEvents);
+                
+                if (E.AutoBreak)
+                {
+                    FInstancedStruct EventStruct_GOTO;
+                    EventStruct_GOTO.InitializeAs<F_SequenceEvent_GOTO>(F_SequenceEvent_GOTO(Event_SWITCH->EndIndex));
+                    EventSequenceRunning->AddEvent(EventStruct_GOTO);
+                }
             }
-
         }
         else if (F_SequenceEvent_LOOP* Event_LOOP = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_LOOP>())
         {
@@ -156,11 +162,13 @@ UEventSequenceRunning* UEventSequenceSystem::CreateEventSequence(UEventSequenceD
 
     ParseEventSequence(EventSequenceRunning, TargetDataAsset->EventWrappers);
     
+    int N = 0;
     for (FInstancedStruct& EventStruct : EventSequenceRunning->EventQueue)
     {
         if (const FBaseSequenceEvent* Event = EventStruct.GetPtr<FBaseSequenceEvent>())
         {
-            UE_LOG(LogTemp, Log, TEXT("EventQueue: %s"), *Event->GetDisplayName());
+		    FString FormattedNum = FString::Printf(TEXT("%03d"), N++);
+            UE_LOG(LogTemp, Log, TEXT("EventQueue: %s %s"), *FormattedNum, *Event->GetDisplayName());
         }
     }
     
@@ -182,7 +190,7 @@ bool UEventSequenceSystem::RemoveEventSequence(UEventSequenceRunning* EventSeque
     
     if (EventSequencesRunning.Contains(EventSequence))
     {
-        EventSequencesRunning.Remove(EventSequence);
+        EventSequencesExiting.Add(EventSequence);
         return true;
     }
     return false;
@@ -211,6 +219,15 @@ bool UEventSequenceSystem::RemoveComponent(const UEventSequenceComponent* Compon
 void UEventSequenceSystem::TickSequences(float DeltaTime)
 {
     if (EventSequencesRunning.IsEmpty()) return;
+    
+    if (!EventSequencesExiting.IsEmpty())
+    {
+        for (UEventSequenceRunning* EventSequence : EventSequencesExiting)
+        {
+            EventSequencesRunning.Remove(EventSequence);
+        }
+        EventSequencesExiting.Empty();
+    }
     
     TArray<UEventSequenceRunning*> RemoveSequences;
     for (UEventSequenceRunning* SequencePtr : EventSequencesRunning)
