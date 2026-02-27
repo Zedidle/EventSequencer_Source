@@ -37,7 +37,7 @@ struct F_SequenceEvent_SWITCH : public FBaseSequenceEvent
 	virtual FString GetDisplayName() const override
 	{
 		FString StartIndexString = FString::Printf(TEXT("%03d"), StartIndex);
-		FString EndIndexString = FString::Printf(TEXT("%03d"), EndIndex);
+		FString EndIndexString = FString::Printf(TEXT("%03d"), EndIndex - 1);
 
 		return "SWITCH " + PropertyName.ToString() + " [From " + StartIndexString + " To " + EndIndexString + "]";
 	}

@@ -56,7 +56,8 @@ class EVENTSEQUENCER_API UEventSequenceSystem : public UTickableWorldSubsystem
     void ParseEventSequence(UEventSequenceRunning* EventSequenceRunning, const TArray<FEventWrapper>& EventWrappers);
     
 public:
-    static UEventSequenceSystem* GetInstance(UWorld* World);
+    // static UEventSequenceSystem* GetInstance(UWorld* World);
+	static UEventSequenceSystem* GetInstance(const UObject* WorldContextObject);
     
     virtual void Tick(float DeltaTime) override;
     

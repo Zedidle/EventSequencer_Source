@@ -53,17 +53,24 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
         else if (F_SequenceEvent_IF* Event_IF = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_IF>())
         {
             // 初步分析 TrueEvents 和 FalseEvents 开始的下标 以及 跳出的下标
-            // 下标未必准确，可能有 +-1 的差距
             Event_IF->TrueEventsStartIndex = EventSequenceRunning->GetEventsNum();
+            Event_IF->FalseEventsStartIndex = Event_IF->TrueEventsStartIndex + 
+                                FBaseSequenceEvent::GetEventListEventsCount(Event_IF->TrueEvents) + 1;
+            Event_IF->EndIndex = Event_IF->FalseEventsStartIndex + FBaseSequenceEvent::GetEventListEventsCount(Event_IF->FalseEvents);
+			
             ParseEventSequence(EventSequenceRunning, Event_IF->TrueEvents);
             
-            Event_IF->FalseEventsStartIndex = EventSequenceRunning->GetEventsNum();
+            FInstancedStruct EventStruct_GOTO;
+            EventStruct_GOTO.InitializeAs<F_SequenceEvent_GOTO>(F_SequenceEvent_GOTO(Event_IF->EndIndex));
+            EventSequenceRunning->AddEvent(EventStruct_GOTO);
+            
             ParseEventSequence(EventSequenceRunning, Event_IF->FalseEvents);
-
-            Event_IF->EndIndex = EventSequenceRunning->GetEventsNum();
         }
         else if (F_SequenceEvent_SWITCH* Event_SWITCH = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_SWITCH>())
         {
+            Event_SWITCH->StartIndex = EventSequenceRunning->GetEventsNum();
+            Event_SWITCH->EndIndex = Event_SWITCH->StartIndex + Event_SWITCH->GetEventsCount() - 1;
+            
             // 当处于Switch中，（如果有Break）每次执行都需要判断是否到达下一个Case，直接跳到EndIndex
             for (auto& E : Event_SWITCH->EventCases)
             {
@@ -71,7 +78,6 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
                 ParseEventSequence(EventSequenceRunning, E.CaseEvents);
             }
 
-            Event_SWITCH->EndIndex = EventSequenceRunning->GetEventsNum();
         }
         else if (F_SequenceEvent_LOOP* Event_LOOP = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_LOOP>())
         {
@@ -84,9 +90,8 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
             
             ParseEventSequence(EventSequenceRunning, Event_LOOP->LoopEvents);
             
-            F_SequenceEvent_GOTO EventGoto = F_SequenceEvent_GOTO(Event_LOOP->State.LoopStartIndex);
             FInstancedStruct EventStruct_GOTO;
-            EventStruct_GOTO.InitializeAs<F_SequenceEvent_GOTO>(EventGoto);
+            EventStruct_GOTO.InitializeAs<F_SequenceEvent_GOTO>(F_SequenceEvent_GOTO(Event_LOOP->State.LoopStartIndex));
             EventSequenceRunning->AddEvent(EventStruct_GOTO);
             
             EventSequenceRunning->LoopStateStack.Pop();
@@ -115,13 +120,14 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
     }
 }
 
-UEventSequenceSystem* UEventSequenceSystem::GetInstance(UWorld* World)
+UEventSequenceSystem* UEventSequenceSystem::GetInstance(const UObject* WorldContextObject)
 {
-    if (World)
-    {
-        return World->GetSubsystem<UEventSequenceSystem>();
-    }
-    return nullptr;	
+    if (!WorldContextObject) return nullptr;
+	
+    UWorld* World = WorldContextObject->GetWorld();
+    if (!World) return nullptr;
+	
+    return World->GetSubsystem<UEventSequenceSystem>();
 }
 
 void UEventSequenceSystem::Tick(float DeltaTime)
@@ -140,7 +146,7 @@ UEventSequenceRunning* UEventSequenceSystem::CreateEventSequence(UEventSequenceD
     if (!TargetDataAsset) return nullptr;
     if (TargetDataAsset->GetSequenceLength() == 0) return nullptr;
     
-    UEventSequenceRunning* EventSequenceRunning = NewObject<UEventSequenceRunning>();
+    UEventSequenceRunning* EventSequenceRunning = NewObject<UEventSequenceRunning>(this);
 
     if (PropertyBagInput)
     {

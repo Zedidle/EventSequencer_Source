@@ -63,9 +63,12 @@ bool UEventSequenceRunning::IsCompleted() const
 	return bCompleted;
 }
 
-FInstancedStruct& UEventSequenceRunning::GetCurEvent()
+void UEventSequenceRunning::GetCurEvent(FInstancedStruct& OutStruct)
 {
-	return EventQueue[CurEventIndex];
+	if (EventQueue.IsValidIndex(CurEventIndex))
+	{
+		OutStruct = EventQueue[CurEventIndex];
+	}
 }
 
 void UEventSequenceRunning::AddLabel(FName Label)
@@ -102,7 +105,8 @@ bool UEventSequenceRunning::ExecuteStep()
 
 void UEventSequenceRunning::Next()
 {
-	FInstancedStruct& CurEvent = GetCurEvent();
+	FInstancedStruct CurEvent;
+	GetCurEvent(CurEvent);
 	if (FBaseSequenceEvent* E = CurEvent.GetMutablePtr<FBaseSequenceEvent>())
 	{
 		if (E->Execute())
@@ -124,7 +128,7 @@ void UEventSequenceRunning::Exit()
 
 void UEventSequenceRunning::Destroy()
 {
-	if (UEventSequenceSystem* EventSequenceSystem = UEventSequenceSystem::GetInstance(GetWorld()))
+	if (UEventSequenceSystem* EventSequenceSystem = UEventSequenceSystem::GetInstance(this))
 	{
 		EventSequenceSystem->RemoveEventSequence(this);
 	}
@@ -318,14 +322,17 @@ bool UEventSequenceRunning::EvaluateCondition(const FSequenceCondition& Conditio
     case EPropertyBagPropertyType::Int32:
         {
             TValueOrError<int32, EPropertyBagResult> V = PropertyBagRuntime.GetValueInt32(Condition.PropertyName);
-    		if (V.GetError() == EPropertyBagResult::Success)
+    		if (V.HasError())
     		{
-    			int32 ComparisonValue;
-    			if (TryParseInt32(Condition.ComparisonValue, ComparisonValue))
-    			{
-    				return CompareInt32(V.GetValue(), ComparisonValue, Condition.Operator);
-    			}
     		}
+		    else
+		    {
+		    	int32 ComparisonValue;
+		    	if (TryParseInt32(Condition.ComparisonValue, ComparisonValue))
+		    	{
+		    		return CompareInt32(V.GetValue(), ComparisonValue, Condition.Operator);
+		    	}
+		    }
         }
         break;
         
@@ -360,8 +367,11 @@ bool UEventSequenceRunning::EvaluateCondition(const FSequenceCondition& Conditio
     case EPropertyBagPropertyType::String:
         {
     		TValueOrError<FString, EPropertyBagResult> V = PropertyBagRuntime.GetValueString(Condition.PropertyName);
-    		if (V.GetError() == EPropertyBagResult::Success)
+    		if (V.HasError())
     		{
+    		}
+		    else
+		    {
     			FString ComparisonValue;
     			if (TryParseString(Condition.ComparisonValue, ComparisonValue))
     			{
@@ -744,7 +754,16 @@ void UEventSequenceRunning::SetDataAsset(UEventSequenceDA* DataAsset)
 	
 	InitDataAsset = DataAsset;
 	PropertyBagRuntime = InitDataAsset->PropertyBagDefault;
-	PropertyBagRuntime.MigrateToNewBagInstance(InitDataAsset->PropertyBagInput);
+	// MigrateToNewBagInstance 合并逻辑有问题
+	// PropertyBagRuntime.MigrateToNewBagInstance(InitDataAsset->PropertyBagInput);
+	if (InitDataAsset->PropertyBagInput.IsValid())
+	{
+		if (const UPropertyBag* Bag = InitDataAsset->PropertyBagInput.GetPropertyBagStruct())
+		{
+			PropertyBagRuntime.AddProperties(Bag->GetPropertyDescs());
+		}
+		PropertyBagRuntime.CopyMatchingValuesByName(InitDataAsset->PropertyBagInput);
+	}
 }
 
 void UEventSequenceRunning::LOOP(const FEventState_LOOP& LoopState)
@@ -852,6 +871,7 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 				}
 			}
 		}
+		// 错误。如果有Wait还会直接跳出，需要平铺解析混合Goto
 		GOTO(CurEvent_SWITCH->EndIndex);
 	}
 	else if (const F_SequenceEvent_RETURN* CurEvent_RETURN = CurEventStruct.GetPtr<F_SequenceEvent_RETURN>())

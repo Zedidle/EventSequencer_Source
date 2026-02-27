@@ -59,25 +59,16 @@ void UEventSequenceDA::ParseEventsToDisplayName(TArray<FEventWrapper>& _EventWra
 		{
 			SourceEvent_IF->TrueEventsStartIndex = CurNum;
 			SourceEvent_IF->FalseEventsStartIndex = CurNum + FBaseSequenceEvent::GetEventListEventsCount(SourceEvent_IF->TrueEvents) + 1;
-			SourceEvent_IF->EndIndex = CurNum + FBaseSequenceEvent::GetEventListEventsCount(SourceEvent_IF->TrueEvents) +
-												FBaseSequenceEvent::GetEventListEventsCount(SourceEvent_IF->FalseEvents) + 1;
+			SourceEvent_IF->EndIndex = SourceEvent_IF->FalseEventsStartIndex + FBaseSequenceEvent::GetEventListEventsCount(SourceEvent_IF->FalseEvents);
 			
-			if (!SourceEvent_IF->TrueEvents.IsEmpty())
-			{
-				ParseEventsToDisplayName(SourceEvent_IF->TrueEvents);
-			}
-
+			ParseEventsToDisplayName(SourceEvent_IF->TrueEvents);
 			PushDisplayTitle(F_SequenceEvent_GOTO(SourceEvent_IF->EndIndex).GetDisplayName());
-			
-			if (!SourceEvent_IF->FalseEvents.IsEmpty())
-			{
-				ParseEventsToDisplayName(SourceEvent_IF->FalseEvents);
-			}
+			ParseEventsToDisplayName(SourceEvent_IF->FalseEvents);
 		}
 		else if (F_SequenceEvent_SWITCH* SourceEvent_SWITCH = EventWrapper.Event.GetMutablePtr<F_SequenceEvent_SWITCH>())
 		{
 			SourceEvent_SWITCH->StartIndex = CurNum;
-			SourceEvent_SWITCH->EndIndex = CurNum + SourceEvent_SWITCH->GetEventsCount() - 2;
+			SourceEvent_SWITCH->EndIndex = CurNum + SourceEvent_SWITCH->GetEventsCount() - 1;
 			for (FEventCase& Case : SourceEvent_SWITCH->EventCases)
 			{
 				ParseEventsToDisplayName(Case.CaseEvents);

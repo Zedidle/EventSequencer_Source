@@ -70,8 +70,7 @@ UEventSequenceRunning* UEventSequenceFuncLib::CreateEventSequence(UObject* World
 {
 	if (!WorldContextObject) return nullptr;
 	
-	UWorld* World = WorldContextObject->GetWorld();
-	if (UEventSequenceSystem* EventSequenceSystem = UEventSequenceSystem::GetInstance(World))
+	if (UEventSequenceSystem* EventSequenceSystem = UEventSequenceSystem::GetInstance(WorldContextObject))
 	{
 		return EventSequenceSystem->CreateEventSequence(TargetDataAsset);
 	}
@@ -83,8 +82,7 @@ bool UEventSequenceFuncLib::RemoveEventSequence(UObject* WorldContextObject, UEv
 {
 	if (!WorldContextObject) return false;
 	
-	UWorld* World = WorldContextObject->GetWorld();
-	if (UEventSequenceSystem* EventSequenceSystem = UEventSequenceSystem::GetInstance(World))
+	if (UEventSequenceSystem* EventSequenceSystem = UEventSequenceSystem::GetInstance(WorldContextObject))
 	{
 		return EventSequenceSystem->RemoveEventSequence(EventSequence);
 	}

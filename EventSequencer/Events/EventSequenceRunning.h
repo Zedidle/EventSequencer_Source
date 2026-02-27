@@ -81,7 +81,7 @@ public:
 	
 	bool IsCompleted() const;
     
-	FInstancedStruct& GetCurEvent();
+	void GetCurEvent(FInstancedStruct& OutStruct);
 
 	UFUNCTION(BlueprintCallable, Category = "Event Sequence")
 	void AddLabel(FName Label);

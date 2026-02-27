@@ -62,8 +62,7 @@ UEventSequenceRunning* UEventSequenceComponent::CreateEventSequence(UEventSequen
 	AActor* Owner = GetOwner();
 	if (!IsValid(Owner)) return nullptr;
 	
-	UWorld* World = Owner->GetWorld();
-	if (UEventSequenceSystem* EventSequenceSystem = UEventSequenceSystem::GetInstance(World))
+	if (UEventSequenceSystem* EventSequenceSystem = UEventSequenceSystem::GetInstance(Owner))
 	{
 		CurEventSequence = EventSequenceSystem->CreateEventSequence(TargetDataAsset, this, PropertyWrapper);
 	}
@@ -76,8 +75,7 @@ bool UEventSequenceComponent::RemoveEventSequence()
 	AActor* Owner = GetOwner();
 	if (!IsValid(Owner)) return false;
 	
-	UWorld* World = Owner->GetWorld();
-	if (UEventSequenceSystem* EventSequenceSystem = UEventSequenceSystem::GetInstance(World))
+	if (UEventSequenceSystem* EventSequenceSystem = UEventSequenceSystem::GetInstance(Owner))
 	{
 		return EventSequenceSystem->RemoveComponent(this);
 	}
