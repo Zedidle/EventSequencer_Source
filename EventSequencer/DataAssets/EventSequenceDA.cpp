@@ -69,9 +69,14 @@ void UEventSequenceDA::ParseEventsToDisplayName(TArray<FEventWrapper>& _EventWra
 		{
 			SourceEvent_SWITCH->StartIndex = CurNum;
 			SourceEvent_SWITCH->EndIndex = CurNum + SourceEvent_SWITCH->GetEventsCount() - 1;
+			
 			for (FEventCase& Case : SourceEvent_SWITCH->EventCases)
 			{
 				ParseEventsToDisplayName(Case.CaseEvents);
+				if (Case.AutoBreak)
+				{
+					PushDisplayTitle(F_SequenceEvent_GOTO(SourceEvent_SWITCH->EndIndex).GetDisplayName());
+				}
 			}
 		}
 		else if (F_SequenceEvent_LOOP* SourceEvent_LOOP = EventWrapper.Event.GetMutablePtr<F_SequenceEvent_LOOP>())
