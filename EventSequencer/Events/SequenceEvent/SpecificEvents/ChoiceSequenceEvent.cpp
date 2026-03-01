@@ -27,7 +27,7 @@ void FChoiceSequenceEvent::OnEnter()
 
 bool FChoiceSequenceEvent::Execute(int Index)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, *FString::Printf(TEXT("FChoiceSequenceEvent::Next")));
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, *FString::Printf(TEXT("FChoiceSequenceEvent::Execute")));
 
 	if (ChoiceWidget)
 	{

@@ -27,6 +27,7 @@ struct FWaitSequenceEvent : public FNestedSequenceEvent
 	virtual bool Execute(int Index = 0) override;
 	virtual float Tick(float DeltaTime, float PreRemainTime = 0) override;
 	virtual void OnFinished() override;
+	virtual void Reset() override;
 	
 	UPROPERTY(EditAnywhere)
 	FWaitSequenceProperty Property;

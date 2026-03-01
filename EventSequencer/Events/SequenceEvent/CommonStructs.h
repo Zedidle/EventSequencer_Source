@@ -155,7 +155,7 @@ struct FBaseSequenceEvent
 	// 例如主动触发对话选择之类的
 	virtual bool Execute(int Index = 0) { return true; }
 
-	virtual void OnFinished() { State = EEventState::Pending; }
+	virtual void OnFinished() { State = EEventState::CurFinished; }
     
 	void SetState(EEventState NewState) { State = NewState; }
 	EEventState GetState() const { return State; }
@@ -176,6 +176,8 @@ struct FNestedSequenceEvent : public FBaseSequenceEvent
 		meta = (BaseStruct = "/Script/EventSequencer.BaseSequenceEvent", TitleProperty = "{EventTitle}"))
 	TArray<FEventWrapper> NestedEvents;
 
+	virtual void Reset(){ State = EEventState::Pending; }
+	
 	virtual int GetEventsCount() { return GetEventListEventsCount(NestedEvents); }
 	
 };

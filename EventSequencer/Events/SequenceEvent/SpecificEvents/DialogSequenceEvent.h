@@ -40,7 +40,7 @@ struct FDialogSequenceEvent : public FNestedSequenceEvent
 	virtual void OnEnter() override;
 	virtual bool Execute(int Index = 0) override;
 	virtual float Tick(float DeltaTime, float PreRemainTime) override;
-
+	virtual void Reset() override;
 	
 	UPROPERTY(EditAnywhere)
 	FDialogSequenceProperty Property;

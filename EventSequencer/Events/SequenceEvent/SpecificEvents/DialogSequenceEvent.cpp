@@ -22,7 +22,7 @@ void FDialogSequenceEvent::OnEnter()
 
 bool FDialogSequenceEvent::Execute(int Index)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, *FString::Printf(TEXT("FDialogSequenceEvent::Next")));
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, *FString::Printf(TEXT("FDialogSequenceEvent::Execute")));
 	return true;
 }
 
@@ -30,4 +30,9 @@ float FDialogSequenceEvent::Tick(float DeltaTime, float PreRemainTime)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, *FString::Printf(TEXT("FDialogSequenceEvent::Tick")));
 	return 0;
+}
+
+void FDialogSequenceEvent::Reset()
+{
+	
 }

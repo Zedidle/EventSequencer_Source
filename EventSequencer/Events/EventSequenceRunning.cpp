@@ -916,7 +916,7 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 		}
 	}
 	// 具体事件
-	else if (FBaseSequenceEvent* Event = CurEventStruct.GetMutablePtr<FBaseSequenceEvent>())
+	else if (FNestedSequenceEvent* Event = CurEventStruct.GetMutablePtr<FNestedSequenceEvent>())
 	{
 		EEventState CurEventState = Event->GetState();
 		if (CurEventState == EEventState::Pending)
@@ -927,9 +927,10 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 		{
 			PreEventRemainTime = Event->Tick(DeltaTime, PreEventRemainTime);
 		}
+		// 需要在Tick中判断是否调用 OnFinished() 进入 CurFinished 状态
 		if (CurEventState == EEventState::CurFinished)
 		{
-			Event->OnFinished();
+			Event->Reset();
 			CurEventIndex++;
             
 			if (CurEventIndex >= EventQueue.Num())

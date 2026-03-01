@@ -26,7 +26,7 @@ void FMoveSequenceEvent::OnEnter()
 
 bool FMoveSequenceEvent::Execute(int Index)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, *FString::Printf(TEXT("MoveSequenceEvent::Next")));
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, *FString::Printf(TEXT("MoveSequenceEvent::Execute")));
 	return true;
 }
 
@@ -36,7 +36,7 @@ float FMoveSequenceEvent::Tick(float DeltaTime, float PreRemainTime)
 
 	if (!IsValid(NPCPawn))
 	{
-		State = EEventState::CurFinished;
+		OnFinished();
 		return 0;
 	}
 		
@@ -44,7 +44,7 @@ float FMoveSequenceEvent::Tick(float DeltaTime, float PreRemainTime)
     
 	if (FVector::Distance(CurLocation, Property.TargetLocation) < Property.ApproachDistance)
 	{
-		State = EEventState::CurFinished;
+		OnFinished();
 	}
 	else if (!bMoving)
 	{
