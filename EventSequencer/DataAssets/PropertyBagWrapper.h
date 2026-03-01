@@ -12,11 +12,19 @@ UCLASS(BlueprintType, Blueprintable)
 class EVENTSEQUENCER_API UPropertyBagWrapper : public UObject
 {
 	GENERATED_BODY()
+
+	bool bBagInitialized = false;
 	
 public:
     // 构造函数
     UPropertyBagWrapper();
+	virtual void PostInitProperties() override;
+	virtual void PostLoad() override;
 
+	UFUNCTION(BlueprintCallable, Category = "PropertyBag")
+	bool InitEmptyPropertyBag();
+
+	
 	FORCEINLINE FInstancedPropertyBag& GetPropertyBag() { return PropertyBag; }
 
 	void SetPropertyBag(const FInstancedPropertyBag& Bag) { PropertyBag = Bag;}

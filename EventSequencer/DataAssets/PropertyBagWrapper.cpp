@@ -5,11 +5,55 @@
 
 UPropertyBagWrapper::UPropertyBagWrapper()
 {
-    PropertyBag.Reset();
+
+}
+
+void UPropertyBagWrapper::PostInitProperties()
+{
+    Super::PostInitProperties();
+}
+
+void UPropertyBagWrapper::PostLoad()
+{
+    Super::PostLoad();
+
+}
+
+bool UPropertyBagWrapper::InitEmptyPropertyBag()
+{
+    if (bBagInitialized) return true;
+    
+    // 1. 安全创建空壳 UPropertyBag（绑定 Outer 避免 GC）
+    UPropertyBag* DefaultBag = NewObject<UPropertyBag>(this, TEXT("EmptyPropertyBag"));
+    if (!DefaultBag)
+    {
+        UE_LOG(LogTemp, Error, TEXT("创建空UPropertyBag失败！"));
+        return false;
+    }
+    
+    // 3. 初始化 FInstancedPropertyBag（此时反射完全就绪）
+    PropertyBag.Reset(); // 清空残留状态
+    DefaultBag->PrepareCppStructOps();
+    PropertyBag.InitializeFromBagStruct(DefaultBag);
+    
+    // 4. 验证并标记
+    if (PropertyBag.IsValid())
+    {
+        UE_LOG(LogTemp, Log, TEXT("空壳PropertyBag初始化成功，UPropertyBag地址：%p"), DefaultBag);
+        bBagInitialized = true;
+        return true;
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("FInstancedPropertyBag初始化失败！"));
+        return false;
+    }
 }
 
 bool UPropertyBagWrapper::AddProperty(const FName& Name, const EPropertyBagPropertyType& Type)
 {
+    InitEmptyPropertyBag();
+    
     // 检查是否已存在同名属性
     if (PropertyBag.FindPropertyDescByName(Name) != nullptr)
     {

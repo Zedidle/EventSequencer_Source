@@ -69,10 +69,13 @@ public:
 	// 初始化定义的DA，存储了 InstancedPropertyBag 数据
 	UPROPERTY()
 	UEventSequenceDA* InitDataAsset;
+	UPROPERTY()
 	FInstancedPropertyBag PropertyBagRuntime;
+	UPROPERTY()
+	FInstancedPropertyBag PropertyBagInput;
 	
 	UFUNCTION()
-	void SetDataAsset(UEventSequenceDA* DataAsset);
+	void SetDataAsset(UEventSequenceDA* DataAsset, const FInstancedPropertyBag& PropertyBag);
 
 	void Tick(float DeltaTime);
 	

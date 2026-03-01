@@ -123,6 +123,7 @@ void UEventSequenceRunning::Next()
 
 void UEventSequenceRunning::Exit()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, *FString::Printf(TEXT("UEventSequenceRunning::Exit")));
 	Destroy();
 }
 
@@ -308,14 +309,18 @@ bool UEventSequenceRunning::EvaluateCondition(const FSequenceCondition& Conditio
     case EPropertyBagPropertyType::Bool:
         {
             TValueOrError<bool, EPropertyBagResult> V = PropertyBagRuntime.GetValueBool(Condition.PropertyName);
-            if (V.GetError() == EPropertyBagResult::Success)
-            {
-                bool ComparisonValue = false;
-                if (TryParseBool(Condition.ComparisonValue, ComparisonValue))
-                {
-                    return CompareBool(V.GetValue(), ComparisonValue, Condition.Operator);
-                }
-            }
+    		if (V.HasError())
+    		{
+    			
+    		}
+		    else
+		    {
+		    	bool ComparisonValue = false;
+		    	if (TryParseBool(Condition.ComparisonValue, ComparisonValue))
+		    	{
+		    		return CompareBool(V.GetValue(), ComparisonValue, Condition.Operator);
+		    	}
+		    }
         }
         break;
         
@@ -339,7 +344,10 @@ bool UEventSequenceRunning::EvaluateCondition(const FSequenceCondition& Conditio
     case EPropertyBagPropertyType::Float:
         {
     		TValueOrError<float, EPropertyBagResult> V = PropertyBagRuntime.GetValueFloat(Condition.PropertyName);
-    		if (V.GetError() == EPropertyBagResult::Success)
+    		if (V.HasError())
+    		{
+    		}
+    		else
     		{
     			float ComparisonValue;
     			if (TryParseFloat(Condition.ComparisonValue, ComparisonValue))
@@ -353,7 +361,10 @@ bool UEventSequenceRunning::EvaluateCondition(const FSequenceCondition& Conditio
     case EPropertyBagPropertyType::Double:
         {
     		TValueOrError<double, EPropertyBagResult> V = PropertyBagRuntime.GetValueDouble(Condition.PropertyName);
-    		if (V.GetError() == EPropertyBagResult::Success)
+    		if (V.HasError())
+    		{
+    		}
+    		else
     		{
     			double ComparisonValue;
     			if (TryParseDouble(Condition.ComparisonValue, ComparisonValue))
@@ -384,7 +395,10 @@ bool UEventSequenceRunning::EvaluateCondition(const FSequenceCondition& Conditio
     case EPropertyBagPropertyType::Name:
         {
     		TValueOrError<FName, EPropertyBagResult> V = PropertyBagRuntime.GetValueName(Condition.PropertyName);
-    		if (V.GetError() == EPropertyBagResult::Success)
+    		if (V.HasError())
+    		{
+    		}
+    		else
     		{
     			FName ComparisonValue;
     			if (TryParseName(Condition.ComparisonValue, ComparisonValue))
@@ -398,7 +412,10 @@ bool UEventSequenceRunning::EvaluateCondition(const FSequenceCondition& Conditio
     case EPropertyBagPropertyType::Text:
         {
     		TValueOrError<FText, EPropertyBagResult> V = PropertyBagRuntime.GetValueText(Condition.PropertyName);
-    		if (V.GetError() == EPropertyBagResult::Success)
+    		if (V.HasError())
+    		{
+    		}
+    		else
     		{
     			FText ComparisonValue;
     			if (TryParseText(Condition.ComparisonValue, ComparisonValue))
@@ -748,21 +765,30 @@ bool UEventSequenceRunning::TryParseText(const FString& StringValue, FText& OutV
 	return true;
 }
 
-void UEventSequenceRunning::SetDataAsset(UEventSequenceDA* DataAsset)
+void UEventSequenceRunning::SetDataAsset(UEventSequenceDA* DataAsset, const FInstancedPropertyBag& PropertyBag)
 {
 	if (!DataAsset) return;
+	if (PropertyBag.IsValid())
+	{
+		UE_LOG(LogTemp, Log, TEXT("FInstancedPropertyBag有效，内部UPropertyBag地址：%p"), PropertyBag.GetPropertyBagStruct());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("FInstancedPropertyBag无效！"));
+	}
+	PropertyBagInput = PropertyBag;
 	
 	InitDataAsset = DataAsset;
 	PropertyBagRuntime = InitDataAsset->PropertyBagDefault;
 	// MigrateToNewBagInstance 合并逻辑有问题
 	// PropertyBagRuntime.MigrateToNewBagInstance(InitDataAsset->PropertyBagInput);
-	if (InitDataAsset->PropertyBagInput.IsValid())
+	if (PropertyBagInput.IsValid())
 	{
-		if (const UPropertyBag* Bag = InitDataAsset->PropertyBagInput.GetPropertyBagStruct())
+		if (const UPropertyBag* Bag = PropertyBagInput.GetPropertyBagStruct())
 		{
 			PropertyBagRuntime.AddProperties(Bag->GetPropertyDescs());
 		}
-		PropertyBagRuntime.CopyMatchingValuesByName(InitDataAsset->PropertyBagInput);
+		PropertyBagRuntime.CopyMatchingValuesByName(PropertyBagInput);
 	}
 }
 
@@ -825,7 +851,14 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 	{
 		if (EvaluateCondition(CurEvent_GOTO->Condition))
 		{
-			GOTO(CurEvent_GOTO->TargetLabel);
+			if (!CurEvent_GOTO->TargetLabel.IsNone())
+			{
+				GOTO(CurEvent_GOTO->TargetLabel);
+			}
+			else
+			{
+				GOTO(CurEvent_GOTO->TargetIndex);
+			}
 		}
 	}
 	else if (const F_SequenceEvent_BREAK* CurEvent_BREAK = CurEventStruct.GetPtr<F_SequenceEvent_BREAK>())

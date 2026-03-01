@@ -178,10 +178,6 @@ void UEventSequenceDA::PostEditChangeProperty(struct FPropertyChangedEvent& Prop
 }
 
 
-void UEventSequenceDA::SetPropertyBagInput(const FInstancedPropertyBag& PropertyBag)
-{
-	PropertyBagInput = PropertyBag;
-}
 
 bool UEventSequenceDA::GetEventAtIndex(int32 Index, FInstancedStruct& OutEvent) const
 {

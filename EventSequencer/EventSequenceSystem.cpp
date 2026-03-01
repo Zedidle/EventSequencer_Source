@@ -147,18 +147,45 @@ TStatId UEventSequenceSystem::GetStatId() const
     return TStatId();  // 或其他安全的返回值
 }
 
-UEventSequenceRunning* UEventSequenceSystem::CreateEventSequence(UEventSequenceDA* TargetDataAsset, UEventSequenceComponent* Component, UPropertyBagWrapper* PropertyBagInput)
+UEventSequenceRunning* UEventSequenceSystem::CreateEventSequence(UEventSequenceDA* TargetDataAsset, UPropertyBagWrapper* PropertyBagInput)
+{
+    if (UEventSequenceRunning* EventSequenceRunning = CreateEventSequenceRunning(TargetDataAsset, PropertyBagInput))
+    {
+        EventSequencesRunning.Add(EventSequenceRunning);
+        return EventSequenceRunning;
+    }
+    return nullptr;
+}
+
+UEventSequenceRunning* UEventSequenceSystem::CreateEventSequenceWithComponent(UEventSequenceDA* TargetDataAsset,
+    UPropertyBagWrapper* PropertyBagInput, UEventSequenceComponent* Component)
+{
+    if (!Component) return nullptr;
+    
+    if (UEventSequenceRunning* EventSequenceRunning = CreateEventSequenceRunning(TargetDataAsset, PropertyBagInput))
+    {
+        EventSequenceComponents.Add(Component);
+        return EventSequenceRunning;
+    }
+    return nullptr;    
+}
+
+UEventSequenceRunning* UEventSequenceSystem::CreateEventSequenceRunning(UEventSequenceDA* TargetDataAsset,
+    UPropertyBagWrapper* PropertyBagInput)
 {
     if (!TargetDataAsset) return nullptr;
     if (TargetDataAsset->GetSequenceLength() == 0) return nullptr;
     
     UEventSequenceRunning* EventSequenceRunning = NewObject<UEventSequenceRunning>(this);
 
-    if (PropertyBagInput)
-    {
-        TargetDataAsset->SetPropertyBagInput(PropertyBagInput->GetPropertyBag());
-    }
-    EventSequenceRunning->SetDataAsset(TargetDataAsset);
+    // ===== 新增：打印关键信息，验证两层“有效” =====
+    UE_LOG(LogTemp, Log, TEXT("UPropertyBagWrapper指针地址：%p（非空=有效）"), PropertyBagInput);
+    
+    // 先拿到Wrapper返回的FInstancedPropertyBag
+    FInstancedPropertyBag InputBag = PropertyBagInput->GetPropertyBag();
+    UE_LOG(LogTemp, Log, TEXT("Wrapper返回的FInstancedPropertyBag内部UPropertyBag地址：%p"), InputBag.GetPropertyBagStruct()); // 这里会打印nullptr
+    
+    EventSequenceRunning->SetDataAsset(TargetDataAsset, PropertyBagInput->GetPropertyBag());
 
     ParseEventSequence(EventSequenceRunning, TargetDataAsset->EventWrappers);
     
@@ -167,18 +194,9 @@ UEventSequenceRunning* UEventSequenceSystem::CreateEventSequence(UEventSequenceD
     {
         if (const FBaseSequenceEvent* Event = EventStruct.GetPtr<FBaseSequenceEvent>())
         {
-		    FString FormattedNum = FString::Printf(TEXT("%03d"), N++);
+            FString FormattedNum = FString::Printf(TEXT("%03d"), N++);
             UE_LOG(LogTemp, Log, TEXT("EventQueue: %s %s"), *FormattedNum, *Event->GetDisplayName());
         }
-    }
-    
-    if (Component)
-    {
-        EventSequenceComponents.Add(Component);
-    }
-    else
-    {
-        EventSequencesRunning.Add(EventSequenceRunning);
     }
     return EventSequenceRunning;
 }

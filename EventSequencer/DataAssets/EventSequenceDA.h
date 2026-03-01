@@ -51,8 +51,7 @@ public:
 	
 	UPROPERTY(EditAnywhere)
 	FInstancedPropertyBag PropertyBagDefault;
-	FInstancedPropertyBag PropertyBagInput;
-	void SetPropertyBagInput(const FInstancedPropertyBag& PropertyBag);
+
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (TitleProperty = "{EventTitle}"))
 	TArray<FEventWrapper> EventWrappers;

@@ -57,6 +57,8 @@ class EVENTSEQUENCER_API UEventSequenceSystem : public UTickableWorldSubsystem
     TArray<TWeakObjectPtr<UEventSequenceComponent>> EventSequenceComponents;
 
     void ParseEventSequence(UEventSequenceRunning* EventSequenceRunning, const TArray<FEventWrapper>& EventWrappers);
+
+    UEventSequenceRunning* CreateEventSequenceRunning(UEventSequenceDA* TargetDataAsset, UPropertyBagWrapper* PropertyBagInput);
     
 public:
     // static UEventSequenceSystem* GetInstance(UWorld* World);
@@ -71,8 +73,10 @@ public:
 
     // PropertyWrapper 开放给蓝图的话，需要在蓝图中创建并设置值，值多的话会占用不少面积
     UFUNCTION(BlueprintCallable, Category = "Event Sequencer")
-    UEventSequenceRunning* CreateEventSequence(UEventSequenceDA* TargetDataAsset, UEventSequenceComponent* Component = nullptr, UPropertyBagWrapper* PropertyBagInput = nullptr);
+    UEventSequenceRunning* CreateEventSequence(UEventSequenceDA* TargetDataAsset, UPropertyBagWrapper* PropertyBagInput = nullptr);
+    UEventSequenceRunning* CreateEventSequenceWithComponent(UEventSequenceDA* TargetDataAsset, UPropertyBagWrapper* PropertyBagInput = nullptr, UEventSequenceComponent* Component = nullptr);
 
+    
     UFUNCTION(BlueprintCallable, Category = "Event Sequencer")
     bool RemoveEventSequence(UEventSequenceRunning* EventSequence);
 

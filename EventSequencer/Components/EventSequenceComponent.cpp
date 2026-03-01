@@ -64,7 +64,7 @@ UEventSequenceRunning* UEventSequenceComponent::CreateEventSequence(UEventSequen
 	
 	if (UEventSequenceSystem* EventSequenceSystem = UEventSequenceSystem::GetInstance(Owner))
 	{
-		CurEventSequence = EventSequenceSystem->CreateEventSequence(TargetDataAsset, this, PropertyWrapper);
+		CurEventSequence = EventSequenceSystem->CreateEventSequenceWithComponent(TargetDataAsset, PropertyWrapper, this);
 	}
 	
 	return CurEventSequence;
