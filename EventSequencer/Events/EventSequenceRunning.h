@@ -62,7 +62,8 @@ public:
 	TArray<FInstancedStruct> EventQueue;
 
 	int GetEventsNum() { return EventQueue.Num(); }
-	
+	void GetLastEvent(FInstancedStruct& InstancedStruct);
+
 	// 当前循环状态栈
 	TArray<FEventState_LOOP> LoopStateStack;
 	
@@ -79,7 +80,8 @@ public:
 
 	void Tick(float DeltaTime);
 	
-	void AddEvent(FInstancedStruct& Event);
+	
+	void AddEvent(const FInstancedStruct& Event);
 	void AppendEvents(TArray<FInstancedStruct>& Events);
 	
 	bool IsCompleted() const;

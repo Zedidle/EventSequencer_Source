@@ -34,14 +34,14 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
         const FInstancedStruct& SourceEventStruct = EventWrappers[i].Event;
         
         // 创建事件的运行时副本
-        FInstancedStruct RuntimeEventStruct = SourceEventStruct;
-        
-        F_SequenceEvent_BREAK* EventBreak = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_BREAK>();
+        const F_SequenceEvent_BREAK* EventBreak = SourceEventStruct.GetPtr<F_SequenceEvent_BREAK>();
         if (!EventBreak)
         {
-            EventSequenceRunning->AddEvent(RuntimeEventStruct);
+            EventSequenceRunning->AddEvent(SourceEventStruct);
         }
         
+        FInstancedStruct RuntimeEventStruct;
+        EventSequenceRunning->GetLastEvent(RuntimeEventStruct);
         
         if (F_SequenceEvent_LABEL* Event_LABEL = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_LABEL>())
         {

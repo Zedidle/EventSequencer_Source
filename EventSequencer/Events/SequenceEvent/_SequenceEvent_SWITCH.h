@@ -10,7 +10,7 @@ struct FEventCase
 {
 	GENERATED_BODY()
 
-	int CaseEventIndex;
+	int CaseEventIndex = -1;
 	
 	// 比较值
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Condition")

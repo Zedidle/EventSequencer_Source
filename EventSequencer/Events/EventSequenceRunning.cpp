@@ -2,6 +2,8 @@
 
 
 #include "EventSequenceRunning.h"
+
+#include "AudioMixerBlueprintLibrary.h"
 #include "../Events/SequenceEvent/CommonStructs.h"
 #include "EventSequencer/EventSequenceSystem.h"
 #include "EventSequencer/DataAssets/PropertyBagWrapper.h"
@@ -14,11 +16,11 @@
 #include "SequenceEvent/_SequenceEvent_RETURN.h"
 #include "SequenceEvent/_SequenceEvent_SWITCH.h"
 
-void UEventSequenceRunning::AddEvent(FInstancedStruct& Event)
+void UEventSequenceRunning::AddEvent(const FInstancedStruct& Event)
 {
 	if(!Event.IsValid()) return;
     
-	if (auto* DestEvent = Event.GetMutablePtr<FBaseSequenceEvent>())
+	if (auto* DestEvent = Event.GetPtr<FBaseSequenceEvent>())
 	{
 		EventQueue.Add(Event);
 	}
@@ -766,6 +768,15 @@ bool UEventSequenceRunning::TryParseText(const FString& StringValue, FText& OutV
 	return true;
 }
 
+void UEventSequenceRunning::GetLastEvent(FInstancedStruct& InstancedStruct)
+{
+	if (!EventQueue.IsEmpty())
+	{
+		InstancedStruct = EventQueue.Last();
+	}
+	
+}
+
 void UEventSequenceRunning::SetDataAsset(UEventSequenceDA* DataAsset, UPropertyBagWrapper* PropertyBagWrapper)
 {
 	if (!DataAsset) return;
@@ -916,21 +927,22 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 	}
 	else if (const F_SequenceEvent_SWITCH* CurEvent_SWITCH = CurEventStruct.GetPtr<F_SequenceEvent_SWITCH>())
 	{
+		bool InCase = false;
 		for (auto& E : CurEvent_SWITCH->EventCases)
 		{
 			FSequenceCondition Condition = FSequenceCondition(CurEvent_SWITCH->PropertyName, ESequenceConditionOperator::Equal, E.ComparisonValue);
 			if (EvaluateCondition(Condition))
 			{
+				InCase = true;
 				// 这部分需要严格测试，跳出去有跳回来感觉有点怪。可能Switch的解析还需要更平铺直叙
 				GOTO(E.CaseEventIndex);
-				if (E.AutoBreak)
-				{
-					break;
-				}
+				break;
 			}
 		}
-		// 错误。如果有Wait还会直接跳出，需要平铺解析混合Goto
-		GOTO(CurEvent_SWITCH->EndIndex);
+		if (!InCase)
+		{
+			GOTO(CurEvent_SWITCH->EndIndex);
+		}
 	}
 	else if (const F_SequenceEvent_RETURN* CurEvent_RETURN = CurEventStruct.GetPtr<F_SequenceEvent_RETURN>())
 	{
