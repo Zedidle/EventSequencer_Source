@@ -58,7 +58,7 @@ class EVENTSEQUENCER_API UEventSequenceSystem : public UTickableWorldSubsystem
 
     void ParseEventSequence(UEventSequenceRunning* EventSequenceRunning, const TArray<FEventWrapper>& EventWrappers);
 
-    UEventSequenceRunning* CreateEventSequenceRunning(UEventSequenceDA* TargetDataAsset, UPropertyBagWrapper* PropertyBagInput);
+    UEventSequenceRunning* CreateEventSequenceRunning(UEventSequenceDA* TargetDataAsset, UPropertyBagWrapper* PropertyBagInput = nullptr);
     
 public:
     // static UEventSequenceSystem* GetInstance(UWorld* World);

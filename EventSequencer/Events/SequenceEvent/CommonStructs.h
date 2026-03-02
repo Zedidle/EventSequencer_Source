@@ -150,6 +150,7 @@ struct FBaseSequenceEvent
 	// 事件生命周期方法
 	virtual void OnEnter() { State = EEventState::Active; }
 	virtual float Tick(float DeltaTime, float PreRemainTime = 0) { return 0; }
+	virtual void Reset(){ State = EEventState::Pending; }
 	
 	// 需要主动执行 Execute()，如果执行后状态为 Completed, 则返回true
 	// 例如主动触发对话选择之类的
@@ -176,7 +177,6 @@ struct FNestedSequenceEvent : public FBaseSequenceEvent
 		meta = (BaseStruct = "/Script/EventSequencer.BaseSequenceEvent", TitleProperty = "{EventTitle}"))
 	TArray<FEventWrapper> NestedEvents;
 
-	virtual void Reset(){ State = EEventState::Pending; }
 	
 	virtual int GetEventsCount() { return GetEventListEventsCount(NestedEvents); }
 	

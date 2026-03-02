@@ -75,7 +75,7 @@ public:
 	FInstancedPropertyBag PropertyBagInput;
 	
 	UFUNCTION()
-	void SetDataAsset(UEventSequenceDA* DataAsset, const FInstancedPropertyBag& PropertyBag);
+	void SetDataAsset(UEventSequenceDA* DataAsset, UPropertyBagWrapper* PropertyBagWrapper);
 
 	void Tick(float DeltaTime);
 	

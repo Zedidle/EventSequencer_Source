@@ -97,7 +97,7 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
             ParseEventSequence(EventSequenceRunning, Event_LOOP->LoopEvents);
             
             FInstancedStruct EventStruct_GOTO;
-            EventStruct_GOTO.InitializeAs<F_SequenceEvent_GOTO>(F_SequenceEvent_GOTO(Event_LOOP->State.LoopStartIndex));
+            EventStruct_GOTO.InitializeAs<F_SequenceEvent_GOTO>(F_SequenceEvent_GOTO(Event_LOOP->State.LoopStartIndex - 1));
             EventSequenceRunning->AddEvent(EventStruct_GOTO);
             
             EventSequenceRunning->LoopStateStack.Pop();
@@ -176,17 +176,9 @@ UEventSequenceRunning* UEventSequenceSystem::CreateEventSequenceRunning(UEventSe
     if (!TargetDataAsset) return nullptr;
     if (TargetDataAsset->GetSequenceLength() == 0) return nullptr;
     
+    
     UEventSequenceRunning* EventSequenceRunning = NewObject<UEventSequenceRunning>(this);
-
-    // ===== 新增：打印关键信息，验证两层“有效” =====
-    UE_LOG(LogTemp, Log, TEXT("UPropertyBagWrapper指针地址：%p（非空=有效）"), PropertyBagInput);
-    
-    // 先拿到Wrapper返回的FInstancedPropertyBag
-    FInstancedPropertyBag InputBag = PropertyBagInput->GetPropertyBag();
-    UE_LOG(LogTemp, Log, TEXT("Wrapper返回的FInstancedPropertyBag内部UPropertyBag地址：%p"), InputBag.GetPropertyBagStruct()); // 这里会打印nullptr
-    
-    EventSequenceRunning->SetDataAsset(TargetDataAsset, PropertyBagInput->GetPropertyBag());
-
+    EventSequenceRunning->SetDataAsset(TargetDataAsset, PropertyBagInput);
     ParseEventSequence(EventSequenceRunning, TargetDataAsset->EventWrappers);
     
     int N = 0;

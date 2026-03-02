@@ -9,6 +9,7 @@
 #include "SequenceEvent/_SequenceEvent_BREAK.h"
 #include "SequenceEvent/_SequenceEvent_GOTO.h"
 #include "SequenceEvent/_SequenceEvent_IF.h"
+#include "SequenceEvent/_SequenceEvent_LABEL.h"
 #include "SequenceEvent/_SequenceEvent_LOOP.h"
 #include "SequenceEvent/_SequenceEvent_RETURN.h"
 #include "SequenceEvent/_SequenceEvent_SWITCH.h"
@@ -74,7 +75,7 @@ void UEventSequenceRunning::GetCurEvent(FInstancedStruct& OutStruct)
 void UEventSequenceRunning::AddLabel(FName Label)
 {
 	// 暂不考虑Label重复问题
-	Label2Index.Add(Label,EventQueue.Num());
+	Label2Index.Add(Label,EventQueue.Num()-1);
 }
 
 void UEventSequenceRunning::Start()
@@ -765,18 +766,26 @@ bool UEventSequenceRunning::TryParseText(const FString& StringValue, FText& OutV
 	return true;
 }
 
-void UEventSequenceRunning::SetDataAsset(UEventSequenceDA* DataAsset, const FInstancedPropertyBag& PropertyBag)
+void UEventSequenceRunning::SetDataAsset(UEventSequenceDA* DataAsset, UPropertyBagWrapper* PropertyBagWrapper)
 {
 	if (!DataAsset) return;
-	if (PropertyBag.IsValid())
+	if (IsValid(PropertyBagWrapper))
 	{
-		UE_LOG(LogTemp, Log, TEXT("FInstancedPropertyBag有效，内部UPropertyBag地址：%p"), PropertyBag.GetPropertyBagStruct());
+		if (PropertyBagWrapper->GetPropertyBag().IsValid())
+		{
+			UE_LOG(LogTemp, Log, TEXT("FInstancedPropertyBag有效，内部UPropertyBag地址：%p"), PropertyBagWrapper->GetPropertyBag().GetPropertyBagStruct());
+			PropertyBagInput = PropertyBagWrapper->GetPropertyBag();
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("FInstancedPropertyBag无效！"));
+		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("FInstancedPropertyBag无效！"));
+		UE_LOG(LogTemp, Warning, TEXT("PropertyBagWrapper Invalid！"));
 	}
-	PropertyBagInput = PropertyBag;
+
 	
 	InitDataAsset = DataAsset;
 	PropertyBagRuntime = InitDataAsset->PropertyBagDefault;
@@ -794,7 +803,7 @@ void UEventSequenceRunning::SetDataAsset(UEventSequenceDA* DataAsset, const FIns
 
 void UEventSequenceRunning::LOOP(const FEventState_LOOP& LoopState)
 {
-	if (LoopStateStack.IsEmpty())
+	if (LoopStateStack.IsEmpty() || LoopState.LoopEventSelf != LoopStateStack.Last().LoopEventSelf)
 	{
 		LoopStateStack.Push(LoopState);
 		GOTO(LoopState.LoopStartIndex);
@@ -804,11 +813,18 @@ void UEventSequenceRunning::LOOP(const FEventState_LOOP& LoopState)
 	FEventState_LOOP& CurLoopState = LoopStateStack.Last();
 	if (CurLoopState.LoopEventSelf == LoopState.LoopEventSelf)
 	{
-		CurLoopState.CurLoopTimes ++;
-		if (CurLoopState.MaxLoopTimes > 0 && CurLoopState.CurLoopTimes == CurLoopState.MaxLoopTimes)
+		if (CurLoopState.MaxLoopTimes > 0)
 		{
-			GOTO(CurLoopState.LoopEndIndex);
-			LoopStateStack.Pop();
+			CurLoopState.CurLoopTimes ++;
+			if (CurLoopState.CurLoopTimes == CurLoopState.MaxLoopTimes)
+			{
+				GOTO(CurLoopState.LoopEndIndex + 1);
+				LoopStateStack.Pop();
+			}
+			else
+			{
+				GOTO(CurLoopState.LoopStartIndex);
+			}
 		}
 		// 无限循环，只能等Break或Return跳出
 		else if (CurLoopState.MaxLoopTimes == 0)
@@ -847,7 +863,11 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 	}
 	
 	FInstancedStruct& CurEventStruct = EventQueue[CurEventIndex];
-	if (const F_SequenceEvent_GOTO* CurEvent_GOTO = CurEventStruct.GetPtr<F_SequenceEvent_GOTO>())
+	if (const F_SequenceEvent_LABEL* CurEvent_LABEL = CurEventStruct.GetPtr<F_SequenceEvent_LABEL>())
+	{
+		Next();
+	}
+	else if (const F_SequenceEvent_GOTO* CurEvent_GOTO = CurEventStruct.GetPtr<F_SequenceEvent_GOTO>())
 	{
 		if (EvaluateCondition(CurEvent_GOTO->Condition))
 		{
@@ -869,12 +889,17 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 			BREAK();
 		}
 	}
-	else if (const F_SequenceEvent_LOOP* CurEvent_LOOP = CurEventStruct.GetPtr<F_SequenceEvent_LOOP>())
+	else if (F_SequenceEvent_LOOP* CurEvent_LOOP = CurEventStruct.GetMutablePtr<F_SequenceEvent_LOOP>())
 	{
+		CurEvent_LOOP->Reset();
 		// 循环状态
 		if (EvaluateCondition(CurEvent_LOOP->Condition))
 		{
 			LOOP(CurEvent_LOOP->State);
+		}
+		else
+		{
+			GOTO(CurEvent_LOOP->State.LoopEndIndex + 1);
 		}
 	}
 	else if (const F_SequenceEvent_IF* CurEvent_IF = CurEventStruct.GetPtr<F_SequenceEvent_IF>())

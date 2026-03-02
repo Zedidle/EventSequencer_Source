@@ -50,6 +50,12 @@ struct F_SequenceEvent_LOOP: public FBaseSequenceEvent
 		return Super::GetEventsCount() + GetEventListEventsCount(LoopEvents) + 1;
 	}
 
+	virtual void Reset() override
+	{
+		Super::Reset();
+		State.CurLoopTimes = 0;
+	}
+	
 	// 循环条件（可选，为空表示无条件循环）
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loop")
 	FSequenceCondition Condition;
