@@ -935,6 +935,7 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 			{
 				InCase = true;
 				// 这部分需要严格测试，跳出去有跳回来感觉有点怪。可能Switch的解析还需要更平铺直叙
+				// 仍然无法设置内部事件的变量
 				GOTO(E.CaseEventIndex);
 				break;
 			}
