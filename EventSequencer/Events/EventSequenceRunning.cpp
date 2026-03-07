@@ -19,11 +19,11 @@
 void UEventSequenceRunning::AddEvent(const FInstancedStruct& Event)
 {
 	if(!Event.IsValid()) return;
-    
-	if (auto* DestEvent = Event.GetPtr<FBaseSequenceEvent>())
-	{
-		EventQueue.Add(Event);
-	}
+	
+	auto* DestEvent = Event.GetPtr<FBaseSequenceEvent>();
+	if (!DestEvent) return;
+
+	EventQueue.Add(Event);
 }
 
 void UEventSequenceRunning::AppendEvents(TArray<FInstancedStruct>& Events)
@@ -768,14 +768,6 @@ bool UEventSequenceRunning::TryParseText(const FString& StringValue, FText& OutV
 	return true;
 }
 
-void UEventSequenceRunning::GetLastEvent(FInstancedStruct& InstancedStruct)
-{
-	if (!EventQueue.IsEmpty())
-	{
-		InstancedStruct = EventQueue.Last();
-	}
-	
-}
 
 void UEventSequenceRunning::SetDataAsset(UEventSequenceDA* DataAsset, UPropertyBagWrapper* PropertyBagWrapper)
 {
@@ -930,12 +922,10 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 		bool InCase = false;
 		for (auto& E : CurEvent_SWITCH->EventCases)
 		{
-			FSequenceCondition Condition = FSequenceCondition(CurEvent_SWITCH->PropertyName, ESequenceConditionOperator::Equal, E.ComparisonValue);
+			FSequenceCondition Condition = FSequenceCondition(CurEvent_SWITCH->ComparePropertyName, ESequenceConditionOperator::Equal, E.ComparisonValue);
 			if (EvaluateCondition(Condition))
 			{
 				InCase = true;
-				// 这部分需要严格测试，跳出去有跳回来感觉有点怪。可能Switch的解析还需要更平铺直叙
-				// 仍然无法设置内部事件的变量
 				GOTO(E.CaseEventIndex);
 				break;
 			}

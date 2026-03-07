@@ -10,6 +10,7 @@ struct FEventCase
 {
 	GENERATED_BODY()
 
+	UPROPERTY()
 	int CaseEventIndex = -1;
 	
 	// 比较值
@@ -39,7 +40,7 @@ struct F_SequenceEvent_SWITCH : public FBaseSequenceEvent
 		FString StartIndexString = FString::Printf(TEXT("%03d"), StartIndex);
 		FString EndIndexString = FString::Printf(TEXT("%03d"), EndIndex - 1);
 
-		return "SWITCH " + PropertyName.ToString() + " [From " + StartIndexString + " To " + EndIndexString + "]";
+		return "SWITCH " + ComparePropertyName.ToString() + " [From " + StartIndexString + " To " + EndIndexString + "]";
 	}
 	virtual int GetEventsCount() override
 	{
@@ -63,7 +64,7 @@ struct F_SequenceEvent_SWITCH : public FBaseSequenceEvent
 	
 	// 条件属性名
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SequenceEvent | SWITCH")
-	FName PropertyName;
+	FName ComparePropertyName;
 
 
 

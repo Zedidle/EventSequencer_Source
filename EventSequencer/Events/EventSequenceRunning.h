@@ -59,10 +59,11 @@ public:
 	
 	bool bPause = false;
 	int CurEventIndex = 0;
+
+	UPROPERTY()
 	TArray<FInstancedStruct> EventQueue;
 
 	int GetEventsNum() { return EventQueue.Num(); }
-	void GetLastEvent(FInstancedStruct& InstancedStruct);
 
 	// 当前循环状态栈
 	TArray<FEventState_LOOP> LoopStateStack;

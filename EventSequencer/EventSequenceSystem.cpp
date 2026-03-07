@@ -2,6 +2,7 @@
 
 #include "EventSequenceSystem.h"
 
+#include "AudioMixerBlueprintLibrary.h"
 #include "DataAssets/PropertyBagWrapper.h"
 #include "UObject/UnrealType.h"
 #include "Engine/World.h"
@@ -33,14 +34,6 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
 
         const FInstancedStruct& SourceEventStruct = EventWrappers[i].Event;
         FInstancedStruct RuntimeEventStruct = SourceEventStruct;
-        // 创建事件的运行时副本
-        // const F_SequenceEvent_BREAK* EventBreak = SourceEventStruct.GetPtr<F_SequenceEvent_BREAK>();
-        // if (!EventBreak)
-        // {
-        //     EventSequenceRunning->AddEvent(SourceEventStruct);
-        // }
-        // FInstancedStruct RuntimeEventStruct;
-        // EventSequenceRunning->GetLastEvent(RuntimeEventStruct);
         
         if (F_SequenceEvent_LABEL* Event_LABEL = RuntimeEventStruct.GetMutablePtr<F_SequenceEvent_LABEL>())
         {
@@ -72,13 +65,16 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
             Event_SWITCH->StartIndex = EventSequenceRunning->GetEventsNum() + 1;
             Event_SWITCH->EndIndex = Event_SWITCH->StartIndex + Event_SWITCH->GetEventsCount() - 1;
             EventSequenceRunning->AddEvent(RuntimeEventStruct);
-            // 当处于Switch中，（如果有Break）每次执行都需要判断是否到达下一个Case，直接跳到EndIndex
-            for (auto& E : Event_SWITCH->EventCases)
+
+            FInstancedStruct& LastSwitchStruct = EventSequenceRunning->EventQueue.Last();
+            F_SequenceEvent_SWITCH* Event_SWITCH_LAST = LastSwitchStruct.GetMutablePtr<F_SequenceEvent_SWITCH>();
+
+            for (FEventCase& CaseEvent : Event_SWITCH_LAST->EventCases)
             {
-                E.CaseEventIndex = EventSequenceRunning->GetEventsNum();
-                ParseEventSequence(EventSequenceRunning, E.CaseEvents);
+                CaseEvent.CaseEventIndex = EventSequenceRunning->GetEventsNum();
+                ParseEventSequence(EventSequenceRunning, CaseEvent.CaseEvents);
                 
-                if (E.AutoBreak)
+                if (CaseEvent.AutoBreak)
                 {
                     FInstancedStruct EventStruct_GOTO;
                     EventStruct_GOTO.InitializeAs<F_SequenceEvent_GOTO>(F_SequenceEvent_GOTO(Event_SWITCH->EndIndex));
