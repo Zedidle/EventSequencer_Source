@@ -2,6 +2,11 @@
 #include "EventSequenceBlueprintAction.h"
 #include "StructUtils/PropertyBag.h"
 
+FString FSequenceEvent_BlueprintCall::GetDisplayName() const
+{
+    return "BP-CALL [" + BlueprintClass->GetName() + "]";
+}
+
 float FSequenceEvent_BlueprintCall::Tick(float DeltaTime, float PreRemainTime)
 {
     return FBaseSequenceEvent::Tick(DeltaTime, PreRemainTime);

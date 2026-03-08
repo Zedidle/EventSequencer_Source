@@ -20,6 +20,8 @@ struct FSequenceEvent_BlueprintCall : public FBaseSequenceEvent
 {
     GENERATED_BODY()
 
+	virtual FString GetDisplayName() const override;
+	
 	UPROPERTY()
 	TWeakObjectPtr<UEventSequenceRunning> EventSequenceRunning;
 	
@@ -30,7 +32,7 @@ struct FSequenceEvent_BlueprintCall : public FBaseSequenceEvent
     TSubclassOf<UEventSequenceBlueprintAction> BlueprintClass;
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ports", 
-              meta = (DisplayName = "Port Bindings", TitleProperty = "BlueprintPropertyName"))
+              meta = (DisplayName = "Port Bindings", TitleProperty = "{PropertyName} = {TargetValue}"))
     TArray<FPortBinding> OutPropertyValues;
     
     // 蓝图实例（运行时使用）

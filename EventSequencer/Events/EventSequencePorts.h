@@ -22,7 +22,7 @@ struct FPortBinding
 	GENERATED_BODY()
     
 	// 解释器中的属性名
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Port", meta = (DisplayName = "Interpreter Property"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Port")
 	FName PropertyName;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Port", 	meta=(
