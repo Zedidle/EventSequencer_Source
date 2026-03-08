@@ -5,9 +5,48 @@
 #include "Misc/DefaultValueHelper.h"
 
 
-UEventSequenceAsyncBlueprintAction* FSequenceEvent_AsyncBlueprintCall::CreateAsyncInstance(UObject* Outer) const
+FString FSequenceEvent_AsyncBlueprintCall::GetDisplayName() const
 {
-    if (!BlueprintClass)
+    return "ABP-CALL [" + BlueprintClass->GetName() + "]";
+}
+
+void FSequenceEvent_AsyncBlueprintCall::SetEventSequenceRunning(UEventSequenceRunning* EventSequenceInstance)
+{
+    EventSequenceRunning = EventSequenceInstance;
+}
+
+bool FSequenceEvent_AsyncBlueprintCall::Execute(int Index)
+{
+    if (!BlueprintClass || !EventSequenceRunning.IsValid())
+    {
+        return false;
+    }
+
+    if (!ActionInstance)
+    {
+        ActionInstance = CreateAsyncInstance(EventSequenceRunning.Get());
+    }
+
+    // 需要等待策划 调用 EventSequenceRunning->ExecuteAsyncBlueprintCallEvent()
+    if (ActionInstance)
+    {
+        // 当执行时，就可以对 Property 进行修改
+        UPropertyBagWrapper* Wrapper = EventSequenceRunning->GetPropertyBagWrapper();
+        ActionInstance->OnStart(Wrapper);
+
+        for (FPortBinding& Bind : OutPropertyValues)
+        {
+            Wrapper->AddValueFromString(Bind.PropertyName, Bind.PropertyType, Bind.TargetValue);
+        }
+        
+        return true;
+    }
+    return false;
+}
+
+UEventSequenceAsyncBlueprintAction* FSequenceEvent_AsyncBlueprintCall::CreateAsyncInstance(UEventSequenceRunning* Outer) const
+{
+    if (!BlueprintClass )
     {
         UE_LOG(LogTemp, Error, TEXT("Async blueprint class is not set"));
         return nullptr;
@@ -25,17 +64,15 @@ UEventSequenceAsyncBlueprintAction* FSequenceEvent_AsyncBlueprintCall::CreateAsy
         Instance->SetInterruptBehavior(InterruptBehavior);
         
         // 绑定委托
-        // Instance->OnCompleted.Add(
-        //     Outer, 
-        //     &UEventSequenceSystem::OnAsyncActionCompleted,
-        //     Instance->GetUniqueID()
-        // );
-        //
-        // Instance->OnFailed.AddUObject(
-        //     Outer,
-        //     &UEventSequenceSystem::OnAsyncActionFailed,
-        //     Instance->GetUniqueID()
-        // );
+        Instance->OnResolved.AddDynamic(
+            Outer, 
+            &UEventSequenceRunning::OnAsyncActionResolved
+        );
+        
+        Instance->OnRejected.AddDynamic(
+            Outer,
+            &UEventSequenceRunning::OnAsyncActionRejected
+        );
     }
     
     return Instance;
@@ -43,52 +80,22 @@ UEventSequenceAsyncBlueprintAction* FSequenceEvent_AsyncBlueprintCall::CreateAsy
 
 void FSequenceEvent_AsyncBlueprintCall::DestroyAsyncInstance()
 {
-    if (AsyncInstance)
+    if (ActionInstance)
     {
         // AsyncInstance->OnCompleted.RemoveAll(this);
         // AsyncInstance->OnFailed.RemoveAll(this);
-        AsyncInstance->ConditionalBeginDestroy();
-        AsyncInstance = nullptr;
+        ActionInstance->ConditionalBeginDestroy();
+        ActionInstance = nullptr;
     }
 }
 
-bool FSequenceEvent_AsyncBlueprintCall::StartAsyncExecution(
-    UEventSequenceAsyncBlueprintAction* Instance, 
-    const FAsyncActionContext& Context,
-    UPropertyBagWrapper* PropertyBag)
-{
-    if (!Instance || !IsValid(Instance))
-    {
-        return false;
-    }
-    
-    // 1. 设置上下文
-    Instance->SetContext(Context);
-    
-    // 2. 同步输入数据
-    if (!SyncPortData(Instance, PropertyBag, true))
-    {
-        UE_LOG(LogTemp, Warning, TEXT("Failed to sync input data to async blueprint"));
-    }
-    
-    // 3. 如果从序列化状态恢复，尝试反序列化
-    if (Context.bRecoveringFromInterrupt && !SerializedState.IsEmpty())
-    {
-        Instance->DeserializeState(SerializedState);
-    }
-    
-    // 4. 执行异步操作
-    Instance->OnExecute(Context);
-    
-    return true;
-}
 
-bool FSequenceEvent_AsyncBlueprintCall::SyncPortData(UEventSequenceAsyncBlueprintAction* Instance,
-    UPropertyBagWrapper* PropertyBag, bool bToBlueprint) const
-{
-
-    return false;
-}
+// 端口数据的绑定不好处理，放一放先
+// bool FSequenceEvent_AsyncBlueprintCall::SyncPortData(UEventSequenceAsyncBlueprintAction* Instance,
+//     UPropertyBagWrapper* PropertyBag, bool bToBlueprint) const
+// {
+//     return false;
+// }
 
 void FSequenceEvent_AsyncBlueprintCall::HandleAsyncComplete(EAsyncActionResult Result, const FString& Reason)
 {
@@ -106,24 +113,20 @@ void FSequenceEvent_AsyncBlueprintCall::HandleAsyncComplete(EAsyncActionResult R
     }
 }
 
-bool FSequenceEvent_AsyncBlueprintCall::ValidatePortBindings(const UClass* _BlueprintClass) const
+// bool FSequenceEvent_AsyncBlueprintCall::ValidatePortBindings(const UClass* _BlueprintClass) const
+// {
+//     return false;
+// }
+
+
+bool FSequenceEvent_AsyncBlueprintCall::OnExecute()
 {
-    return false;
+    if (!ActionInstance)
+    {
+        return false;
+    }
+
+    ActionInstance->OnExecute();
+    return true;
 }
 
-FString FSequenceEvent_AsyncBlueprintCall::SerializeAsyncState() const
-{
-    if (AsyncInstance && AsyncInstance->SupportsStateSerialization())
-    {
-        return AsyncInstance->SerializeState();
-    }
-    return TEXT("");
-}
-
-void FSequenceEvent_AsyncBlueprintCall::DeserializeAsyncState(const FString& StateString)
-{
-    if (AsyncInstance && AsyncInstance->SupportsStateSerialization())
-    {
-        AsyncInstance->DeserializeState(StateString);
-    }
-}

@@ -150,8 +150,13 @@ bool UEventSequenceRunning::IsWaitingForAsync() const
 	return WaitingForAsyncEventIndex != -1 && WaitingForAsyncOperationID.IsValid();
 }
 
+void UEventSequenceRunning::SetState(ESequenceState NewState)
+{
+	State = NewState;
+}
+
 void UEventSequenceRunning::OnAsyncOperationCompleted(int32 EventIndex, EAsyncActionResult Result,
-	const FString& Reason)
+                                                      const FString& Reason)
 {
 	if (EventIndex != WaitingForAsyncEventIndex)
 	{
@@ -169,29 +174,20 @@ void UEventSequenceRunning::OnAsyncOperationCompleted(int32 EventIndex, EAsyncAc
 			if (Result == EAsyncActionResult::Success)
 			{
 				// 同步输出数据
-				if (AsyncEvent->AsyncInstance)
-				{
-					SyncPortData(AsyncEvent->AsyncInstance, AsyncEvent->PortBindings, false);
-				}
+				// if (AsyncEvent->ActionInstance)
+				// {
+				// 	SyncPortData(AsyncEvent->ActionInstance, AsyncEvent->OutPropertyValues, false);
+				// }
                 
 				// 如果实例不支持缓存，销毁它
-				if (AsyncEvent->AsyncInstance->GetInterruptBehavior() == EAsyncInterruptBehavior::Skip)
+				if (AsyncEvent->ActionInstance->GetInterruptBehavior() == EAsyncInterruptBehavior::Skip)
 				{
-					AsyncEvent->AsyncInstance->ConditionalBeginDestroy();
-					AsyncEvent->AsyncInstance = nullptr;
+					AsyncEvent->ActionInstance->ConditionalBeginDestroy();
+					AsyncEvent->ActionInstance = nullptr;
 				}
-			}
-            
-			// 序列化状态（如果支持）
-			if (AsyncEvent->AsyncInstance && AsyncEvent->AsyncInstance->SupportsStateSerialization())
-			{
-				AsyncEvent->SerializedState = AsyncEvent->AsyncInstance->SerializeState();
 			}
 		}
 	}
-    
-	// 停止等待
-	StopWaitingForAsync();
     
 	// 如果序列在等待，恢复执行
 	if (State == ESequenceState::WaitingForAsync)
@@ -218,9 +214,17 @@ bool UEventSequenceRunning::ExecuteEvent(FInstancedStruct& Event, int32 EventInd
 	return false;
 }
 
-bool UEventSequenceRunning::ExecuteAsyncBlueprintCallEvent(FSequenceEvent_AsyncBlueprintCall& AsyncEvent,
-	int32 EventIndex)
+bool UEventSequenceRunning::ExecuteAsyncBlueprintCallEvent()
 {
+	// 判断当前任务是否为 AsyncBlueprintCallEvent
+	if (EventQueue.IsValidIndex(CurEventIndex))
+	{
+		FInstancedStruct& OutStruct = EventQueue[CurEventIndex];
+		if (FSequenceEvent_AsyncBlueprintCall* AsyncBlueprintCall = OutStruct.GetMutablePtr<FSequenceEvent_AsyncBlueprintCall>())
+		{
+			AsyncBlueprintCall->OnExecute();
+		}
+	}
 	return false;
 }
 
@@ -228,21 +232,6 @@ bool UEventSequenceRunning::ExecuteCatchBlock(FSequenceEvent_AsyncBlueprintCall&
 {
 	return false;
 }
-
-void UEventSequenceRunning::StartWaitingForAsync(int32 EventIndex, const FGuid& AsyncOperationID)
-{
-}
-
-void UEventSequenceRunning::StopWaitingForAsync()
-{
-}
-
-bool UEventSequenceRunning::SyncPortData(UEventSequenceAsyncBlueprintAction* Instance, const TArray<FPortBinding>& PortBindings,
-	bool bToBlueprint)
-{
-	return false;
-}
-
 
 bool UEventSequenceRunning::HandleControlFlowEvent(FInstancedStruct& Event, int32 EventIndex)
 {
@@ -254,45 +243,6 @@ bool UEventSequenceRunning::HandleActionEvent(FInstancedStruct& Event, int32 Eve
 	return false;
 }
 
-
-
-void UEventSequenceRunning::SetState(ESequenceState NewState)
-{
-}
-//
-// bool UEventSequenceRunning::ExecuteBlueprintCallEvent(FSequenceEvent_BlueprintCall& BlueprintCallEvent, int32 EventIndex)
-// {
-// 	// 1. 创建蓝图实例
-// 	if (!BlueprintCallEvent.BlueprintInstance)
-// 	{
-// 		BlueprintCallEvent.BlueprintInstance = BlueprintCallEvent.GetOrCreateBlueprintInstance(this);
-// 		if (!BlueprintCallEvent.BlueprintInstance)
-// 		{
-// 			return false;
-// 		}
-// 	}
-//     
-// 	// 2. 创建执行上下文
-// 	FSequenceBlueprintContext Context;
-// 	Context.DeltaTime = GetWorld() ? GetWorld()->GetDeltaSeconds() : 0.0f;
-// 	Context.CurrentEventIndex = EventIndex;
-// 	Context.WorldContextObject = this;
-//     
-// 	// 3. 执行蓝图
-// 	bool bResult = BlueprintCallEvent.ExecuteBlueprint(
-// 		BlueprintCallEvent.BlueprintInstance,
-// 		Context,
-// 		PropertyBagRuntime
-// 	);
-//     
-// 	// 4. 清理实例（如果需要）
-// 	// if (bResult && BlueprintCallEvent.bAutoDestroyInstance)
-// 	// {
-// 	// 	BlueprintCallEvent.DestroyBlueprintInstance();
-// 	// }
-//     
-// 	return bResult;
-// }
 
 
 bool UEventSequenceRunning::EvaluateCondition(const FSequenceCondition& Condition)
@@ -951,8 +901,10 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 	else if (FSequenceEvent_AsyncBlueprintCall* CurEvent_AsyncBlueprintCall = CurEventStruct.GetMutablePtr<FSequenceEvent_AsyncBlueprintCall>())
 	{
 		CurEvent_BlueprintCall->Execute();
+		// 专门为异步事件做了状态，是否划算，后续可能移除
+		SetState(ESequenceState::WaitingForAsync);
 		// 进入等待异步完成的状态，并在 OnAsyncBlueprintCallFinished 接受回调
-		CurEventIndex++;
+		// CurEventIndex++;
 	}
 	// 具体事件
 	else if (FNestedSequenceEvent* Event = CurEventStruct.GetMutablePtr<FNestedSequenceEvent>())
@@ -980,4 +932,15 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 			}
 		}
 	}
+}
+
+
+void UEventSequenceRunning::OnAsyncActionResolved()
+{
+	CurEventIndex ++ ;
+}
+
+void UEventSequenceRunning::OnAsyncActionRejected(FString Reason)
+{
+	CurEventIndex ++ ;
 }

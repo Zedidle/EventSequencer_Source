@@ -80,8 +80,12 @@ public:
 	void SetDataAsset(UEventSequenceDA* DataAsset, UPropertyBagWrapper* PropertyBagWrapper);
 
 	void Tick(float DeltaTime);
-	
-	
+	UFUNCTION()
+	void OnAsyncActionResolved();
+	UFUNCTION()
+	void OnAsyncActionRejected(FString Reason);
+
+
 	void AddEvent(const FInstancedStruct& Event);
 	void AppendEvents(TArray<FInstancedStruct>& Events);
 	
@@ -146,8 +150,10 @@ public:
     
     // 检查是否在等待异步操作
     bool IsWaitingForAsync() const;
-    
-    // 异步操作完成回调
+
+	void SetState(ESequenceState Running);
+
+	// 异步操作完成回调，用不上，放着先
     void OnAsyncOperationCompleted(int32 EventIndex, EAsyncActionResult Result, const FString& Reason = TEXT(""));
     
     // 获取所有标签
@@ -157,11 +163,7 @@ public:
     // 查找标签索引
     UFUNCTION(BlueprintCallable, Category = "Event Sequence")
     int32 FindLabelIndex(const FName& LabelName) const;
-    
-    // 获取执行统计
-    UFUNCTION(BlueprintCallable, Category = "Event Sequence")
-    int32 GetExecutedInstructionCount() const { return ExecutedInstructionCount; }
-    
+	
     // 获取序列数据资产
     UEventSequenceDA* GetSequenceDA() const { return SequenceDA; }
     
@@ -205,39 +207,27 @@ protected:
     // 每帧执行指令限制
     int32 InstructionLimitPerFrame = 1000;
     
-    // 异步实例缓存
-    TMap<FName, UEventSequenceAsyncBlueprintAction*> AsyncInstanceCache;
-    
     // 执行事件
     bool ExecuteEvent(FInstancedStruct& Event, int32 EventIndex);
     
     // 执行异步蓝图调用事件
-    bool ExecuteAsyncBlueprintCallEvent(FSequenceEvent_AsyncBlueprintCall& AsyncEvent, int32 EventIndex);
+	UFUNCTION(BlueprintCallable)
+    bool ExecuteAsyncBlueprintCallEvent();
     
     // 执行Catch块
     bool ExecuteCatchBlock(FSequenceEvent_AsyncBlueprintCall& AsyncEvent, int32 EventIndex);
     
-    // 开始等待异步操作
-    void StartWaitingForAsync(int32 EventIndex, const FGuid& AsyncOperationID);
-    
-    // 结束等待异步操作
-    void StopWaitingForAsync();
-    
-    // 同步端口数据
-    bool SyncPortData(UEventSequenceAsyncBlueprintAction* Instance, 
-                      const TArray<FPortBinding>& PortBindings,
-                      bool bToBlueprint);
-    
+    // 同步端口数据，目前还没哟绑定的做法
+    // bool SyncPortData(UEventSequenceAsyncBlueprintAction* Instance, 
+    //                   const TArray<FPortBinding>& PortBindings,
+    //                   bool bToBlueprint);
+
     
     // 处理控制流事件
     bool HandleControlFlowEvent(FInstancedStruct& Event, int32 EventIndex);
     
     // 处理具体操作事件
     bool HandleActionEvent(FInstancedStruct& Event, int32 EventIndex);
-    
-    // 设置状态
-    void SetState(ESequenceState NewState);
 
-	// bool ExecuteBlueprintCallEvent(FSequenceEvent_BlueprintCall& BlueprintCallEvent, int32 EventIndex);
-	
+
 };

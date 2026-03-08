@@ -19,15 +19,15 @@ bool FSequenceEvent_BlueprintCall::Execute(int Index)
         return false;
     }
     
-    if (!BlueprintInstance)
+    if (!ActionInstance)
     {
-        BlueprintInstance = NewObject<UEventSequenceBlueprintAction>(EventSequenceRunning.Get(), BlueprintClass);
+        ActionInstance = NewObject<UEventSequenceBlueprintAction>(EventSequenceRunning.Get(), BlueprintClass);
     }
 
-    if (BlueprintInstance)
+    if (ActionInstance)
     {
 	    UPropertyBagWrapper* Wrapper = EventSequenceRunning->GetPropertyBagWrapper();
-        BlueprintInstance->Execute(Wrapper);
+        ActionInstance->Execute(Wrapper);
         
         for (FPortBinding& Bind : OutPropertyValues)
         {
@@ -48,20 +48,20 @@ UEventSequenceBlueprintAction* FSequenceEvent_BlueprintCall::GetOrCreateBlueprin
     }
     
     // 如果已存在实例，返回现有实例
-    if (BlueprintInstance && IsValid(BlueprintInstance))
+    if (ActionInstance && IsValid(ActionInstance))
     {
-        return BlueprintInstance;
+        return ActionInstance;
     }
     
     // 创建新实例
-    BlueprintInstance = NewObject<UEventSequenceBlueprintAction>(Outer, BlueprintClass);
-    if (!BlueprintInstance)
+    ActionInstance = NewObject<UEventSequenceBlueprintAction>(Outer, BlueprintClass);
+    if (!ActionInstance)
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to create blueprint instance for class: %s"), 
                *BlueprintClass->GetName());
     }
     
-    return BlueprintInstance;
+    return ActionInstance;
 }
 
 

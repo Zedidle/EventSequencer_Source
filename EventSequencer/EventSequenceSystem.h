@@ -83,45 +83,26 @@ public:
     UFUNCTION()
     bool RemoveComponent(const UEventSequenceComponent* Component);
 
-
-    // 异步操作管理
-    UFUNCTION(BlueprintCallable, Category = "Event Sequence|Async")
-    FGuid StartAsyncOperation(UEventSequenceRunning* Instance, int32 EventIndex, 
-                             UEventSequenceAsyncBlueprintAction* AsyncAction);
+    // UFUNCTION(BlueprintCallable, Category = "Event Sequence|Async")
+    // bool CancelAsyncOperation(const FGuid& AsyncOperationID, const FString& Reason = TEXT("Cancelled"));
+    //
+    // UFUNCTION(BlueprintCallable, Category = "Event Sequence|Async")
+    // bool HasPendingAsyncOperation(const FGuid& SequenceID) const;
     
-    UFUNCTION(BlueprintCallable, Category = "Event Sequence|Async")
-    bool CancelAsyncOperation(const FGuid& AsyncOperationID, const FString& Reason = TEXT("Cancelled"));
-    
-    UFUNCTION(BlueprintCallable, Category = "Event Sequence|Async")
-    bool HasPendingAsyncOperation(const FGuid& SequenceID) const;
-    
-    UFUNCTION(BlueprintCallable, Category = "Event Sequence|Async")
-    TArray<FGuid> GetPendingAsyncOperations(const FGuid& SequenceID) const;
-    
-    // 异步回调
-    void OnAsyncActionCompleted(const FGuid& AsyncActionID);
-    void OnAsyncActionFailed(const FString& Reason, const FGuid& AsyncActionID);
-    
-    // 序列化支持
-    UFUNCTION(BlueprintCallable, Category = "Event Sequence|Serialization")
-    void SerializeAsyncOperations(const FGuid& SequenceID, TArray<FString>& OutSerializedStates);
-    
-    UFUNCTION(BlueprintCallable, Category = "Event Sequence|Serialization")
-    void DeserializeAsyncOperations(const FGuid& SequenceID, const TArray<FString>& SerializedStates);
+    // 异步回调，应该下放到 EventSequence 内置处理
+    // void OnAsyncActionCompleted(const FGuid& AsyncActionID);
+    // void OnAsyncActionFailed(const FString& Reason, const FGuid& AsyncActionID);
     
     // 全局属性包
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Event Sequence")
     UPropertyBagWrapper* GlobalPropertyBag = nullptr;
     
     // 事件总线
-    DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnAsyncOperationStarted, const FGuid&, const FGuid&, UEventSequenceAsyncBlueprintAction*);
-    FOnAsyncOperationStarted OnAsyncOperationStarted;
-    
-    DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnAsyncOperationCompleted, const FGuid&, const FGuid&, EAsyncActionResult);
-    FOnAsyncOperationCompleted OnAsyncOperationCompleted;
-    
-    // 获取异步操作信息
-    const FAsyncOperationInfo* GetAsyncOperationInfo(const FGuid& AsyncOperationID) const;
+    // DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnAsyncOperationStarted, const FGuid&, const FGuid&, UEventSequenceAsyncBlueprintAction*);
+    // FOnAsyncOperationStarted OnAsyncOperationStarted;
+    //
+    // DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnAsyncOperationCompleted, const FGuid&, const FGuid&, EAsyncActionResult);
+    // FOnAsyncOperationCompleted OnAsyncOperationCompleted;
 
     UFUNCTION()
     UEventSequenceRunning* GetAsyncEventSequence(const FGuid& Guid);
@@ -145,8 +126,6 @@ private:
     
     // 内部函数
     FGuid GenerateAsyncOperationID();
-    void CleanupCompletedAsyncOperations();
-    void ProcessAsyncOperations(float DeltaTime);
     
     // 处理中断恢复
     void HandleInterruptRecovery(UEventSequenceRunning* Instance, FSequenceEvent_AsyncBlueprintCall& AsyncEvent);

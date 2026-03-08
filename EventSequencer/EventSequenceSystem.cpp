@@ -274,10 +274,6 @@ void UEventSequenceSystem::TickSequences(float DeltaTime)
     }
 }
 
-const FAsyncOperationInfo* UEventSequenceSystem::GetAsyncOperationInfo(const FGuid& AsyncOperationID) const
-{
-    return nullptr;
-}
 
 UEventSequenceRunning* UEventSequenceSystem::GetAsyncEventSequence(const FGuid& Guid)
 {
@@ -291,185 +287,131 @@ FGuid UEventSequenceSystem::GenerateAsyncOperationID()
     return NewID;
 }
 
-void UEventSequenceSystem::CleanupCompletedAsyncOperations()
-{
-}
-
-void UEventSequenceSystem::ProcessAsyncOperations(float DeltaTime)
-{
-}
-
-FGuid UEventSequenceSystem::StartAsyncOperation(UEventSequenceRunning* Instance, int32 EventIndex,
-                                                UEventSequenceAsyncBlueprintAction* AsyncAction)
-{
-    if (!Instance || !AsyncAction)
-    {
-        return FGuid();
-    }
-    
-    FGuid AsyncOperationID = GenerateAsyncOperationID();
-    
-    FAsyncOperationInfo OperationInfo;
-    // OperationInfo.SequenceID = Instance->GetSequenceID();
-    OperationInfo.EventIndex = EventIndex;
-    OperationInfo.AsyncAction = AsyncAction;
-    // OperationInfo.AsyncActionID = AsyncAction->GetUniqueID();
-    OperationInfo.StartTime = GetWorld()->GetTimeSeconds();
-    
-    // 添加到映射
-    AsyncOperations.Add(AsyncOperationID, OperationInfo);
-    
-    TArray<FGuid>& SequenceOperations = SequenceToAsyncOperations.FindOrAdd(Instance->GetSequenceID());
-    SequenceOperations.Add(AsyncOperationID);
-    
-    // 绑定委托
-    // AsyncAction->OnCompleted.AddDynamic(this, &UEventSequenceSystem::OnAsyncActionCompleted, AsyncOperationID);
-    // AsyncAction->OnFailed.AddUObject(this, &UEventSequenceSystem::OnAsyncActionFailed, AsyncAction->GetUniqueID());
-    
-    // 广播事件
-    OnAsyncOperationStarted.Broadcast(Instance->GetSequenceID(), AsyncOperationID, AsyncAction);
-    
-    return AsyncOperationID;
-}
-
 // 取消异步操作
-bool UEventSequenceSystem::CancelAsyncOperation(const FGuid& AsyncOperationID, const FString& Reason)
-{
-    FAsyncOperationInfo* OperationInfo = AsyncOperations.Find(AsyncOperationID);
-    if (!OperationInfo)
-    {
-        return false;
-    }
-    
-    UEventSequenceAsyncBlueprintAction* AsyncAction = OperationInfo->AsyncAction.Get();
-    if (AsyncAction)
-    {
-        AsyncAction->CompleteFailure(Reason);
-    }
-    
-    return true;
-}
+// bool UEventSequenceSystem::CancelAsyncOperation(const FGuid& AsyncOperationID, const FString& Reason)
+// {
+//     FAsyncOperationInfo* OperationInfo = AsyncOperations.Find(AsyncOperationID);
+//     if (!OperationInfo)
+//     {
+//         return false;
+//     }
+//     
+//     UEventSequenceAsyncBlueprintAction* AsyncAction = OperationInfo->AsyncAction.Get();
+//     if (AsyncAction)
+//     {
+//         AsyncAction->CompleteFailure(Reason);
+//     }
+//     
+//     return true;
+// }
+//
+// // 检查是否有挂起的异步操作
+// bool UEventSequenceSystem::HasPendingAsyncOperation(const FGuid& SequenceID) const
+// {
+//     const TArray<FGuid>* Operations = SequenceToAsyncOperations.Find(SequenceID);
+//     if (!Operations)
+//     {
+//         return false;
+//     }
+//     
+//     for (const FGuid& OperationID : *Operations)
+//     {
+//         const FAsyncOperationInfo* Info = AsyncOperations.Find(OperationID);
+//         if (Info && Info->AsyncAction.IsValid() && !Info->AsyncAction->IsCompleted())
+//         {
+//             return true;
+//         }
+//     }
+//     
+//     return false;
+// }
 
-// 检查是否有挂起的异步操作
-bool UEventSequenceSystem::HasPendingAsyncOperation(const FGuid& SequenceID) const
-{
-    const TArray<FGuid>* Operations = SequenceToAsyncOperations.Find(SequenceID);
-    if (!Operations)
-    {
-        return false;
-    }
-    
-    for (const FGuid& OperationID : *Operations)
-    {
-        const FAsyncOperationInfo* Info = AsyncOperations.Find(OperationID);
-        if (Info && Info->AsyncAction.IsValid() && !Info->AsyncAction->IsCompleted())
-        {
-            return true;
-        }
-    }
-    
-    return false;
-}
-
-TArray<FGuid> UEventSequenceSystem::GetPendingAsyncOperations(const FGuid& SequenceID) const
-{
-    return TArray<FGuid>();
-}
 
 // 异步操作完成回调
-void UEventSequenceSystem::OnAsyncActionCompleted(const FGuid& AsyncActionID)
-{
-    // 查找对应的异步操作
-    FGuid FoundOperationID;
-    FAsyncOperationInfo* FoundOperation = nullptr;
-    
-    for (auto& Pair : AsyncOperations)
-    {
-        if (Pair.Value.AsyncActionID == AsyncActionID)
-        {
-            FoundOperationID = Pair.Key;
-            FoundOperation = &Pair.Value;
-            break;
-        }
-    }
-    
-    if (!FoundOperation)
-    {
-        return;
-    }
-    
-    // 获取序列实例
-    UEventSequenceRunning* Instance = GetAsyncEventSequence(FoundOperation->SequenceID);
-    if (Instance)
-    {
-        // 通知序列实例异步操作完成
-        Instance->OnAsyncOperationCompleted(FoundOperation->EventIndex, EAsyncActionResult::Success, TEXT(""));
-    }
-    
-    // 广播完成事件
-    OnAsyncOperationCompleted.Broadcast(FoundOperation->SequenceID, FoundOperationID, EAsyncActionResult::Success);
-    
-    // 从映射中移除
-    AsyncOperations.Remove(FoundOperationID);
-    
-    TArray<FGuid>* SequenceOperations = SequenceToAsyncOperations.Find(FoundOperation->SequenceID);
-    if (SequenceOperations)
-    {
-        SequenceOperations->Remove(FoundOperationID);
-    }
-}
+// void UEventSequenceSystem::OnAsyncActionCompleted(const FGuid& AsyncActionID)
+// {
+//     // 查找对应的异步操作
+//     FGuid FoundOperationID;
+//     FAsyncOperationInfo* FoundOperation = nullptr;
+//     
+//     for (auto& Pair : AsyncOperations)
+//     {
+//         if (Pair.Value.AsyncActionID == AsyncActionID)
+//         {
+//             FoundOperationID = Pair.Key;
+//             FoundOperation = &Pair.Value;
+//             break;
+//         }
+//     }
+//     
+//     if (!FoundOperation)
+//     {
+//         return;
+//     }
+//     
+//     // 获取序列实例
+//     UEventSequenceRunning* Instance = GetAsyncEventSequence(FoundOperation->SequenceID);
+//     if (Instance)
+//     {
+//         // 通知序列实例异步操作完成
+//         Instance->OnAsyncOperationCompleted(FoundOperation->EventIndex, EAsyncActionResult::Success, TEXT(""));
+//     }
+//     
+//     // 广播完成事件
+//     OnAsyncOperationCompleted.Broadcast(FoundOperation->SequenceID, FoundOperationID, EAsyncActionResult::Success);
+//     
+//     // 从映射中移除
+//     AsyncOperations.Remove(FoundOperationID);
+//     
+//     TArray<FGuid>* SequenceOperations = SequenceToAsyncOperations.Find(FoundOperation->SequenceID);
+//     if (SequenceOperations)
+//     {
+//         SequenceOperations->Remove(FoundOperationID);
+//     }
+// }
+//
+// void UEventSequenceSystem::OnAsyncActionFailed(const FString& Reason, const FGuid& AsyncActionID)
+// {
+//     // 查找对应的异步操作
+//     FGuid FoundOperationID;
+//     FAsyncOperationInfo* FoundOperation = nullptr;
+//     
+//     for (auto& Pair : AsyncOperations)
+//     {
+//         if (Pair.Value.AsyncActionID == AsyncActionID)
+//         {
+//             FoundOperationID = Pair.Key;
+//             FoundOperation = &Pair.Value;
+//             break;
+//         }
+//     }
+//     
+//     if (!FoundOperation)
+//     {
+//         return;
+//     }
+//     
+//     // 获取序列实例
+//     UEventSequenceRunning* Instance = GetAsyncEventSequence(FoundOperation->SequenceID);
+//     if (Instance)
+//     {
+//         // 通知序列实例异步操作失败
+//         Instance->OnAsyncOperationCompleted(FoundOperation->EventIndex, EAsyncActionResult::Failed, Reason);
+//     }
+//     
+//     // 广播完成事件
+//     OnAsyncOperationCompleted.Broadcast(FoundOperation->SequenceID, FoundOperationID, EAsyncActionResult::Failed);
+//     
+//     // 从映射中移除
+//     AsyncOperations.Remove(FoundOperationID);
+//     
+//     TArray<FGuid>* SequenceOperations = SequenceToAsyncOperations.Find(FoundOperation->SequenceID);
+//     if (SequenceOperations)
+//     {
+//         SequenceOperations->Remove(FoundOperationID);
+//     }
+// }
 
-void UEventSequenceSystem::OnAsyncActionFailed(const FString& Reason, const FGuid& AsyncActionID)
-{
-    // 查找对应的异步操作
-    FGuid FoundOperationID;
-    FAsyncOperationInfo* FoundOperation = nullptr;
-    
-    for (auto& Pair : AsyncOperations)
-    {
-        if (Pair.Value.AsyncActionID == AsyncActionID)
-        {
-            FoundOperationID = Pair.Key;
-            FoundOperation = &Pair.Value;
-            break;
-        }
-    }
-    
-    if (!FoundOperation)
-    {
-        return;
-    }
-    
-    // 获取序列实例
-    UEventSequenceRunning* Instance = GetAsyncEventSequence(FoundOperation->SequenceID);
-    if (Instance)
-    {
-        // 通知序列实例异步操作失败
-        Instance->OnAsyncOperationCompleted(FoundOperation->EventIndex, EAsyncActionResult::Failed, Reason);
-    }
-    
-    // 广播完成事件
-    OnAsyncOperationCompleted.Broadcast(FoundOperation->SequenceID, FoundOperationID, EAsyncActionResult::Failed);
-    
-    // 从映射中移除
-    AsyncOperations.Remove(FoundOperationID);
-    
-    TArray<FGuid>* SequenceOperations = SequenceToAsyncOperations.Find(FoundOperation->SequenceID);
-    if (SequenceOperations)
-    {
-        SequenceOperations->Remove(FoundOperationID);
-    }
-}
-
-void UEventSequenceSystem::SerializeAsyncOperations(const FGuid& SequenceID, TArray<FString>& OutSerializedStates)
-{
-    
-}
-
-void UEventSequenceSystem::DeserializeAsyncOperations(const FGuid& SequenceID, const TArray<FString>& SerializedStates)
-{
-    
-}
 
 // 处理中断恢复
 void UEventSequenceSystem::HandleInterruptRecovery( UEventSequenceRunning* Instance, FSequenceEvent_AsyncBlueprintCall& AsyncEvent)
@@ -483,9 +425,9 @@ void UEventSequenceSystem::HandleInterruptRecovery( UEventSequenceRunning* Insta
     {
     case EAsyncInterruptBehavior::Restart:
         // 重启语义：重新创建异步实例
-        if (AsyncEvent.AsyncInstance)
+        if (AsyncEvent.ActionInstance)
         {
-            AsyncEvent.AsyncInstance->ResetState();
+            AsyncEvent.ActionInstance->ResetState();
         }
         AsyncEvent.AsyncResult = EAsyncActionResult::Pending;
         AsyncEvent.FailureReason.Empty();

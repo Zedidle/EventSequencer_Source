@@ -24,6 +24,7 @@ struct FSequenceEvent_BlueprintCall : public FBaseSequenceEvent
 	
 	UPROPERTY()
 	TWeakObjectPtr<UEventSequenceRunning> EventSequenceRunning;
+	void SetEventSequenceRunning(UEventSequenceRunning* EventSequenceInstance);
 	
     // 蓝图类引用
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Blueprint", 
@@ -37,7 +38,7 @@ struct FSequenceEvent_BlueprintCall : public FBaseSequenceEvent
     
     // 蓝图实例（运行时使用）
     UPROPERTY(Transient)
-    UEventSequenceBlueprintAction* BlueprintInstance = nullptr;
+    UEventSequenceBlueprintAction* ActionInstance = nullptr;
     
     // 执行结果
     EBlueprintActionResult LastResult = EBlueprintActionResult::Success;
@@ -54,5 +55,4 @@ struct FSequenceEvent_BlueprintCall : public FBaseSequenceEvent
     // 获取蓝图实例（如果不存在则创建）
     UEventSequenceBlueprintAction* GetOrCreateBlueprintInstance(UObject* Outer);
 
-	void SetEventSequenceRunning(UEventSequenceRunning* EventSequenceInstance);
 };
