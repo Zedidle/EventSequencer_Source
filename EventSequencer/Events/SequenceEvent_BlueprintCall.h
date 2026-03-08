@@ -29,10 +29,9 @@ struct FSequenceEvent_BlueprintCall : public FBaseSequenceEvent
                       AllowedClasses = "/Script/EventSequencer.EventSequenceBlueprintAction"))
     TSubclassOf<UEventSequenceBlueprintAction> BlueprintClass;
     
-    // 端口绑定配置
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ports", 
               meta = (DisplayName = "Port Bindings", TitleProperty = "BlueprintPropertyName"))
-    TArray<FPortBinding> PortBindings;
+    TArray<FPortBinding> OutPropertyValues;
     
     // 蓝图实例（运行时使用）
     UPROPERTY(Transient)
@@ -42,18 +41,10 @@ struct FSequenceEvent_BlueprintCall : public FBaseSequenceEvent
     EBlueprintActionResult LastResult = EBlueprintActionResult::Success;
     
     // 重置状态
-    // virtual void Reset() override
-    // {
-    //     FBaseSequenceEvent::Reset();
-    //     
-    //     // 清理蓝图实例
-    //     if (BlueprintInstance && BlueprintInstance->bDestroyAfterExecution)
-    //     {
-    //         BlueprintInstance->MarkAsGarbage();
-    //     }
-    //     BlueprintInstance = nullptr;
-    //     LastResult = EBlueprintActionResult::Success;
-    // }
+    virtual void Reset() override
+    {
+        FBaseSequenceEvent::Reset();
+    }
 
 	virtual float Tick(float DeltaTime, float PreRemainTime = 0) override;
 	virtual bool Execute(int Index = 0) override;

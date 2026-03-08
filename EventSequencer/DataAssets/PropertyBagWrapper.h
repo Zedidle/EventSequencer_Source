@@ -101,8 +101,6 @@ public:
     UFUNCTION(BlueprintCallable, Category = "PropertyBag")
     bool AddValueSoftPath(const FName Name, const FSoftObjectPath& Value);
 
-
-
 	UFUNCTION(BlueprintCallable, Category = "PropertyBag")
 	bool GetValueBool(const FName Name) const;
 
@@ -206,7 +204,6 @@ public:
 		}
 		else
 		{
-			static_assert(false, "Unsupported type");
 			return EPropertyBagPropertyType::None;
 		}
 	}
@@ -219,13 +216,7 @@ public:
 		EPropertyBagPropertyType Type = GetPropertyType<T>();
     
 		// 添加属性
-		bool bSuccess = AddProperty(Name, Type);
-		if (!bSuccess)
-		{
-			return false;
-		}
-    
-		// 设置值
+		AddProperty(Name, Type);
 		return SetValue<T>(Name, Value);
 	}
 
@@ -287,10 +278,200 @@ public:
 		}
 		else
 		{
-			static_assert(false, "Unsupported type");
 			return false;
 		}
 	}
 
+	
+	template<typename T>
+	bool ConvertStringToType(const FString& StringValue, T& OutValue)
+	{
+		if constexpr (std::is_same_v<T, bool>)
+		{
+			// 支持 "true"/"false", "True"/"False", "1"/"0"
+			FString Lower = StringValue.ToLower();
+			if (Lower == TEXT("true") || Lower == TEXT("1"))
+			{
+				OutValue = true;
+				return true;
+			}
+			else if (Lower == TEXT("false") || Lower == TEXT("0"))
+			{
+				OutValue = false;
+				return true;
+			}
+			return false;
+		}
+		else if constexpr (std::is_same_v<T, uint8>)
+		{
+			int32 Temp = FCString::Atoi(*StringValue);
+			if (Temp >= 0 && Temp <= 255)
+			{
+				OutValue = static_cast<uint8>(Temp);
+				return true;
+			}
+			return false;
+		}
+		else if constexpr (std::is_same_v<T, int32>)
+		{
+			OutValue = FCString::Atoi(*StringValue);
+			return true;
+		}
+		else if constexpr (std::is_same_v<T, int64>)
+		{
+			OutValue = FCString::Atoi64(*StringValue);
+			return true;
+		}
+		else if constexpr (std::is_same_v<T, float>)
+		{
+			OutValue = FCString::Atof(*StringValue);
+			return true;
+		}
+		else if constexpr (std::is_same_v<T, double>)
+		{
+			OutValue = FCString::Atod(*StringValue);
+			return true;
+		}
+		else if constexpr (std::is_same_v<T, FName>)
+		{
+			OutValue = FName(*StringValue);
+			return true;
+		}
+		else if constexpr (std::is_same_v<T, FString>)
+		{
+			OutValue = StringValue;
+			return true;
+		}
+		else if constexpr (std::is_same_v<T, FText>)
+		{
+			OutValue = FText::FromString(StringValue);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
 
+// 主函数：根据 EPropertyBagPropertyType 转换 FString
+bool AddValueFromString(const FName Name, EPropertyBagPropertyType Type, const FString& StringValue)
+{
+    switch (Type)
+    {
+    case EPropertyBagPropertyType::Bool:
+    {
+        bool Value = false;
+        if (ConvertStringToType(StringValue, Value))
+        {
+            return AddValue<bool>(Name, Value);
+        }
+        break;
+    }
+    case EPropertyBagPropertyType::Byte:
+    {
+        uint8 Value = 0;
+        if (ConvertStringToType(StringValue, Value))
+        {
+            return AddValue<uint8>(Name, Value);
+        }
+        break;
+    }
+    case EPropertyBagPropertyType::Int32:
+    {
+        int32 Value = 0;
+        if (ConvertStringToType(StringValue, Value))
+        {
+            return AddValue<int32>(Name, Value);
+        }
+        break;
+    }
+    case EPropertyBagPropertyType::Int64:
+    {
+        int64 Value = 0;
+        if (ConvertStringToType(StringValue, Value))
+        {
+            return AddValue<int64>(Name, Value);
+        }
+        break;
+    }
+    case EPropertyBagPropertyType::Float:
+    {
+        float Value = 0.0f;
+        if (ConvertStringToType(StringValue, Value))
+        {
+            return AddValue<float>(Name, Value);
+        }
+        break;
+    }
+    case EPropertyBagPropertyType::Double:
+    {
+        double Value = 0.0;
+        if (ConvertStringToType(StringValue, Value))
+        {
+            return AddValue<double>(Name, Value);
+        }
+        break;
+    }
+    case EPropertyBagPropertyType::Name:
+    {
+        FName Value = NAME_None;
+        if (ConvertStringToType(StringValue, Value))
+        {
+            return AddValue<FName>(Name, Value);
+        }
+        break;
+    }
+    case EPropertyBagPropertyType::String:
+    {
+        FString Value = TEXT("");
+        if (ConvertStringToType(StringValue, Value))
+        {
+            return AddValue<FString>(Name, Value);
+        }
+        break;
+    }
+    case EPropertyBagPropertyType::Text:
+    {
+        FText Value = FText::GetEmpty();
+        if (ConvertStringToType(StringValue, Value))
+        {
+            return AddValue<FText>(Name, Value);
+        }
+        break;
+    }
+    // 蓝图不支持就另说
+    case EPropertyBagPropertyType::UInt32:
+    {
+        int32 Temp = FCString::Atoi(*StringValue);
+        if (Temp >= 0)
+        {
+            uint32 Value = static_cast<uint32>(Temp);
+            // 需要对应的 SetValueUInt32 函数
+            EPropertyBagResult Result = PropertyBag.SetValueUInt32(Name, Value);
+            return Result == EPropertyBagResult::Success;
+        }
+        break;
+    }
+    case EPropertyBagPropertyType::UInt64:
+    {
+        int64 Temp = FCString::Atoi64(*StringValue);
+        if (Temp >= 0)
+        {
+            uint64 Value = static_cast<uint64>(Temp);
+            // 需要对应的 SetValueUInt64 函数
+            EPropertyBagResult Result = PropertyBag.SetValueUInt64(Name, Value);
+            return Result == EPropertyBagResult::Success;
+        }
+        break;
+    }
+    default:
+        UE_LOG(LogTemp, Warning, TEXT("不支持从字符串转换到类型: %d"), static_cast<uint8>(Type));
+        break;
+    }
+    
+    UE_LOG(LogTemp, Warning, TEXT("无法将字符串 '%s' 转换为类型 %d"), *StringValue, static_cast<uint8>(Type));
+    return false;
+}
+	
 };

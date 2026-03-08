@@ -65,11 +65,6 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Context")
 	UPropertyBagWrapper* OutPropertyBag;
 	
-	// 执行蓝图行为
-	// UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Event Sequence")
-	// EBlueprintActionResult Execute(const FSequenceBlueprintContext& Context);
-	// virtual EBlueprintActionResult Execute_Implementation(const FSequenceBlueprintContext& Context);
-	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Event Sequence")
 	void ExecuteTest(const UPropertyBagWrapper* InProperty, UPropertyBagWrapper* OutProperty);
 

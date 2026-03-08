@@ -21,15 +21,12 @@ bool FSequenceEvent_BlueprintCall::Execute(int Index)
 
     if (BlueprintInstance)
     {
-        // FInstancedPropertyBag OutProperty;
-        // BlueprintInstance->Execute(EventSequenceRunning->PropertyBagRuntime, OutProperty);
-
 	    UPropertyBagWrapper* Wrapper = EventSequenceRunning->GetPropertyBagWrapper();
         BlueprintInstance->Execute(Wrapper);
         
-        for (FPortBinding& Bind : PortBindings)
+        for (FPortBinding& Bind : OutPropertyValues)
         {
-            Wrapper->AddProperty(Bind.PropertyName, Bind.PropertyType);
+            Wrapper->AddValueFromString(Bind.PropertyName, Bind.PropertyType, Bind.TargetValue);
         }
         
         return true;

@@ -25,15 +25,16 @@ struct FPortBinding
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Port", meta = (DisplayName = "Interpreter Property"))
 	FName PropertyName;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Port")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Port", 	meta=(
+		EnumFilter="Bool,Byte,Int32,Int64,Float,Double,Name,String,Text"
+	))
 	EPropertyBagPropertyType PropertyType;
 
 	// 端口方向
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Port")
-	EPortDirection Direction = EPortDirection::Input;
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Port")
+	// EPortDirection Direction = EPortDirection::Input;
     
 	// 当 EPortDirection 为 Output 时生效
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Port")
-	FString OutputValue;
-
+	FString TargetValue;
 };
