@@ -33,7 +33,8 @@ bool FSequenceEvent_BlueprintCall::Execute(int Index)
         {
             Wrapper->AddValueFromString(Bind.PropertyName, Bind.PropertyType, Bind.TargetValue);
         }
-        
+
+        EventSequenceRunning->PropertyBagRuntime = Wrapper->GetPropertyBag();
         return true;
     }
     return false;
