@@ -3,10 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "StructUtils/PropertyBag.h"
 #include "UObject/Object.h"
 #include "EventSequenceBlueprintAction.generated.h"
 
 
+class UPropertyBagWrapper;
+class UEventSequenceRunning;
 // 蓝图同步行为执行结果
 UENUM(BlueprintType)
 enum class EBlueprintActionResult : uint8
@@ -55,13 +58,24 @@ class EVENTSEQUENCER_API UEventSequenceBlueprintAction : public UObject
 {
 	GENERATED_BODY()
 
-	    
 public:
+	UPROPERTY(BlueprintReadOnly, Category = "Context")
+	UPropertyBagWrapper* InPropertyBag;
+	
+	UPROPERTY(BlueprintReadOnly, Category = "Context")
+	UPropertyBagWrapper* OutPropertyBag;
+	
 	// 执行蓝图行为
+	// UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Event Sequence")
+	// EBlueprintActionResult Execute(const FSequenceBlueprintContext& Context);
+	// virtual EBlueprintActionResult Execute_Implementation(const FSequenceBlueprintContext& Context);
+	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Event Sequence")
-	EBlueprintActionResult Execute(const FSequenceBlueprintContext& Context);
-	virtual EBlueprintActionResult Execute_Implementation(const FSequenceBlueprintContext& Context);
-    
+	void ExecuteTest(const UPropertyBagWrapper* InProperty, UPropertyBagWrapper* OutProperty);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Event Sequence")
+	void Execute(UPropertyBagWrapper* InPropertyWrapper);
+	
 	// 获取执行上下文
 	UFUNCTION(BlueprintPure, Category = "Event Sequence")
 	virtual FSequenceBlueprintContext GetContext() const;

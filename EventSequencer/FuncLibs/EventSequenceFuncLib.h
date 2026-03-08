@@ -10,7 +10,6 @@
 #include "EventSequenceFuncLib.generated.h"
 
 
-struct FEventSequenceRunning;
 class UEventSequenceDA;
 
 UCLASS()

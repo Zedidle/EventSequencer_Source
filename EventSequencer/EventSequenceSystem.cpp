@@ -113,6 +113,16 @@ void UEventSequenceSystem::ParseEventSequence(UEventSequenceRunning* EventSequen
         {
             EventSequenceRunning->AddEvent(RuntimeEventStruct);
         }
+        else if (FSequenceEvent_BlueprintCall* Event_BlueprintCall = RuntimeEventStruct.GetMutablePtr<FSequenceEvent_BlueprintCall>())
+        {
+            Event_BlueprintCall->SetEventSequenceRunning(EventSequenceRunning);
+            EventSequenceRunning->AddEvent(RuntimeEventStruct);
+        }
+        else if (FSequenceEvent_AsyncBlueprintCall* Event_AsyncBlueprintCall = RuntimeEventStruct.GetMutablePtr<FSequenceEvent_AsyncBlueprintCall>())
+        {
+            EventSequenceRunning->AddEvent(RuntimeEventStruct);
+            // Event_AsyncBlueprintCall->SetEventSequenceRunning(EventSequenceRunning);
+        }
         // 具体事件
         else
         {

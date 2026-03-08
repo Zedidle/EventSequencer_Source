@@ -238,6 +238,6 @@ protected:
     // 设置状态
     void SetState(ESequenceState NewState);
 
-	bool ExecuteBlueprintCallEvent(FSequenceEvent_BlueprintCall& BlueprintCallEvent, int32 EventIndex);
+	// bool ExecuteBlueprintCallEvent(FSequenceEvent_BlueprintCall& BlueprintCallEvent, int32 EventIndex);
 	
 };

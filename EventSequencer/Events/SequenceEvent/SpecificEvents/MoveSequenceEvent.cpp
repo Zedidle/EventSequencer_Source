@@ -16,7 +16,6 @@ int FMoveSequenceEvent::GetEventsCount()
 void FMoveSequenceEvent::OnEnter()
 {
 	FBaseSequenceEvent::OnEnter();
-		
 	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, *FString::Printf(TEXT("MoveSequenceEvent::OnEnter")));
 	if (NPCPawn)
 	{

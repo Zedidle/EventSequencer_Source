@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "EventSequenceBlueprintAction.h"
 #include "EventSequencePorts.h"
+#include "EventSequencer/FuncLibs/EventSequenceFuncLib.h"
 #include "SequenceEvent/CommonStructs.h"
 #include "StructUtils/PropertyBag.h"
 #include "SequenceEvent_BlueprintCall.generated.h"
@@ -18,8 +19,10 @@ USTRUCT(BlueprintType, meta = (DisplayName = "Blueprint Call"))
 struct FSequenceEvent_BlueprintCall : public FBaseSequenceEvent
 {
     GENERATED_BODY()
-    
-public:
+
+	UPROPERTY()
+	TWeakObjectPtr<UEventSequenceRunning> EventSequenceRunning;
+	
     // 蓝图类引用
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Blueprint", 
               meta = (DisplayName = "Blueprint Class", 
@@ -51,25 +54,12 @@ public:
     //     BlueprintInstance = nullptr;
     //     LastResult = EBlueprintActionResult::Success;
     // }
-    
+
+	virtual float Tick(float DeltaTime, float PreRemainTime = 0) override;
+	virtual bool Execute(int Index = 0) override;
+	
     // 获取蓝图实例（如果不存在则创建）
     UEventSequenceBlueprintAction* GetOrCreateBlueprintInstance(UObject* Outer);
-    
-    // 同步端口数据
-    bool SyncPortData(UEventSequenceBlueprintAction* Instance, 
-                      FInstancedPropertyBag& PropertyBag,
-                      bool bToBlueprint);
-    
-    // 执行蓝图
-    bool ExecuteBlueprint(UEventSequenceBlueprintAction* Instance, 
-                          const FSequenceBlueprintContext& Context,
-                          FInstancedPropertyBag& PropertyBag);
-    
-    // 验证端口绑定
-    bool ValidatePortBindings(const UClass* _BlueprintClass) const;
-    
-    // 获取端口信息
-    void GetPortInfo(const UClass* _BlueprintClass, 
-                     TArray<FPortBinding>& InputPorts, 
-                     TArray<FPortBinding>& OutputPorts) const;
+
+	void SetEventSequenceRunning(UEventSequenceRunning* EventSequenceInstance);
 };

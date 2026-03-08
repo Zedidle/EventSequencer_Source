@@ -50,7 +50,7 @@ bool UPropertyBagWrapper::InitEmptyPropertyBag()
     }
 }
 
-bool UPropertyBagWrapper::AddProperty(const FName& Name, const EPropertyBagPropertyType& Type)
+bool UPropertyBagWrapper::AddProperty(const FName Name, const EPropertyBagPropertyType& Type)
 {
     InitEmptyPropertyBag();
     
@@ -66,139 +66,115 @@ bool UPropertyBagWrapper::AddProperty(const FName& Name, const EPropertyBagPrope
     return Result == EPropertyBagAlterationResult::Success;
 }
 
-bool UPropertyBagWrapper::SetValueBool(const FName& Name, bool Value)
+bool UPropertyBagWrapper::SetValueBool(const FName Name, bool Value)
 {
     EPropertyBagResult Result = PropertyBag.SetValueBool(Name, Value);
     return Result == EPropertyBagResult::Success;
 }
 
-bool UPropertyBagWrapper::AddValueBool(const FName& Name, bool Value)
+bool UPropertyBagWrapper::AddValueBool(const FName Name, bool Value)
 {
     AddProperty(Name, EPropertyBagPropertyType::Bool);
     return SetValueBool(Name, Value);
 }
 
-bool UPropertyBagWrapper::SetValueByte(const FName& Name, uint8 Value)
+bool UPropertyBagWrapper::SetValueByte(const FName Name, uint8 Value)
 {
     EPropertyBagResult Result = PropertyBag.SetValueByte(Name, Value);
     return Result == EPropertyBagResult::Success;
 }
 
-bool UPropertyBagWrapper::AddValueByte(const FName& Name, uint8 Value)
+bool UPropertyBagWrapper::AddValueByte(const FName Name, uint8 Value)
 {
     AddProperty(Name, EPropertyBagPropertyType::Byte);
     return SetValueByte(Name, Value);
 }
 
-bool UPropertyBagWrapper::SetValueInt(const FName& Name, int32 Value)
+bool UPropertyBagWrapper::SetValueInt(const FName Name, int32 Value)
 {
     EPropertyBagResult Result = PropertyBag.SetValueInt32(Name, Value);
     return Result == EPropertyBagResult::Success;
 }
 
-bool UPropertyBagWrapper::AddValueInt(const FName& Name, int32 Value)
+bool UPropertyBagWrapper::AddValueInt(const FName Name, int32 Value)
 {
     AddProperty(Name, EPropertyBagPropertyType::Int32);
     return SetValueInt(Name, Value);
 }
 
-// bool UPropertyBagWrapper::SetValueUInt32(const FName& Name, uint32 Value)
-// {
-//     EPropertyBagResult Result = PropertyBag.SetValueUInt32(Name, Value);
-//     return Result == EPropertyBagResult::Success;
-// }
-//
-// bool UPropertyBagWrapper::AddValueUInt32(const FName& Name, uint32 Value)
-// {
-//     AddProperty(Name, EPropertyBagPropertyType::UInt32);
-//     return SetValueUInt32(Name, Value);
-// }
-
-bool UPropertyBagWrapper::SetValueInt64(const FName& Name, int64 Value)
+bool UPropertyBagWrapper::SetValueInt64(const FName Name, int64 Value)
 {
     EPropertyBagResult Result = PropertyBag.SetValueInt64(Name, Value);
     return Result == EPropertyBagResult::Success;
 }
 
-bool UPropertyBagWrapper::AddValueInt64(const FName& Name, int64 Value)
+bool UPropertyBagWrapper::AddValueInt64(const FName Name, int64 Value)
 {
     AddProperty(Name, EPropertyBagPropertyType::UInt64);
     return SetValueInt64(Name, Value);
 }
 
-// bool UPropertyBagWrapper::SetValueUInt64(const FName& Name, uint64 Value)
-// {
-//     EPropertyBagResult Result = PropertyBag.SetValueUInt64(Name, Value);
-//     return Result == EPropertyBagResult::Success;
-// }
-//
-// bool UPropertyBagWrapper::AddValueUInt64(const FName& Name, uint64 Value)
-// {
-//     AddProperty(Name, EPropertyBagPropertyType::UInt64);
-//     return SetValueUInt64(Name, Value);
-// }
-
-bool UPropertyBagWrapper::SetValueFloat(const FName& Name, float Value)
+bool UPropertyBagWrapper::SetValueFloat(const FName Name, float Value)
 {
     EPropertyBagResult Result = PropertyBag.SetValueFloat(Name, Value);
     return Result == EPropertyBagResult::Success;
 }
 
-bool UPropertyBagWrapper::AddValueFloat(const FName& Name, float Value)
+bool UPropertyBagWrapper::AddValueFloat(const FName Name, float Value)
 {
     AddProperty(Name, EPropertyBagPropertyType::Float);
     return SetValueFloat(Name, Value);
 }
 
-bool UPropertyBagWrapper::SetValueDouble(const FName& Name, double Value)
+bool UPropertyBagWrapper::SetValueDouble(const FName Name, double Value)
 {
     EPropertyBagResult Result = PropertyBag.SetValueDouble(Name, Value);
     return Result == EPropertyBagResult::Success;
 }
 
-bool UPropertyBagWrapper::AddValueDouble(const FName& Name, double Value)
+bool UPropertyBagWrapper::AddValueDouble(const FName Name, double Value)
 {
     AddProperty(Name, EPropertyBagPropertyType::Double);
     return SetValueDouble(Name, Value);
 }
 
-bool UPropertyBagWrapper::SetValueName(const FName& Name, const FName& Value)
+bool UPropertyBagWrapper::SetValueName(const FName Name, const FName Value)
 {
     EPropertyBagResult Result = PropertyBag.SetValueName(Name, Value);
     return Result == EPropertyBagResult::Success;
 }
 
-bool UPropertyBagWrapper::AddValueName(const FName& Name, const FName& Value)
+bool UPropertyBagWrapper::AddValueName(const FName Name, const FName Value)
 {
     AddProperty(Name, EPropertyBagPropertyType::Name);
     return SetValueName(Name, Value);
 }
 
-bool UPropertyBagWrapper::SetValueString(const FName& Name, const FString& Value)
+bool UPropertyBagWrapper::SetValueString(const FName Name, const FString& Value)
 {
     EPropertyBagResult Result = PropertyBag.SetValueString(Name, Value);
     return Result == EPropertyBagResult::Success;
 }
 
-bool UPropertyBagWrapper::AddValueString(const FName& Name, const FString& Value)
+bool UPropertyBagWrapper::AddValueString(const FName Name, const FString& Value)
 {
     AddProperty(Name, EPropertyBagPropertyType::String);
     return SetValueString(Name, Value);
 }
 
-bool UPropertyBagWrapper::SetValueText(const FName& Name, const FText& Value)
+bool UPropertyBagWrapper::SetValueText(const FName Name, const FText& Value)
 {
     EPropertyBagResult Result = PropertyBag.SetValueText(Name, Value);
     return Result == EPropertyBagResult::Success;
 }
 
-bool UPropertyBagWrapper::AddValueText(const FName& Name, const FText& Value)
+bool UPropertyBagWrapper::AddValueText(const FName Name, const FText& Value)
 {
     AddProperty(Name, EPropertyBagPropertyType::Text);
     return SetValueText(Name, Value);
 }
 
-bool UPropertyBagWrapper::SetValueVector(const FName& Name, const FVector& Value)
+bool UPropertyBagWrapper::SetValueVector(const FName Name, const FVector& Value)
 {
     // 直接使用 FConstStructView::Make
     FConstStructView StructView = FConstStructView::Make(Value);
@@ -216,43 +192,43 @@ bool UPropertyBagWrapper::SetValueVector(const FName& Name, const FVector& Value
     return Result == EPropertyBagResult::Success;
 }
 
-bool UPropertyBagWrapper::AddValueVector(const FName& Name, const FVector& Value)
+bool UPropertyBagWrapper::AddValueVector(const FName Name, const FVector& Value)
 {
     AddProperty(Name, EPropertyBagPropertyType::Struct);
     return SetValueVector(Name, Value);
 }
 
-bool UPropertyBagWrapper::SetValueObject(const FName& Name, UObject* Value)
+bool UPropertyBagWrapper::SetValueObject(const FName Name, UObject* Value)
 {
     EPropertyBagResult Result = PropertyBag.SetValueObject(Name, Value);
     return Result == EPropertyBagResult::Success;
 }
 
-bool UPropertyBagWrapper::AddValueObject(const FName& Name, UObject* Value)
+bool UPropertyBagWrapper::AddValueObject(const FName Name, UObject* Value)
 {
     AddProperty(Name, EPropertyBagPropertyType::Object);
     return SetValueObject(Name, Value);
 }
 
-bool UPropertyBagWrapper::SetValueClass(const FName& Name, UClass* Value)
+bool UPropertyBagWrapper::SetValueClass(const FName Name, UClass* Value)
 {
     EPropertyBagResult Result = PropertyBag.SetValueClass(Name, Value);
     return Result == EPropertyBagResult::Success;
 }
 
-bool UPropertyBagWrapper::AddValueClass(const FName& Name, UClass* Value)
+bool UPropertyBagWrapper::AddValueClass(const FName Name, UClass* Value)
 {
     AddProperty(Name, EPropertyBagPropertyType::Class);
     return SetValueClass(Name, Value);
 }
 
-bool UPropertyBagWrapper::SetValueSoftPath(const FName& Name, const FSoftObjectPath& Value)
+bool UPropertyBagWrapper::SetValueSoftPath(const FName Name, const FSoftObjectPath& Value)
 {
     EPropertyBagResult Result = PropertyBag.SetValueSoftPath(Name, Value);
     return Result == EPropertyBagResult::Success;
 }
 
-bool UPropertyBagWrapper::AddValueSoftPath(const FName& Name, const FSoftObjectPath& Value)
+bool UPropertyBagWrapper::AddValueSoftPath(const FName Name, const FSoftObjectPath& Value)
 {
     AddProperty(Name, EPropertyBagPropertyType::SoftObject);
     return SetValueSoftPath(Name, Value);
@@ -260,7 +236,7 @@ bool UPropertyBagWrapper::AddValueSoftPath(const FName& Name, const FSoftObjectP
 
 
 
-bool UPropertyBagWrapper::GetValueBool(const FName& Name) const
+bool UPropertyBagWrapper::GetValueBool(const FName Name) const
 {
     auto V = PropertyBag.GetValueBool(Name);
 
@@ -276,7 +252,7 @@ bool UPropertyBagWrapper::GetValueBool(const FName& Name) const
     return false;
 }
 
-uint8 UPropertyBagWrapper::GetValueByte(const FName& Name) const
+uint8 UPropertyBagWrapper::GetValueByte(const FName Name) const
 {
     auto V = PropertyBag.GetValueByte(Name);
 
@@ -292,7 +268,7 @@ uint8 UPropertyBagWrapper::GetValueByte(const FName& Name) const
     return false;
 }
 
-int32 UPropertyBagWrapper::GetValueInt(const FName& Name) const
+int32 UPropertyBagWrapper::GetValueInt(const FName Name) const
 {
     auto V = PropertyBag.GetValueInt32(Name);
 
@@ -308,7 +284,7 @@ int32 UPropertyBagWrapper::GetValueInt(const FName& Name) const
     return 0;
 }
 
-int64 UPropertyBagWrapper::GetValueInt64(const FName& Name) const
+int64 UPropertyBagWrapper::GetValueInt64(const FName Name) const
 {
     auto V = PropertyBag.GetValueInt64(Name);
 
@@ -325,7 +301,7 @@ int64 UPropertyBagWrapper::GetValueInt64(const FName& Name) const
 }
 
 
-float UPropertyBagWrapper::GetValueFloat(const FName& Name) const
+float UPropertyBagWrapper::GetValueFloat(const FName Name) const
 {
     auto V = PropertyBag.GetValueFloat(Name);
 
@@ -341,7 +317,7 @@ float UPropertyBagWrapper::GetValueFloat(const FName& Name) const
     return 0;
 }
 
-double UPropertyBagWrapper::GetValueDouble(const FName& Name) const
+double UPropertyBagWrapper::GetValueDouble(const FName Name) const
 {
     auto V = PropertyBag.GetValueDouble(Name);
 
@@ -357,7 +333,7 @@ double UPropertyBagWrapper::GetValueDouble(const FName& Name) const
     return 0;
 }
 
-FName UPropertyBagWrapper::GetValueName(const FName& Name) const
+FName UPropertyBagWrapper::GetValueName(const FName Name) const
 {
     auto V = PropertyBag.GetValueName(Name);
 
@@ -373,7 +349,7 @@ FName UPropertyBagWrapper::GetValueName(const FName& Name) const
     return FName();
 }
 
-FString UPropertyBagWrapper::GetValueString(const FName& Name) const
+FString UPropertyBagWrapper::GetValueString(const FName Name) const
 {
     auto V = PropertyBag.GetValueString(Name);
 
@@ -389,7 +365,7 @@ FString UPropertyBagWrapper::GetValueString(const FName& Name) const
     return "";
 }
 
-FText UPropertyBagWrapper::GetValueText(const FName& Name) const
+FText UPropertyBagWrapper::GetValueText(const FName Name) const
 {
     auto V = PropertyBag.GetValueText(Name);
 
@@ -407,7 +383,7 @@ FText UPropertyBagWrapper::GetValueText(const FName& Name) const
 
 
 
-FVector UPropertyBagWrapper::GetValueVector(const FName& Name) const
+FVector UPropertyBagWrapper::GetValueVector(const FName Name) const
 {
     auto V = PropertyBag.GetValueStruct(Name);
 
@@ -438,7 +414,7 @@ FVector UPropertyBagWrapper::GetValueVector(const FName& Name) const
     return FVector::ZeroVector;
 }
 
-UObject* UPropertyBagWrapper::GetValueObject(const FName& Name) const
+UObject* UPropertyBagWrapper::GetValueObject(const FName Name) const
 {
     auto V = PropertyBag.GetValueObject(Name);
 
@@ -454,7 +430,7 @@ UObject* UPropertyBagWrapper::GetValueObject(const FName& Name) const
     return nullptr;
 }
 
-UClass* UPropertyBagWrapper::GetValueClass(const FName& Name) const
+UClass* UPropertyBagWrapper::GetValueClass(const FName Name) const
 {
     auto V = PropertyBag.GetValueClass(Name);
 
@@ -470,7 +446,7 @@ UClass* UPropertyBagWrapper::GetValueClass(const FName& Name) const
     return nullptr;
 }
 
-FSoftObjectPath UPropertyBagWrapper::GetValueSoftPath(const FName& Name) const
+FSoftObjectPath UPropertyBagWrapper::GetValueSoftPath(const FName Name) const
 {
     auto V = PropertyBag.GetValueSoftPath(Name);
 
@@ -495,3 +471,13 @@ bool UPropertyBagWrapper::MergeFrom(UPropertyBagWrapper* Other, bool bOverrideEx
     }
     return false;
 }
+
+
+
+
+
+
+
+
+
+
