@@ -86,11 +86,11 @@ public:
     
     // 完成异步操作（成功）
     UFUNCTION(BlueprintCallable, Category = "Event Sequence", meta = (DisplayName = "Resolve"))
-    void CompleteSuccess();
+    void Resolve();
     
     // 完成异步操作（失败）
     UFUNCTION(BlueprintCallable, Category = "Event Sequence", meta = (DisplayName = "Reject"))
-    void CompleteFailure(const FString& Reason = TEXT(""));
+    void Reject(const FString& Reason = TEXT(""));
     
     // 获取结果
     EAsyncActionResult GetResult() const { return Result; }

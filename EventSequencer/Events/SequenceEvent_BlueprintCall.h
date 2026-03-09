@@ -21,6 +21,7 @@ struct FSequenceEvent_BlueprintCall : public FBaseSequenceEvent
     GENERATED_BODY()
 
 	virtual FString GetDisplayName() const override;
+	virtual int GetEventsCount() override;
 	
 	UPROPERTY()
 	TWeakObjectPtr<UEventSequenceRunning> EventSequenceRunning;

@@ -9,9 +9,23 @@ FString FSequenceEvent_AsyncBlueprintCall::GetDisplayName() const
 {
     if (BlueprintClass)
     {
-        return "ABP-CALL [" + BlueprintClass->GetName() + "]";
+        if (CatchEvents.IsEmpty())
+        {
+            return "ABP-CALL [" + BlueprintClass->GetName() + "]";
+        }
+        else
+        {
+            FString CatchStartIndexStr = FString::Printf(TEXT("%03d"), CatchStartIndex);
+            FString EndIndexStr = FString::Printf(TEXT("%03d"), EndIndex);
+            return "ABP-CALL [" + BlueprintClass->GetName() + "] [CatchEvents: From " + CatchStartIndexStr + " To " + EndIndexStr + "]";
+        }
     }
     return "ABP-CALL [None]";
+}
+
+int FSequenceEvent_AsyncBlueprintCall::GetEventsCount()
+{
+    return Super::GetEventsCount() + GetEventListEventsCount(CatchEvents);
 }
 
 void FSequenceEvent_AsyncBlueprintCall::SetEventSequenceRunning(UEventSequenceRunning* EventSequenceInstance)
@@ -28,7 +42,24 @@ bool FSequenceEvent_AsyncBlueprintCall::Execute(int Index)
 
     if (!ActionInstance)
     {
-        ActionInstance = CreateAsyncInstance(EventSequenceRunning.Get());
+        if (!bAsyncInstanceCreated)
+        {
+            ActionInstance = CreateAsyncInstance(EventSequenceRunning.Get());
+            bAsyncInstanceCreated = true;
+        }
+        else
+        {
+            if (InterruptBehavior == EAsyncInterruptBehavior::Restart)
+            {
+                // 继续在Tick中触发重启？
+                bAsyncInstanceCreated = false;
+            }
+            else if (InterruptBehavior == EAsyncInterruptBehavior::Skip)
+            {
+                EventSequenceRunning->GOTO(CatchStartIndex);
+            }
+            return false;
+        }
     }
 
     // 需要等待策划 调用 EventSequenceRunning->ExecuteAsyncBlueprintCallEvent()

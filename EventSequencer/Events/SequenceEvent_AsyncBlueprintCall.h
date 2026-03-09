@@ -19,7 +19,16 @@ struct FSequenceEvent_AsyncBlueprintCall : public FBaseSequenceEvent
 {
 	GENERATED_BODY()
 	
+	bool bAsyncInstanceCreated = false;
+	
+	// 触发Catch的跳转下标
+	int CatchStartIndex = -1;
+	// 结束下标，包括平铺 CatchEvents 之后的位置
+	int EndIndex = -1;
+	
 	virtual FString GetDisplayName() const override;
+	
+	virtual int GetEventsCount() override;
 	
 	UPROPERTY()
 	TWeakObjectPtr<UEventSequenceRunning> EventSequenceRunning;
@@ -43,7 +52,7 @@ struct FSequenceEvent_AsyncBlueprintCall : public FBaseSequenceEvent
     // Catch块事件序列
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Catch", 
               meta = (BaseStruct = "/Script/EventSequencer.BaseSequenceEvent"))
-    TArray<FInstancedStruct> CatchEvents;
+    TArray<FEventWrapper> CatchEvents;
     
     // 蓝图实例（运行时创建，不序列化）
     UPROPERTY(Transient)
@@ -60,10 +69,6 @@ struct FSequenceEvent_AsyncBlueprintCall : public FBaseSequenceEvent
     
     // 是否正在执行Catch块
     bool bExecutingCatch = false;
-    
-    // Catch块开始索引
-    int32 CatchStartIndex = -1;
-
 
 	virtual bool Execute(int Index = 0) override;
 

@@ -60,6 +60,8 @@ public:
 	bool bPause = false;
 	int CurEventIndex = 0;
 
+	FSequenceEvent_AsyncBlueprintCall* CurAsyncEvent;
+	
 	UPROPERTY()
 	TArray<FInstancedStruct> EventQueue;
 
@@ -155,9 +157,6 @@ public:
 
 	void SetState(ESequenceState Running);
 
-	// 异步操作完成回调，用不上，放着先
-    void OnAsyncOperationCompleted(int32 EventIndex, EAsyncActionResult Result, const FString& Reason = TEXT(""));
-    
     // 获取所有标签
     UFUNCTION(BlueprintCallable, Category = "Event Sequence")
     TArray<FName> GetAllLabels() const;
@@ -218,11 +217,6 @@ protected:
     
     // 执行Catch块
     bool ExecuteCatchBlock(FSequenceEvent_AsyncBlueprintCall& AsyncEvent, int32 EventIndex);
-    
-    // 同步端口数据，目前还没哟绑定的做法
-    // bool SyncPortData(UEventSequenceAsyncBlueprintAction* Instance, 
-    //                   const TArray<FPortBinding>& PortBindings,
-    //                   bool bToBlueprint);
 
     
     // 处理控制流事件

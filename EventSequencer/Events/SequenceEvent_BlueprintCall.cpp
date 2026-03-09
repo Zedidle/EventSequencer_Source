@@ -11,6 +11,11 @@ FString FSequenceEvent_BlueprintCall::GetDisplayName() const
     return "BP-CALL [None]";
 }
 
+int FSequenceEvent_BlueprintCall::GetEventsCount()
+{
+	return Super::GetEventsCount();
+}
+
 float FSequenceEvent_BlueprintCall::Tick(float DeltaTime, float PreRemainTime)
 {
     return FBaseSequenceEvent::Tick(DeltaTime, PreRemainTime);

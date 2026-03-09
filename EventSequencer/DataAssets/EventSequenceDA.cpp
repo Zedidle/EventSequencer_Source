@@ -2,6 +2,8 @@
 
 #include "EventSequenceDA.h"
 
+#include "EventSequencer/Events/SequenceEvent_AsyncBlueprintCall.h"
+#include "EventSequencer/Events/SequenceEvent_BlueprintCall.h"
 #include "EventSequencer/Events/SequenceEvent/_SequenceEvent_BREAK.h"
 #include "EventSequencer/Events/SequenceEvent/_SequenceEvent_GOTO.h"
 #include "EventSequencer/Events/SequenceEvent/_SequenceEvent_IF.h"
@@ -99,6 +101,15 @@ void UEventSequenceDA::ParseEventsToDisplayName(TArray<FEventWrapper>& _EventWra
 		}
 		else if (F_SequenceEvent_RETURN* SourceEvent_RETURN = EventWrapper.Event.GetMutablePtr<F_SequenceEvent_RETURN>())
 		{
+		}
+		else if (FSequenceEvent_BlueprintCall* SourceEvent_BlueprintCall = EventWrapper.Event.GetMutablePtr<FSequenceEvent_BlueprintCall>())
+		{
+		}
+		else if (FSequenceEvent_AsyncBlueprintCall* SourceEvent_AsyncBlueprintCall = EventWrapper.Event.GetMutablePtr<FSequenceEvent_AsyncBlueprintCall>())
+		{
+			SourceEvent_AsyncBlueprintCall->CatchStartIndex = CurNum;
+			SourceEvent_AsyncBlueprintCall->EndIndex = CurNum + SourceEvent_AsyncBlueprintCall->GetEventsCount();
+			ParseEventsToDisplayName(SourceEvent_AsyncBlueprintCall->CatchEvents);
 		}
 		// 具体事件
 		else

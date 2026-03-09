@@ -160,46 +160,6 @@ void UEventSequenceRunning::SetState(ESequenceState NewState)
 	State = NewState;
 }
 
-void UEventSequenceRunning::OnAsyncOperationCompleted(int32 EventIndex, EAsyncActionResult Result,
-                                                      const FString& Reason)
-{
-	if (EventIndex != WaitingForAsyncEventIndex)
-	{
-		return;
-	}
-    
-	// 查找对应的异步事件
-	if (EventIndex >= 0 && EventIndex < EventSequenceRuntime.Num())
-	{
-		FInstancedStruct& Event = EventSequenceRuntime[EventIndex];
-		if (FSequenceEvent_AsyncBlueprintCall* AsyncEvent = Event.GetMutablePtr<FSequenceEvent_AsyncBlueprintCall>())
-		{
-			AsyncEvent->HandleAsyncComplete(Result, Reason);
-            
-			if (Result == EAsyncActionResult::Success)
-			{
-				// 同步输出数据
-				// if (AsyncEvent->ActionInstance)
-				// {
-				// 	SyncPortData(AsyncEvent->ActionInstance, AsyncEvent->OutPropertyValues, false);
-				// }
-                
-				// 如果实例不支持缓存，销毁它
-				if (AsyncEvent->ActionInstance->GetInterruptBehavior() == EAsyncInterruptBehavior::Skip)
-				{
-					AsyncEvent->ActionInstance->ConditionalBeginDestroy();
-					AsyncEvent->ActionInstance = nullptr;
-				}
-			}
-		}
-	}
-    
-	// 如果序列在等待，恢复执行
-	if (State == ESequenceState::WaitingForAsync)
-	{
-		SetState(ESequenceState::Running);
-	}
-}
 
 TArray<FName> UEventSequenceRunning::GetAllLabels() const
 {
@@ -221,6 +181,14 @@ bool UEventSequenceRunning::ExecuteEvent(FInstancedStruct& Event, int32 EventInd
 
 bool UEventSequenceRunning::ExecuteAsyncBlueprintCallEvent()
 {
+	if (CurAsyncEvent)
+	{
+		CurAsyncEvent->OnExecute();
+		return true;
+	}
+	return false;
+	
+	
 	// 判断当前任务是否为 AsyncBlueprintCallEvent
 	if (EventQueue.IsValidIndex(CurEventIndex))
 	{
@@ -908,6 +876,7 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 	{
 		if (State != ESequenceState::WaitingForAsync)
 		{
+			CurAsyncEvent = CurEvent_AsyncBlueprintCall;
 			CurEvent_AsyncBlueprintCall->Execute();
 			// 专门为异步事件做了状态，是否划算，后续可能移除
 			SetState(ESequenceState::WaitingForAsync);
@@ -949,11 +918,27 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 void UEventSequenceRunning::OnAsyncActionResolved()
 {
 	SetState(ESequenceState::Running);
-	CurEventIndex ++ ;
+	if (CurAsyncEvent)
+	{
+		GOTO(CurAsyncEvent->EndIndex);
+	}
+	else
+	{
+		CurEventIndex ++ ;
+	}
+	CurAsyncEvent = nullptr;
 }
 
 void UEventSequenceRunning::OnAsyncActionRejected(FString Reason)
 {
 	SetState(ESequenceState::Running);
-	CurEventIndex ++ ;
+	if (CurAsyncEvent)
+	{
+		GOTO(CurAsyncEvent->EndIndex);
+	}
+	else
+	{
+		CurEventIndex ++ ;
+	}
+	CurAsyncEvent = nullptr;
 }

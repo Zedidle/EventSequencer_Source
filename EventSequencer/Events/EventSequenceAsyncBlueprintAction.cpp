@@ -12,10 +12,10 @@ void UEventSequenceAsyncBlueprintAction::OnStart_Implementation(UPropertyBagWrap
 // 可以与BlueprintCall一样 对 InPropertyWrapper 进行修改属性
 void UEventSequenceAsyncBlueprintAction::OnExecute_Implementation()
 {
-	CompleteSuccess();
+	Resolve();
 }
 
-void UEventSequenceAsyncBlueprintAction::CompleteSuccess()
+void UEventSequenceAsyncBlueprintAction::Resolve()
 {
 	if (Result == EAsyncActionResult::Pending)
 	{
@@ -24,7 +24,7 @@ void UEventSequenceAsyncBlueprintAction::CompleteSuccess()
 	}
 }
 
-void UEventSequenceAsyncBlueprintAction::CompleteFailure(const FString& Reason)
+void UEventSequenceAsyncBlueprintAction::Reject(const FString& Reason)
 {
 	if (Result == EAsyncActionResult::Pending)
 	{
