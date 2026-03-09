@@ -108,6 +108,11 @@ bool UEventSequenceRunning::ExecuteStep()
 
 void UEventSequenceRunning::Next()
 {
+	if (ExecuteAsyncBlueprintCallEvent())
+	{
+		return;
+	}
+	
 	FInstancedStruct CurEvent;
 	GetCurEvent(CurEvent);
 	if (FBaseSequenceEvent* E = CurEvent.GetMutablePtr<FBaseSequenceEvent>())
@@ -223,6 +228,7 @@ bool UEventSequenceRunning::ExecuteAsyncBlueprintCallEvent()
 		if (FSequenceEvent_AsyncBlueprintCall* AsyncBlueprintCall = OutStruct.GetMutablePtr<FSequenceEvent_AsyncBlueprintCall>())
 		{
 			AsyncBlueprintCall->OnExecute();
+			return true;
 		}
 	}
 	return false;
@@ -900,11 +906,16 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 	}
 	else if (FSequenceEvent_AsyncBlueprintCall* CurEvent_AsyncBlueprintCall = CurEventStruct.GetMutablePtr<FSequenceEvent_AsyncBlueprintCall>())
 	{
-		CurEvent_BlueprintCall->Execute();
-		// 专门为异步事件做了状态，是否划算，后续可能移除
-		SetState(ESequenceState::WaitingForAsync);
-		// 进入等待异步完成的状态，并在 OnAsyncBlueprintCallFinished 接受回调
-		// CurEventIndex++;
+		if (State != ESequenceState::WaitingForAsync)
+		{
+			CurEvent_AsyncBlueprintCall->Execute();
+			// 专门为异步事件做了状态，是否划算，后续可能移除
+			SetState(ESequenceState::WaitingForAsync);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Log, TEXT("Sequence Tick: AsyncBlueprintCall, 异步事件已开始，等待用户主动执行 ExecuteAsyncBlueprintCallEvent 回调。"));
+		}
 	}
 	// 具体事件
 	else if (FNestedSequenceEvent* Event = CurEventStruct.GetMutablePtr<FNestedSequenceEvent>())
@@ -937,10 +948,12 @@ void UEventSequenceRunning::Tick(float DeltaTime)
 
 void UEventSequenceRunning::OnAsyncActionResolved()
 {
+	SetState(ESequenceState::Running);
 	CurEventIndex ++ ;
 }
 
 void UEventSequenceRunning::OnAsyncActionRejected(FString Reason)
 {
+	SetState(ESequenceState::Running);
 	CurEventIndex ++ ;
 }

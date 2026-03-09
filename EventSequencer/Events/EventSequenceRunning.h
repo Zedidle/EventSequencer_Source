@@ -80,6 +80,8 @@ public:
 	void SetDataAsset(UEventSequenceDA* DataAsset, UPropertyBagWrapper* PropertyBagWrapper);
 
 	void Tick(float DeltaTime);
+	
+	// 进入等待异步完成的状态，并在 OnAsyncBlueprintCallFinished 接受回调
 	UFUNCTION()
 	void OnAsyncActionResolved();
 	UFUNCTION()

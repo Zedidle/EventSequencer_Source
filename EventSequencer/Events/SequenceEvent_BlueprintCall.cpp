@@ -4,7 +4,11 @@
 
 FString FSequenceEvent_BlueprintCall::GetDisplayName() const
 {
-    return "BP-CALL [" + BlueprintClass->GetName() + "]";
+    if (BlueprintClass)
+    {
+        return "BP-CALL [" + BlueprintClass->GetName() + "]";
+    }
+    return "BP-CALL [None]";
 }
 
 float FSequenceEvent_BlueprintCall::Tick(float DeltaTime, float PreRemainTime)

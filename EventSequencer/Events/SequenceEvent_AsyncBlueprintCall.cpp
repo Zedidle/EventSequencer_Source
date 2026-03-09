@@ -7,7 +7,11 @@
 
 FString FSequenceEvent_AsyncBlueprintCall::GetDisplayName() const
 {
-    return "ABP-CALL [" + BlueprintClass->GetName() + "]";
+    if (BlueprintClass)
+    {
+        return "ABP-CALL [" + BlueprintClass->GetName() + "]";
+    }
+    return "ABP-CALL [None]";
 }
 
 void FSequenceEvent_AsyncBlueprintCall::SetEventSequenceRunning(UEventSequenceRunning* EventSequenceInstance)
