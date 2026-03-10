@@ -173,12 +173,6 @@ int32 UEventSequenceRunning::FindLabelIndex(const FName& LabelName) const
 	return Label2Index.FindRef(LabelName);
 }
 
-
-bool UEventSequenceRunning::ExecuteEvent(FInstancedStruct& Event, int32 EventIndex)
-{
-	return false;
-}
-
 bool UEventSequenceRunning::ExecuteAsyncBlueprintCallEvent()
 {
 	if (CurAsyncEvent)
@@ -186,34 +180,6 @@ bool UEventSequenceRunning::ExecuteAsyncBlueprintCallEvent()
 		CurAsyncEvent->OnExecute();
 		return true;
 	}
-	return false;
-	
-	
-	// 判断当前任务是否为 AsyncBlueprintCallEvent
-	if (EventQueue.IsValidIndex(CurEventIndex))
-	{
-		FInstancedStruct& OutStruct = EventQueue[CurEventIndex];
-		if (FSequenceEvent_AsyncBlueprintCall* AsyncBlueprintCall = OutStruct.GetMutablePtr<FSequenceEvent_AsyncBlueprintCall>())
-		{
-			AsyncBlueprintCall->OnExecute();
-			return true;
-		}
-	}
-	return false;
-}
-
-bool UEventSequenceRunning::ExecuteCatchBlock(FSequenceEvent_AsyncBlueprintCall& AsyncEvent, int32 EventIndex)
-{
-	return false;
-}
-
-bool UEventSequenceRunning::HandleControlFlowEvent(FInstancedStruct& Event, int32 EventIndex)
-{
-	return false;
-}
-
-bool UEventSequenceRunning::HandleActionEvent(FInstancedStruct& Event, int32 EventIndex)
-{
 	return false;
 }
 

@@ -126,8 +126,5 @@ private:
     
     // 内部函数
     FGuid GenerateAsyncOperationID();
-    
-    // 处理中断恢复
-    void HandleInterruptRecovery(UEventSequenceRunning* Instance, FSequenceEvent_AsyncBlueprintCall& AsyncEvent);
 
 };

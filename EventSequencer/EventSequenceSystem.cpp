@@ -290,30 +290,3 @@ FGuid UEventSequenceSystem::GenerateAsyncOperationID()
     FGuid NewID = FGuid::NewGuid();
     return NewID;
 }
-
-// 处理中断恢复
-void UEventSequenceSystem::HandleInterruptRecovery( UEventSequenceRunning* Instance, FSequenceEvent_AsyncBlueprintCall& AsyncEvent)
-{
-    if (!Instance)
-    {
-        return;
-    }
-    
-    switch (AsyncEvent.InterruptBehavior)
-    {
-    case EAsyncInterruptBehavior::Restart:
-        // 重启语义：重新创建异步实例
-        if (AsyncEvent.ActionInstance)
-        {
-            AsyncEvent.ActionInstance->ResetState();
-        }
-        AsyncEvent.AsyncResult = EAsyncActionResult::Pending;
-        AsyncEvent.FailureReason.Empty();
-        break;
-        
-    case EAsyncInterruptBehavior::Skip:
-        // 跳过语义：直接视为失败
-        AsyncEvent.HandleAsyncComplete(EAsyncActionResult::Failed, TEXT("Interrupted"));
-        break;
-    }
-}

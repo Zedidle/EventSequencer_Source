@@ -132,21 +132,21 @@ void FSequenceEvent_AsyncBlueprintCall::DestroyAsyncInstance()
 //     return false;
 // }
 
-void FSequenceEvent_AsyncBlueprintCall::HandleAsyncComplete(EAsyncActionResult Result, const FString& Reason)
-{
-    AsyncResult = Result;
-    
-    if (Result == EAsyncActionResult::Failed)
-    {
-        FailureReason = Reason;
-    }
-    
-    // 清理序列化状态
-    if (Result != EAsyncActionResult::Pending)
-    {
-        SerializedState.Empty();
-    }
-}
+// void FSequenceEvent_AsyncBlueprintCall::HandleAsyncComplete(EAsyncActionResult Result, const FString& Reason)
+// {
+//     AsyncResult = Result;
+//     
+//     if (Result == EAsyncActionResult::Failed)
+//     {
+//         FailureReason = Reason;
+//     }
+//     
+//     // 清理序列化状态
+//     if (Result != EAsyncActionResult::Pending)
+//     {
+//         SerializedState.Empty();
+//     }
+// }
 
 // bool FSequenceEvent_AsyncBlueprintCall::ValidatePortBindings(const UClass* _BlueprintClass) const
 // {
@@ -158,6 +158,15 @@ bool FSequenceEvent_AsyncBlueprintCall::OnExecute()
 {
     if (!ActionInstance)
     {
+        if (InterruptBehavior == EAsyncInterruptBehavior::Restart)
+        {
+            bAsyncInstanceCreated = false;    
+        }
+        else if (InterruptBehavior == EAsyncInterruptBehavior::Skip)
+        {
+            EventSequenceRunning->GOTO(CatchStartIndex);
+        }
+        
         return false;
     }
 

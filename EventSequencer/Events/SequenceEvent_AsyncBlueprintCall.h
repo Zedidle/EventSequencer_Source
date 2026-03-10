@@ -90,7 +90,7 @@ struct FSequenceEvent_AsyncBlueprintCall : public FBaseSequenceEvent
     //                   bool bToBlueprint) const;
     
     // 处理异步完成
-    void HandleAsyncComplete(EAsyncActionResult Result, const FString& Reason = TEXT(""));
+    // void HandleAsyncComplete(EAsyncActionResult Result, const FString& Reason = TEXT(""));
     
     // 验证端口绑定
     // bool ValidatePortBindings(const UClass* BlueprintClass) const;

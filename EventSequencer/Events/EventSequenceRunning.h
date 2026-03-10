@@ -208,22 +208,9 @@ protected:
     // 每帧执行指令限制
     int32 InstructionLimitPerFrame = 1000;
     
-    // 执行事件
-    bool ExecuteEvent(FInstancedStruct& Event, int32 EventIndex);
-    
     // 执行异步蓝图调用事件
 	UFUNCTION(BlueprintCallable)
     bool ExecuteAsyncBlueprintCallEvent();
-    
-    // 执行Catch块
-    bool ExecuteCatchBlock(FSequenceEvent_AsyncBlueprintCall& AsyncEvent, int32 EventIndex);
-
-    
-    // 处理控制流事件
-    bool HandleControlFlowEvent(FInstancedStruct& Event, int32 EventIndex);
-    
-    // 处理具体操作事件
-    bool HandleActionEvent(FInstancedStruct& Event, int32 EventIndex);
 
 
 };
